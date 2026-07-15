@@ -1,0 +1,116 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+out/
+target/
+_build/
+deps/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Elixir
+_build/
+deps/
+*.ez
+erl_crash.dump
+
+# Rust
+target/
+**/*.rs.bk
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test coverage
+coverage/
+htmlcov/
+.coverage
+.pytest_cache/
+.mypy_cache/
+
+# Generated files
+*.pb.go
+*_pb2.py
+*_pb2_grpc.py
+*.pb.ex
+
+# Electron
+release/
+
+# MinIO data
+minio-data/
+
+# Docker volumes
+pgdata/
+redisdata/
+esdata/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Secrets, certificates and local artifacts ───
+# Backup archives
+*.zip
+# TLS certificates and private keys — never publish
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+certs/
+packages/client/certs/
+# Local tooling artifacts
+tmp-out/
+*.plugin
+# Local artifacts
+_relay_*.bat
+_relay_*.txt
+_to_delete/
+local-notes.ps1
+notes.ps1
+LOCAL-NOTES.md
+
+# Local per-user editor settings
+.local/settings.json
+
+# Browser test artifacts
+.browser-tests/
+
+# Playwright test artifacts
+test-results/
+playwright-report/
+
+# Database backup snapshots (created at runtime by the backup sidecar)
+/backups/*
+!/backups/.gitkeep
+
+# Local security audit notes (do not publish)
+SECURITY-AUDIT.md
