@@ -1,0 +1,20 @@
+# Client build uses `context: .` but its Dockerfile COPYs nothing (source comes via bind mount
+# at runtime), so excluding heavy/irrelevant paths just shrinks the build context sent to the daemon.
+.git
+node_modules
+**/node_modules
+.pnpm-store
+dist
+build
+**/dist
+**/build
+target
+**/target
+_build
+deps
+test-results
+playwright-report
+.browser-tests
+*.png
+*.log
+.env
