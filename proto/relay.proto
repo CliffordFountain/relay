@@ -1,0 +1,1127 @@
+syntax = "proto3";
+package data_services;
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Shared / Common
+// ──────────────────────────────────────────────────────────────────────────────
+
+message Empty {}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Common Domain Types
+// ──────────────────────────────────────────────────────────────────────────────
+
+message User {
+  int64  id             = 1;
+  string username       = 2;
+  string discriminator  = 3;
+  string email          = 4;
+  optional string avatar         = 5;
+  optional string banner         = 6;
+  optional string bio            = 7;
+  optional string accent_color   = 8;
+  optional string pronouns       = 9;
+  optional string display_name   = 10;
+  int64  flags          = 11;
+  int32  premium_type   = 12;
+  bool   verified       = 13;
+  bool   mfa_enabled    = 14;
+  optional string locale         = 15;
+  optional string communication_disabled_until = 16;
+}
+
+message UserSettings {
+  int64  user_id  = 1;
+  string locale   = 2;
+  string theme    = 3;
+  bool   enable_tts_command          = 4;
+  bool   message_display_compact     = 5;
+  bool   show_current_game           = 6;
+  bool   default_guilds_restricted   = 7;
+  bool   inline_attachment_media     = 8;
+  bool   inline_embed_media          = 9;
+  bool   gif_auto_play               = 10;
+  bool   render_embeds               = 11;
+  bool   render_reactions            = 12;
+  bool   animate_emoji               = 13;
+  bool   enable_tts                  = 14;
+  int32  explicit_content_filter     = 15;
+}
+
+message Guild {
+  int64  id           = 1;
+  string name         = 2;
+  optional string icon        = 3;
+  optional string banner      = 4;
+  optional string description = 5;
+  int64  owner_id     = 6;
+  int32  verification_level   = 7;
+  int32  default_message_notifications = 8;
+  int32  explicit_content_filter       = 9;
+  bool   nsfw_level   = 10;
+  optional string preferred_locale     = 11;
+  optional string vanity_url_code      = 12;
+  int32  member_count = 13;
+  repeated Channel channels = 14;
+  repeated Role    roles    = 15;
+  bool   discoverable = 16;
+}
+
+message Channel {
+  int64  id           = 1;
+  int32  type         = 2;
+  optional int64  guild_id    = 3;
+  string name         = 4;
+  optional string topic       = 5;
+  bool   nsfw         = 6;
+  optional int64  last_message_id    = 7;
+  int32  position     = 8;
+  int32  bitrate      = 9;
+  int32  user_limit   = 10;
+  int32  rate_limit_per_user         = 11;
+  optional int64  parent_id   = 12;
+  repeated PermissionOverwrite permission_overwrites = 13;
+  optional string rtc_region  = 14;
+  optional int32  video_quality_mode = 15;
+  optional string icon        = 16;
+  optional string owner_id    = 17;
+}
+
+message PermissionOverwrite {
+  int64  id    = 1;
+  int32  type  = 2;   // 0 = role, 1 = member
+  int64  allow = 3;
+  int64  deny  = 4;
+}
+
+message Role {
+  int64  id          = 1;
+  int64  guild_id    = 2;
+  string name        = 3;
+  int32  color       = 4;
+  bool   hoist       = 5;
+  int32  position    = 6;
+  int64  permissions = 7;
+  bool   managed     = 8;
+  bool   mentionable = 9;
+  optional string icon        = 10;
+  optional string unicode_emoji = 11;
+}
+
+message Member {
+  User   user        = 1;
+  optional string nick        = 2;
+  repeated int64 roles        = 3;
+  string joined_at            = 4;
+  optional string premium_since = 5;
+  bool   deaf                 = 6;
+  bool   mute                 = 7;
+  bool   pending              = 8;
+  optional string communication_disabled_until = 9;
+  optional string avatar      = 10;
+}
+
+message Message {
+  int64  id              = 1;
+  int64  channel_id      = 2;
+  int64  author_id       = 3;
+  string content         = 4;
+  string timestamp       = 5;
+  optional string edited_timestamp   = 6;
+  bool   tts             = 7;
+  bool   mention_everyone= 8;
+  repeated Embed       embeds      = 9;
+  repeated Attachment  attachments = 10;
+  repeated Reaction    reactions   = 11;
+  bool   pinned         = 12;
+  int32  type           = 13;
+  int64  flags          = 14;
+  optional MessageReference message_reference = 15;
+  optional Message referenced_message         = 16;
+  optional string nonce = 17;
+  repeated int64 mention_role_ids = 18;
+  optional int64 guild_id = 19;
+}
+
+message Embed {
+  optional string title       = 1;
+  optional string description = 2;
+  optional string url         = 3;
+  optional string timestamp   = 4;
+  optional int32  color       = 5;
+  optional EmbedAuthor  author    = 6;
+  repeated EmbedField   fields    = 7;
+  optional EmbedMedia   thumbnail = 8;
+  optional EmbedMedia   image     = 9;
+  optional EmbedFooter  footer    = 10;
+  optional string type  = 11;
+  optional string site_name = 12;
+}
+
+message EmbedAuthor {
+  string name            = 1;
+  optional string url      = 2;
+  optional string icon_url = 3;
+}
+
+message EmbedField {
+  string name   = 1;
+  string value  = 2;
+  bool   inline = 3;
+}
+
+message EmbedMedia {
+  string url             = 1;
+  optional int32 width   = 2;
+  optional int32 height  = 3;
+}
+
+message EmbedFooter {
+  string text            = 1;
+  optional string icon_url = 2;
+}
+
+message MessageReference {
+  int64 message_id = 1;
+  int64 channel_id = 2;
+  optional int64 guild_id = 3;
+}
+
+message Attachment {
+  int64  id           = 1;
+  string filename     = 2;
+  string content_type = 3;
+  int32  size         = 4;
+  string url          = 5;
+  optional string proxy_url = 6;
+  optional int32  width     = 7;
+  optional int32  height    = 8;
+}
+
+message AttachmentInput {
+  string filename     = 1;
+  string content_type = 2;
+  int32  size         = 3;
+  string url          = 4;
+  optional int32 width  = 5;
+  optional int32 height = 6;
+}
+
+message Reaction {
+  int32  count = 1;
+  bool   me    = 2;
+  ReactionEmoji emoji = 3;
+}
+
+message ReactionEmoji {
+  optional int64  id   = 1;
+  string          name = 2;
+}
+
+message Invite {
+  string code         = 1;
+  int64  guild_id     = 2;
+  int64  channel_id   = 3;
+  int64  inviter_id   = 4;
+  int32  uses         = 5;
+  int32  max_uses     = 6;
+  int32  max_age      = 7;
+  bool   temporary    = 8;
+  string created_at   = 9;
+  optional string expires_at = 10;
+}
+
+message Ban {
+  int64  guild_id  = 1;
+  User   user      = 2;
+  optional string reason = 3;
+}
+
+message Relationship {
+  int64  id         = 1;
+  int64  user_id    = 2;
+  int64  target_id  = 3;
+  int32  type       = 4;
+  User   user       = 5;
+}
+
+message ReadState {
+  int64 user_id         = 1;
+  int64 channel_id      = 2;
+  int64 last_message_id = 3;
+  int32 mention_count   = 4;
+}
+
+message Thread {
+  int64  id              = 1;
+  int64  guild_id        = 2;
+  int64  parent_id       = 3;
+  int64  owner_id        = 4;
+  string name            = 5;
+  int32  type            = 6;
+  bool   archived        = 7;
+  int32  auto_archive_duration = 8;
+  optional string archive_timestamp = 9;
+  bool   locked          = 10;
+  int32  message_count   = 11;
+  int32  member_count    = 12;
+  optional int64 last_message_id = 13;
+  int32  rate_limit_per_user    = 14;
+}
+
+message Webhook {
+  int64  id          = 1;
+  int32  type        = 2;
+  int64  guild_id    = 3;
+  int64  channel_id  = 4;
+  optional int64  user_id    = 5;
+  string name        = 6;
+  optional string avatar     = 7;
+  string token       = 8;
+  string url         = 9;
+}
+
+message Emoji {
+  int64  id          = 1;
+  int64  guild_id    = 2;
+  string name        = 3;
+  optional int64  user_id    = 4;
+  bool   require_colons = 5;
+  bool   managed     = 6;
+  bool   animated    = 7;
+  bool   available   = 8;
+}
+
+message AutoModRule {
+  int64  id          = 1;
+  int64  guild_id    = 2;
+  string name        = 3;
+  int64  creator_id  = 4;
+  int32  event_type  = 5;
+  int32  trigger_type = 6;
+  string trigger_metadata = 7;  // JSON
+  string actions     = 8;       // JSON array
+  bool   enabled     = 9;
+  repeated int64 exempt_roles    = 10;
+  repeated int64 exempt_channels = 11;
+}
+
+message ScheduledEvent {
+  int64  id                   = 1;
+  int64  guild_id             = 2;
+  optional int64 channel_id   = 3;
+  int64  creator_id           = 4;
+  string name                 = 5;
+  optional string description = 6;
+  string scheduled_start_time = 7;   // ISO8601
+  optional string scheduled_end_time = 8;
+  int32  entity_type          = 9;
+  string entity_metadata      = 10;  // JSON
+  int32  status               = 11;
+  int32  privacy_level        = 12;
+  int32  interested_count     = 13;
+}
+
+message CreateScheduledEventRequest {
+  int64  guild_id             = 1;
+  optional int64 channel_id   = 2;
+  int64  creator_id           = 3;
+  string name                 = 4;
+  optional string description = 5;
+  string scheduled_start_time = 6;
+  optional string scheduled_end_time = 7;
+  int32  entity_type          = 8;
+  string entity_metadata      = 9;
+  int32  privacy_level        = 10;
+}
+message UpdateScheduledEventRequest {
+  int64  guild_id             = 1;
+  int64  event_id             = 2;
+  optional string name        = 3;
+  optional string description  = 4;
+  optional string scheduled_start_time = 5;
+  optional string scheduled_end_time   = 6;
+  optional int32 entity_type  = 7;
+  optional int32 status       = 8;
+}
+message GetScheduledEventsRequest  { int64 guild_id = 1; }
+message GetScheduledEventsResponse { repeated ScheduledEvent events = 1; }
+message GetScheduledEventRequest   { int64 event_id = 1; int64 guild_id = 2; }
+message DeleteScheduledEventRequest { int64 event_id = 1; int64 guild_id = 2; }
+
+message AuditLogEntry {
+  int64  id           = 1;
+  int64  guild_id     = 2;
+  int64  user_id      = 3;
+  optional int64  target_id   = 4;
+  int32  action_type  = 5;
+  optional string changes     = 6;   // JSON
+  optional string options     = 7;   // JSON
+  optional string reason      = 8;
+  string created_at   = 9;
+}
+
+message NotificationSettings {
+  int64  user_id        = 1;
+  optional int64  guild_id      = 2;
+  optional int64  channel_id    = 3;
+  int32  message_notifications  = 4;
+  bool   muted          = 5;
+  bool   suppress_everyone      = 6;
+  bool   suppress_roles         = 7;
+  bool   mobile_push            = 8;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// UserService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service UserService {
+  rpc GetUser(GetUserRequest)                         returns (User);
+  rpc GetUserByEmail(GetUserByEmailRequest)           returns (User);
+  rpc GetUserByToken(GetUserByTokenRequest)           returns (User);
+  rpc CreateUser(CreateUserRequest)                   returns (User);
+  rpc UpdateUser(UpdateUserRequest)                   returns (User);
+  rpc DeleteUser(DeleteUserRequest)                   returns (Empty);
+  rpc GetUserGuilds(GetUserGuildsRequest)             returns (GetUserGuildsResponse);
+  rpc GetUserSettings(GetUserSettingsRequest)         returns (UserSettings);
+  rpc UpdateUserSettings(UpdateUserSettingsRequest)   returns (UserSettings);
+  rpc CreateToken(CreateTokenRequest)                 returns (TokenResponse);
+  rpc ValidateToken(ValidateTokenRequest)             returns (User);
+  rpc RevokeToken(RevokeTokenRequest)                 returns (Empty);
+  rpc GetMfaSecret(GetMfaSecretRequest)               returns (MfaSecretResponse);
+  rpc SetMfaSecret(SetMfaSecretRequest)               returns (Empty);
+  rpc DisableMfa(DisableMfaRequest)                   returns (Empty);
+  rpc CreatePasswordResetToken(CreatePasswordResetTokenRequest) returns (PasswordResetTokenResponse);
+  rpc ValidatePasswordResetToken(ValidatePasswordResetTokenRequest) returns (ValidatePasswordResetTokenResponse);
+  rpc UpdatePassword(UpdatePasswordRequest)           returns (Empty);
+  rpc AuthenticateUser(AuthenticateUserRequest)       returns (User);
+}
+
+message GetUserRequest       { int64  user_id = 1; }
+message GetUserByEmailRequest { string email  = 1; }
+message GetUserByTokenRequest { string token  = 1; }
+message AuthenticateUserRequest { string email = 1; string password_hash = 2; }
+message DeleteUserRequest    { int64  user_id = 1; }
+message GetUserGuildsRequest { int64  user_id = 1; }
+message GetUserSettingsRequest { int64 user_id = 1; }
+
+message CreateUserRequest {
+  string username     = 1;
+  string email        = 2;
+  string password_hash = 3;
+  optional string date_of_birth = 4;
+}
+
+message UpdateUserRequest {
+  int64  user_id      = 1;
+  optional string username     = 2;
+  optional string email        = 3;
+  optional string avatar       = 4;
+  optional string banner       = 5;
+  optional string bio          = 6;
+  optional string accent_color = 7;
+  optional string pronouns     = 8;
+  optional string display_name = 9;
+  optional string locale       = 10;
+}
+
+message UpdateUserSettingsRequest {
+  int64  user_id  = 1;
+  optional string locale   = 2;
+  optional string theme    = 3;
+  optional bool   enable_tts_command        = 4;
+  optional bool   message_display_compact   = 5;
+  optional bool   inline_attachment_media   = 6;
+  optional bool   render_embeds             = 7;
+  optional bool   animate_emoji             = 8;
+  optional int32  explicit_content_filter   = 9;
+}
+
+message CreateTokenRequest { int64 user_id = 1; }
+message TokenResponse      { string token = 1; }
+message ValidateTokenRequest { string token = 1; }
+message RevokeTokenRequest   { string token = 1; }
+
+message GetMfaSecretRequest    { int64  user_id = 1; }
+message MfaSecretResponse      { optional string secret = 1; bool enabled = 2; }
+message SetMfaSecretRequest    { int64 user_id = 1; string secret = 2; }
+message DisableMfaRequest      { int64 user_id = 1; }
+
+message CreatePasswordResetTokenRequest  { int64 user_id = 1; }
+message PasswordResetTokenResponse       { string token = 1; string expires_at = 2; }
+message ValidatePasswordResetTokenRequest { string token = 1; }
+message ValidatePasswordResetTokenResponse { int64 user_id = 1; bool valid = 2; }
+message UpdatePasswordRequest  { int64 user_id = 1; string password_hash = 2; }
+
+message GetUserGuildsResponse  { repeated GuildSummary guilds = 1; }
+message GuildSummary {
+  int64  id           = 1;
+  string name         = 2;
+  optional string icon = 3;
+  int64  owner_id     = 4;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// GuildService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service GuildService {
+  rpc GetGuild(GetGuildRequest)           returns (Guild);
+  rpc GetGuildByVanity(GetGuildByVanityRequest) returns (Guild);
+  rpc CreateGuild(CreateGuildRequest)     returns (Guild);
+  rpc UpdateGuild(UpdateGuildRequest)     returns (Guild);
+  rpc DeleteGuild(DeleteGuildRequest)     returns (Empty);
+  rpc GetGuildChannels(GetGuildChannelsRequest) returns (GetChannelsResponse);
+  rpc TransferOwnership(TransferOwnershipRequest) returns (Guild);
+  rpc GetGuildEmojis(GetGuildEmojisRequest) returns (GetEmojisResponse);
+  rpc CreateEmoji(CreateEmojiRequest)     returns (Emoji);
+  rpc UpdateEmoji(UpdateEmojiRequest)     returns (Emoji);
+  rpc DeleteEmoji(DeleteEmojiRequest)     returns (Empty);
+  rpc GetAutoModRules(GetAutoModRulesRequest) returns (GetAutoModRulesResponse);
+  rpc GetAutoModRule(GetAutoModRuleRequest)   returns (AutoModRule);
+  rpc CreateAutoModRule(CreateAutoModRuleRequest) returns (AutoModRule);
+  rpc UpdateAutoModRule(UpdateAutoModRuleRequest) returns (AutoModRule);
+  rpc DeleteAutoModRule(DeleteAutoModRuleRequest) returns (Empty);
+  rpc GetAuditLogs(GetAuditLogsRequest)   returns (GetAuditLogsResponse);
+  rpc CreateAuditLogEntry(CreateAuditLogEntryRequest) returns (Empty);
+  rpc CreateScheduledEvent(CreateScheduledEventRequest) returns (ScheduledEvent);
+  rpc GetScheduledEvents(GetScheduledEventsRequest)     returns (GetScheduledEventsResponse);
+  rpc GetScheduledEvent(GetScheduledEventRequest)       returns (ScheduledEvent);
+  rpc UpdateScheduledEvent(UpdateScheduledEventRequest) returns (ScheduledEvent);
+  rpc DeleteScheduledEvent(DeleteScheduledEventRequest) returns (Empty);
+  rpc DiscoverGuilds(DiscoverGuildsRequest)             returns (DiscoverGuildsResponse);
+  rpc AddScheduledEventInterest(ScheduledEventInterestRequest)    returns (Empty);
+  rpc RemoveScheduledEventInterest(ScheduledEventInterestRequest) returns (Empty);
+  rpc GetScheduledEventInterested(GetScheduledEventInterestedRequest) returns (GetScheduledEventInterestedResponse);
+}
+
+message GetGuildRequest    { int64 guild_id = 1; }
+message GetGuildByVanityRequest { string code = 1; }
+message DeleteGuildRequest { int64 guild_id = 1; }
+message GetGuildChannelsRequest { int64 guild_id = 1; }
+
+message CreateGuildRequest {
+  string name         = 1;
+  int64  owner_id     = 2;
+  optional string icon = 3;
+}
+
+message UpdateGuildRequest {
+  int64  guild_id     = 1;
+  optional string name        = 2;
+  optional string icon        = 3;
+  optional string banner      = 4;
+  optional string description = 5;
+  optional int32  verification_level            = 6;
+  optional int32  default_message_notifications = 7;
+  optional int32  explicit_content_filter       = 8;
+  optional string preferred_locale              = 9;
+  optional string vanity_url_code               = 10;
+  optional int64  system_channel_id             = 11;
+  optional int64  rules_channel_id              = 12;
+  optional int64  public_updates_channel_id     = 13;
+  optional bool   discoverable                  = 14;
+}
+
+// ── Wave 2 feature messages ──────────────────────────────────────────
+message DiscoverGuildsRequest  { optional string query = 1; int32 limit = 2; }
+message DiscoverableGuild      { int64 id = 1; string name = 2; optional string icon = 3; optional string description = 4; int32 member_count = 5; }
+message DiscoverGuildsResponse { repeated DiscoverableGuild guilds = 1; }
+
+message ScheduledEventInterestRequest       { int64 event_id = 1; int64 user_id = 2; }
+message GetScheduledEventInterestedRequest  { int64 event_id = 1; }
+message GetScheduledEventInterestedResponse { repeated int64 user_ids = 1; int32 count = 2; }
+
+message FollowChannelRequest        { int64 source_channel_id = 1; int64 target_channel_id = 2; int64 webhook_id = 3; int64 created_by = 4; }
+message FollowChannelResponse       { int64 webhook_id = 1; }
+message ChannelFollower             { int64 source_channel_id = 1; int64 target_channel_id = 2; int64 webhook_id = 3; }
+message GetChannelFollowersRequest  { int64 source_channel_id = 1; }
+message GetChannelFollowersResponse { repeated ChannelFollower followers = 1; }
+message UnfollowChannelRequest      { int64 source_channel_id = 1; int64 target_channel_id = 2; }
+
+message GetUserMentionsRequest  { int64 user_id = 1; int32 limit = 2; }
+message UserMention             { Message message = 1; int64 guild_id = 2; }
+message GetUserMentionsResponse { repeated UserMention mentions = 1; }
+
+message TransferOwnershipRequest { int64 guild_id = 1; int64 new_owner_id = 2; }
+
+message GetGuildEmojisRequest  { int64 guild_id = 1; }
+message GetEmojisResponse      { repeated Emoji emojis = 1; }
+
+message CreateEmojiRequest {
+  int64  guild_id  = 1;
+  string name      = 2;
+  string image_url = 3;
+  int64  user_id   = 4;
+}
+
+message UpdateEmojiRequest {
+  int64  emoji_id  = 1;
+  int64  guild_id  = 2;
+  string name      = 3;
+}
+
+message DeleteEmojiRequest { int64 emoji_id = 1; int64 guild_id = 2; }
+
+message GetAutoModRulesRequest { int64 guild_id = 1; }
+message GetAutoModRulesResponse { repeated AutoModRule rules = 1; }
+message GetAutoModRuleRequest   { int64 rule_id = 1; int64 guild_id = 2; }
+
+message CreateAutoModRuleRequest {
+  int64  guild_id         = 1;
+  string name             = 2;
+  int64  creator_id       = 3;
+  int32  event_type       = 4;
+  int32  trigger_type     = 5;
+  string trigger_metadata = 6;  // JSON
+  string actions          = 7;  // JSON
+  bool   enabled          = 8;
+  repeated int64 exempt_roles    = 9;
+  repeated int64 exempt_channels = 10;
+}
+
+message UpdateAutoModRuleRequest {
+  int64  rule_id   = 1;
+  int64  guild_id  = 2;
+  optional string name             = 3;
+  optional string trigger_metadata = 4;
+  optional string actions          = 5;
+  optional bool   enabled          = 6;
+}
+
+message DeleteAutoModRuleRequest { int64 rule_id = 1; int64 guild_id = 2; }
+
+message GetAuditLogsRequest {
+  int64 guild_id      = 1;
+  optional int64 user_id      = 2;
+  optional int32 action_type  = 3;
+  optional int64 before       = 4;
+  int32 limit         = 5;
+}
+message GetAuditLogsResponse { repeated AuditLogEntry entries = 1; }
+
+message CreateAuditLogEntryRequest {
+  int64  guild_id      = 1;
+  int64  user_id       = 2;
+  optional int64  target_id   = 3;
+  int32  action_type   = 4;
+  optional string changes     = 5;
+  optional string options     = 6;
+  optional string reason      = 7;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ChannelService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service ChannelService {
+  rpc GetChannel(GetChannelRequest)           returns (Channel);
+  rpc CreateChannel(CreateChannelRequest)     returns (Channel);
+  rpc UpdateChannel(UpdateChannelRequest)     returns (Channel);
+  rpc DeleteChannel(DeleteChannelRequest)     returns (Empty);
+  rpc GetChannelOverwrites(GetChannelOverwritesRequest) returns (GetOverwritesResponse);
+  rpc UpsertPermissionOverwrite(UpsertPermissionOverwriteRequest) returns (Empty);
+  rpc DeletePermissionOverwrite(DeletePermissionOverwriteRequest) returns (Empty);
+  rpc GetDmChannels(GetDmChannelsRequest)     returns (GetChannelsResponse);
+  rpc GetOrCreateDm(GetOrCreateDmRequest)     returns (Channel);
+  rpc CreateGroupDm(CreateGroupDmRequest)     returns (Channel);
+  rpc AddDmMember(AddDmMemberRequest)         returns (Empty);
+  rpc RemoveDmMember(RemoveDmMemberRequest)   returns (Empty);
+  rpc GetDmMembers(GetDmMembersRequest)       returns (GetDmMembersResponse);
+  rpc UpdateChannelPositions(UpdateChannelPositionsRequest) returns (Empty);
+  rpc FollowChannel(FollowChannelRequest)                 returns (FollowChannelResponse);
+  rpc GetChannelFollowers(GetChannelFollowersRequest)     returns (GetChannelFollowersResponse);
+  rpc UnfollowChannel(UnfollowChannelRequest)             returns (Empty);
+}
+
+message GetChannelRequest  { int64 channel_id = 1; }
+message DeleteChannelRequest { int64 channel_id = 1; }
+message GetChannelOverwritesRequest { int64 channel_id = 1; }
+message GetOverwritesResponse { repeated PermissionOverwrite overwrites = 1; }
+message GetChannelsResponse  { repeated Channel channels = 1; }
+
+message CreateChannelRequest {
+  int64  guild_id    = 1;
+  string name        = 2;
+  int32  type        = 3;
+  optional string topic      = 4;
+  bool   nsfw        = 5;
+  int32  bitrate     = 6;
+  int32  user_limit  = 7;
+  int32  rate_limit_per_user = 8;
+  optional int64  parent_id  = 9;
+  int32  position    = 10;
+  repeated PermissionOverwrite permission_overwrites = 11;
+}
+
+message UpdateChannelRequest {
+  int64  channel_id  = 1;
+  optional string name       = 2;
+  optional string topic      = 3;
+  optional bool   nsfw       = 4;
+  optional int32  bitrate    = 5;
+  optional int32  user_limit = 6;
+  optional int32  rate_limit_per_user = 7;
+  optional int64  parent_id  = 8;
+  optional int32  position   = 9;
+  optional string rtc_region = 10;
+  optional int32  video_quality_mode = 11;
+}
+
+message UpsertPermissionOverwriteRequest {
+  int64 channel_id    = 1;
+  int64 overwrite_id  = 2;
+  int32 type          = 3;
+  int64 allow         = 4;
+  int64 deny          = 5;
+}
+
+message DeletePermissionOverwriteRequest {
+  int64 channel_id   = 1;
+  int64 overwrite_id = 2;
+}
+
+message GetDmChannelsRequest  { int64 user_id = 1; }
+message GetOrCreateDmRequest  { int64 user_id = 1; int64 target_id = 2; }
+message CreateGroupDmRequest  { int64 owner_id = 1; repeated int64 user_ids = 2; string name = 3; }
+message AddDmMemberRequest    { int64 channel_id = 1; int64 user_id = 2; }
+message RemoveDmMemberRequest { int64 channel_id = 1; int64 user_id = 2; }
+message GetDmMembersRequest   { int64 channel_id = 1; }
+message GetDmMembersResponse  { repeated int64 user_ids = 1; }
+
+message UpdateChannelPositionsRequest {
+  int64 guild_id = 1;
+  repeated ChannelPosition positions = 2;
+}
+message ChannelPosition {
+  int64 id       = 1;
+  int32 position = 2;
+  optional int64 parent_id = 3;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// MessageService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service MessageService {
+  rpc GetMessages(GetMessagesRequest)             returns (GetMessagesResponse);
+  rpc GetMessage(GetMessageRequest)               returns (Message);
+  rpc CreateMessage(CreateMessageRequest)         returns (Message);
+  rpc UpdateMessage(UpdateMessageRequest)         returns (Message);
+  rpc DeleteMessage(DeleteMessageRequest)         returns (Empty);
+  rpc BulkDeleteMessages(BulkDeleteMessagesRequest) returns (Empty);
+  rpc GetPinnedMessages(GetPinnedMessagesRequest) returns (GetMessagesResponse);
+  rpc PinMessage(PinMessageRequest)               returns (Empty);
+  rpc UnpinMessage(UnpinMessageRequest)           returns (Empty);
+  rpc CreateAttachment(CreateAttachmentRequest)   returns (Attachment);
+  rpc GetUserMentions(GetUserMentionsRequest)     returns (GetUserMentionsResponse);
+}
+
+message GetMessagesRequest {
+  int64 channel_id      = 1;
+  optional int64 before = 2;
+  optional int64 after  = 3;
+  optional int64 around = 4;
+  int32 limit           = 5;
+}
+message GetMessagesResponse  { repeated Message messages = 1; }
+message GetMessageRequest    { int64 channel_id = 1; int64 message_id = 2; }
+
+message CreateMessageRequest {
+  int64  channel_id     = 1;
+  int64  author_id      = 2;
+  optional string content = 3;
+  optional int32  type    = 4;
+  optional int64  flags   = 5;
+  bool   tts            = 6;
+  repeated Embed embeds = 7;
+  optional MessageReference message_reference = 8;
+  repeated int64 mention_user_ids  = 9;
+  bool   mention_everyone          = 10;
+  repeated int64 mention_role_ids  = 11;
+  repeated AttachmentInput attachments = 12;
+  optional string nonce = 13;
+  optional int64  guild_id = 14;
+}
+
+message UpdateMessageRequest {
+  int64  channel_id  = 1;
+  int64  message_id  = 2;
+  optional string content = 3;
+  repeated Embed embeds   = 4;
+  optional int64  flags   = 5;
+}
+
+message DeleteMessageRequest      { int64 channel_id = 1; int64 message_id = 2; }
+message BulkDeleteMessagesRequest { int64 channel_id = 1; repeated int64 message_ids = 2; }
+message GetPinnedMessagesRequest  { int64 channel_id = 1; }
+message PinMessageRequest         { int64 channel_id = 1; int64 message_id = 2; }
+message UnpinMessageRequest       { int64 channel_id = 1; int64 message_id = 2; }
+
+message CreateAttachmentRequest {
+  int64  message_id   = 1;
+  string filename     = 2;
+  string content_type = 3;
+  int32  size         = 4;
+  string url          = 5;
+  optional int32 width  = 6;
+  optional int32 height = 7;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ReactionService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service ReactionService {
+  rpc AddReaction(AddReactionRequest)           returns (Empty);
+  rpc RemoveReaction(RemoveReactionRequest)     returns (Empty);
+  rpc RemoveAllReactions(RemoveAllReactionsRequest) returns (Empty);
+  rpc RemoveEmojiReactions(RemoveEmojiReactionsRequest) returns (Empty);
+  rpc GetReactions(GetReactionsRequest)         returns (GetReactionsResponse);
+}
+
+message AddReactionRequest {
+  int64  message_id = 1;
+  int64  user_id    = 2;
+  string emoji_name = 3;
+  optional int64 emoji_id = 4;
+}
+message RemoveReactionRequest {
+  int64  message_id = 1;
+  int64  user_id    = 2;
+  string emoji_name = 3;
+  optional int64 emoji_id = 4;
+}
+message RemoveAllReactionsRequest  { int64 message_id = 1; }
+message RemoveEmojiReactionsRequest { int64 message_id = 1; string emoji_name = 2; optional int64 emoji_id = 3; }
+message GetReactionsRequest {
+  int64  message_id = 1;
+  string emoji_name = 2;
+  optional int64 emoji_id = 3;
+  int32  limit      = 4;
+  optional int64 after = 5;
+}
+message GetReactionsResponse { repeated User users = 1; }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// MemberService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service MemberService {
+  rpc GetMembers(GetMembersRequest)       returns (GetMembersResponse);
+  rpc GetMember(GetMemberRequest)         returns (Member);
+  rpc GetMemberCount(GetMemberCountRequest) returns (MemberCountResponse);
+  rpc AddMember(AddMemberRequest)         returns (Member);
+  rpc UpdateMember(UpdateMemberRequest)   returns (Member);
+  rpc RemoveMember(RemoveMemberRequest)   returns (Empty);
+  rpc AddMemberRole(AddMemberRoleRequest) returns (Empty);
+  rpc RemoveMemberRole(RemoveMemberRoleRequest) returns (Empty);
+  rpc GetMemberRoles(GetMemberRolesRequest) returns (GetMemberRolesResponse);
+  rpc IsMember(IsMemberRequest)           returns (IsMemberResponse);
+}
+
+message GetMembersRequest  { int64 guild_id = 1; int32 limit = 2; optional int64 after = 3; }
+message GetMembersResponse { repeated Member members = 1; }
+message GetMemberRequest   { int64 guild_id = 1; int64 user_id = 2; }
+message GetMemberCountRequest { int64 guild_id = 1; }
+message MemberCountResponse   { int32 count = 1; }
+message IsMemberRequest       { int64 guild_id = 1; int64 user_id = 2; }
+message IsMemberResponse      { bool is_member = 1; }
+
+message AddMemberRequest {
+  int64  guild_id   = 1;
+  int64  user_id    = 2;
+  optional string nick = 3;
+}
+
+message UpdateMemberRequest {
+  int64  guild_id   = 1;
+  int64  user_id    = 2;
+  optional string nick         = 3;
+  optional bool   deaf         = 4;
+  optional bool   mute         = 5;
+  optional string communication_disabled_until = 6;
+}
+
+message RemoveMemberRequest    { int64 guild_id = 1; int64 user_id = 2; }
+message AddMemberRoleRequest   { int64 guild_id = 1; int64 user_id = 2; int64 role_id = 3; }
+message RemoveMemberRoleRequest { int64 guild_id = 1; int64 user_id = 2; int64 role_id = 3; }
+message GetMemberRolesRequest  { int64 guild_id = 1; int64 user_id = 2; }
+message GetMemberRolesResponse { repeated int64 role_ids = 1; }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// RoleService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service RoleService {
+  rpc GetRoles(GetRolesRequest)               returns (GetRolesResponse);
+  rpc GetRole(GetRoleRequest)                 returns (Role);
+  rpc CreateRole(CreateRoleRequest)           returns (Role);
+  rpc UpdateRole(UpdateRoleRequest)           returns (Role);
+  rpc DeleteRole(DeleteRoleRequest)           returns (Empty);
+  rpc UpdateRolePositions(UpdateRolePositionsRequest) returns (GetRolesResponse);
+}
+
+message GetRolesRequest    { int64 guild_id = 1; }
+message GetRolesResponse   { repeated Role roles = 1; }
+message GetRoleRequest     { int64 guild_id = 1; int64 role_id = 2; }
+message DeleteRoleRequest  { int64 guild_id = 1; int64 role_id = 2; }
+
+message CreateRoleRequest {
+  int64  guild_id    = 1;
+  string name        = 2;
+  int32  color       = 3;
+  bool   hoist       = 4;
+  int32  position    = 5;
+  int64  permissions = 6;
+  bool   mentionable = 7;
+}
+
+message UpdateRoleRequest {
+  int64  guild_id    = 1;
+  int64  role_id     = 2;
+  optional string name        = 3;
+  optional int32  color       = 4;
+  optional bool   hoist       = 5;
+  optional int64  permissions = 6;
+  optional bool   mentionable = 7;
+  optional string icon        = 8;
+  optional string unicode_emoji = 9;
+}
+
+message UpdateRolePositionsRequest {
+  int64 guild_id = 1;
+  repeated RolePosition positions = 2;
+}
+message RolePosition { int64 id = 1; int32 position = 2; }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PermissionService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service PermissionService {
+  rpc ComputePermissions(ComputePermissionsRequest)               returns (PermissionsResponse);
+  rpc ComputeChannelPermissions(ComputeChannelPermissionsRequest) returns (PermissionsResponse);
+  rpc GetGuildOwner(GetGuildOwnerRequest)                         returns (GetGuildOwnerResponse);
+}
+
+message ComputePermissionsRequest        { int64 guild_id = 1; int64 user_id = 2; }
+message ComputeChannelPermissionsRequest { int64 guild_id = 1; int64 channel_id = 2; int64 user_id = 3; }
+message PermissionsResponse              { int64 permissions = 1; }
+message GetGuildOwnerRequest             { int64 guild_id = 1; }
+message GetGuildOwnerResponse            { int64 owner_id = 1; }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// InviteService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service InviteService {
+  rpc GetInvite(GetInviteRequest)           returns (Invite);
+  rpc GetGuildInvites(GetGuildInvitesRequest) returns (GetInvitesResponse);
+  rpc GetChannelInvites(GetChannelInvitesRequest) returns (GetInvitesResponse);
+  rpc CreateInvite(CreateInviteRequest)     returns (Invite);
+  rpc DeleteInvite(DeleteInviteRequest)     returns (Empty);
+  rpc UseInvite(UseInviteRequest)           returns (UseInviteResponse);
+}
+
+message GetInviteRequest       { string code = 1; }
+message GetGuildInvitesRequest { int64 guild_id = 1; }
+message GetChannelInvitesRequest { int64 channel_id = 1; }
+message GetInvitesResponse     { repeated Invite invites = 1; }
+message DeleteInviteRequest    { string code = 1; }
+
+message CreateInviteRequest {
+  int64  channel_id  = 1;
+  int64  guild_id    = 2;
+  int64  inviter_id  = 3;
+  int32  max_uses    = 4;
+  int32  max_age     = 5;
+  bool   temporary   = 6;
+}
+
+message UseInviteRequest     { string code = 1; int64 user_id = 2; }
+message UseInviteResponse    { int64 guild_id = 1; int64 channel_id = 2; }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// BanService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service BanService {
+  rpc GetBan(GetBanRequest)       returns (Ban);
+  rpc GetBans(GetBansRequest)     returns (GetBansResponse);
+  rpc CreateBan(CreateBanRequest) returns (Ban);
+  rpc DeleteBan(DeleteBanRequest) returns (Empty);
+}
+
+message GetBanRequest    { int64 guild_id = 1; int64 user_id = 2; }
+message GetBansRequest   { int64 guild_id = 1; int32 limit = 2; optional int64 before = 3; optional int64 after = 4; }
+message GetBansResponse  { repeated Ban bans = 1; }
+message DeleteBanRequest { int64 guild_id = 1; int64 user_id = 2; }
+
+message CreateBanRequest {
+  int64  guild_id         = 1;
+  int64  user_id          = 2;
+  optional string reason  = 3;
+  int32  delete_message_days = 4;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// RelationshipService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service RelationshipService {
+  rpc GetRelationships(GetRelationshipsRequest)   returns (GetRelationshipsResponse);
+  rpc GetRelationship(GetRelationshipRequest)     returns (Relationship);
+  rpc UpsertRelationship(UpsertRelationshipRequest) returns (Relationship);
+  rpc DeleteRelationship(DeleteRelationshipRequest) returns (Empty);
+  rpc GetMutualFriends(GetMutualFriendsRequest)   returns (GetRelationshipsResponse);
+  rpc GetMutualGuilds(GetMutualGuildsRequest)     returns (GetMutualGuildsResponse);
+  // Resolve a target user by their (case-insensitive) username so the API can
+  // turn an "add friend by username" request into a relationship by user id.
+  rpc GetUserByUsername(GetUserByUsernameRequest) returns (User);
+}
+
+message GetRelationshipsRequest  { int64 user_id = 1; }
+message GetUserByUsernameRequest { string username = 1; }
+message GetRelationshipsResponse { repeated Relationship relationships = 1; }
+message GetRelationshipRequest   { int64 user_id = 1; int64 target_id = 2; }
+message DeleteRelationshipRequest { int64 user_id = 1; int64 target_id = 2; }
+message GetMutualFriendsRequest  { int64 user_id = 1; int64 target_id = 2; }
+message GetMutualGuildsRequest   { int64 user_id = 1; int64 target_id = 2; }
+message GetMutualGuildsResponse  { repeated GuildSummary guilds = 1; }
+
+message UpsertRelationshipRequest {
+  int64 user_id   = 1;
+  int64 target_id = 2;
+  int32 type      = 3;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ReadStateService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service ReadStateService {
+  rpc GetReadStates(GetReadStatesRequest)   returns (GetReadStatesResponse);
+  rpc GetReadState(GetReadStateRequest)     returns (ReadState);
+  rpc AckMessage(AckMessageRequest)         returns (ReadState);
+  rpc DeleteReadState(DeleteReadStateRequest) returns (Empty);
+}
+
+message GetReadStatesRequest  { int64 user_id = 1; }
+message GetReadStatesResponse { repeated ReadState read_states = 1; }
+message GetReadStateRequest   { int64 user_id = 1; int64 channel_id = 2; }
+message AckMessageRequest     { int64 user_id = 1; int64 channel_id = 2; int64 message_id = 3; }
+message DeleteReadStateRequest { int64 user_id = 1; int64 channel_id = 2; }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ThreadService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service ThreadService {
+  rpc GetThread(GetThreadRequest)             returns (Thread);
+  rpc CreateThread(CreateThreadRequest)       returns (Thread);
+  rpc UpdateThread(UpdateThreadRequest)       returns (Thread);
+  rpc ArchiveThread(ArchiveThreadRequest)     returns (Thread);
+  rpc GetChannelThreads(GetChannelThreadsRequest) returns (GetThreadsResponse);
+  rpc GetGuildThreads(GetGuildThreadsRequest)     returns (GetThreadsResponse);
+  rpc AddThreadMember(AddThreadMemberRequest)     returns (Empty);
+  rpc RemoveThreadMember(RemoveThreadMemberRequest) returns (Empty);
+  rpc GetForumPosts(GetForumPostsRequest)     returns (GetThreadsResponse);
+}
+
+message GetThreadRequest   { int64 thread_id = 1; }
+message DeleteThreadRequest { int64 thread_id = 1; }
+message GetChannelThreadsRequest { int64 channel_id = 1; bool archived = 2; }
+message GetGuildThreadsRequest   { int64 guild_id = 1; bool archived = 2; }
+message GetThreadsResponse       { repeated Thread threads = 1; }
+message AddThreadMemberRequest   { int64 thread_id = 1; int64 user_id = 2; }
+message RemoveThreadMemberRequest { int64 thread_id = 1; int64 user_id = 2; }
+message ArchiveThreadRequest     { int64 thread_id = 1; bool locked = 2; }
+message GetForumPostsRequest     { int64 channel_id = 1; string sort_order = 2; int32 limit = 3; }
+
+message CreateThreadRequest {
+  int64  channel_id    = 1;
+  int64  guild_id      = 2;
+  int64  owner_id      = 3;
+  string name          = 4;
+  int32  type          = 5;
+  int32  auto_archive_duration = 6;
+  optional int64 message_id = 7;
+}
+
+message UpdateThreadRequest {
+  int64  thread_id     = 1;
+  optional string name          = 2;
+  optional bool   archived      = 3;
+  optional int32  auto_archive_duration = 4;
+  optional bool   locked        = 5;
+  optional int32  rate_limit_per_user = 6;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// WebhookService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service WebhookService {
+  rpc GetWebhook(GetWebhookRequest)               returns (Webhook);
+  rpc GetChannelWebhooks(GetChannelWebhooksRequest) returns (GetWebhooksResponse);
+  rpc GetGuildWebhooks(GetGuildWebhooksRequest)   returns (GetWebhooksResponse);
+  rpc CreateWebhook(CreateWebhookRequest)         returns (Webhook);
+  rpc UpdateWebhook(UpdateWebhookRequest)         returns (Webhook);
+  rpc DeleteWebhook(DeleteWebhookRequest)         returns (Empty);
+}
+
+message GetWebhookRequest         { int64 webhook_id = 1; }
+message GetChannelWebhooksRequest { int64 channel_id = 1; }
+message GetGuildWebhooksRequest   { int64 guild_id   = 1; }
+message GetWebhooksResponse       { repeated Webhook webhooks = 1; }
+message DeleteWebhookRequest      { int64 webhook_id = 1; }
+
+message CreateWebhookRequest {
+  int64  guild_id   = 1;
+  int64  channel_id = 2;
+  int64  user_id    = 3;
+  string name       = 4;
+  optional string avatar = 5;
+}
+
+message UpdateWebhookRequest {
+  int64  webhook_id  = 1;
+  optional string name       = 2;
+  optional string avatar     = 3;
+  optional int64  channel_id = 4;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// NotificationService
+// ──────────────────────────────────────────────────────────────────────────────
+
+service NotificationService {
+  rpc GetNotificationSettings(GetNotificationSettingsRequest) returns (GetNotificationSettingsResponse);
+  rpc UpsertNotificationSettings(UpsertNotificationSettingsRequest) returns (NotificationSettings);
+  rpc DeleteNotificationSettings(DeleteNotificationSettingsRequest) returns (Empty);
+}
+
+message GetNotificationSettingsRequest {
+  int64 user_id = 1;
+  optional int64 guild_id   = 2;
+  optional int64 channel_id = 3;
+}
+message GetNotificationSettingsResponse { repeated NotificationSettings settings = 1; }
+message DeleteNotificationSettingsRequest {
+  int64 user_id  = 1;
+  optional int64 guild_id   = 2;
+  optional int64 channel_id = 3;
+}
+
+message UpsertNotificationSettingsRequest {
+  int64 user_id    = 1;
+  optional int64 guild_id   = 2;
+  optional int64 channel_id = 3;
+  int32 message_notifications = 4;
+  bool  muted      = 5;
+  bool  suppress_everyone = 6;
+  bool  suppress_roles    = 7;
+  bool  mobile_push       = 8;
+}
