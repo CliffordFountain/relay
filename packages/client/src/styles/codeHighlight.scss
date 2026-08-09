@@ -1,0 +1,83 @@
+@use './variables' as *;
+
+// Relay-inspired dark code highlighting theme
+// Applied inside code blocks with syntax highlighting
+
+.hljs {
+  color: $text-normal;
+  background: $code-block-bg;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #6A9955;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-addition {
+  color: #C586C0;
+}
+
+.hljs-number,
+.hljs-string,
+.hljs-meta .hljs-meta-string,
+.hljs-literal,
+.hljs-doctag,
+.hljs-regexp {
+  color: #CE9178;
+}
+
+.hljs-string {
+  color: #CE9178;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: #DCDCAA;
+}
+
+.hljs-attribute,
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-class .hljs-title,
+.hljs-type {
+  color: #4EC9B0;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-subst,
+.hljs-meta,
+.hljs-meta .hljs-keyword,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-link {
+  color: #D4D4D4;
+}
+
+.hljs-built_in,
+.hljs-deletion {
+  color: #9CDCFE;
+}
+
+.hljs-params {
+  color: #9CDCFE;
+}
+
+.hljs-formula {
+  color: #C586C0;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}

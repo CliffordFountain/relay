@@ -1,0 +1,169 @@
+// Relay theme tokens.
+// Colours resolve to runtime CSS custom properties defined per-theme in
+// `_themes.scss` (the "relay" theme). Component SCSS keeps
+// referencing these $tokens, so switching [data-theme] recolours everything live.
+// Non-colour tokens (layout, radii, shadows, transitions, z-index) are static.
+
+// === BACKGROUND COLORS ===
+$bg-primary: var(--bg-primary);
+$bg-secondary: var(--bg-secondary);
+$bg-secondary-alt: var(--bg-secondary-alt);
+$bg-tertiary: var(--bg-tertiary);
+$bg-floating: var(--bg-floating);
+$bg-nested-floating: var(--bg-nested-floating);
+$bg-accent: var(--bg-accent);
+$bg-modifier-hover: var(--bg-modifier-hover);
+$bg-modifier-active: var(--bg-modifier-active);
+$bg-modifier-selected: var(--bg-modifier-selected);
+$bg-modifier-accent: var(--bg-modifier-accent);
+
+// === MENTIONED ===
+$bg-mentioned: var(--bg-mentioned);
+$bg-mentioned-hover: var(--bg-mentioned-hover);
+
+// === INPUT AREAS ===
+$channeltextarea-bg: var(--channeltextarea-bg);
+$input-bg: var(--input-bg);
+$input-placeholder: var(--input-placeholder);
+
+// === TEXT COLORS ===
+$text-normal: var(--text-normal);
+$text-muted: var(--text-muted);
+$text-faint: var(--text-faint);
+$text-link: var(--text-link);
+$text-positive: var(--text-positive);
+$text-warning: var(--text-warning);
+$text-danger: var(--text-danger);
+
+// === HEADER COLORS ===
+$header-primary: var(--header-primary);
+$header-secondary: var(--header-secondary);
+
+// === BRAND / ACCENT ===
+$brand-color: var(--brand-color);
+$brand-hover: var(--brand-hover);
+$brand-active: var(--brand-active);
+$brand-light: var(--brand-light);
+
+// === STATUS COLORS ===
+$status-online: var(--status-online);
+$status-idle: var(--status-idle);
+$status-dnd: var(--status-dnd);
+$status-offline: var(--status-offline);
+$status-streaming: var(--status-streaming);
+
+// === INTERACTIVE STATES ===
+$interactive-normal: var(--interactive-normal);
+$interactive-hover: var(--interactive-hover);
+$interactive-active: var(--interactive-active);
+$interactive-muted: var(--interactive-muted);
+
+// === CHANNEL COLORS ===
+$channel-icon: var(--channel-icon);
+$channels-default: var(--channels-default);
+$channels-text-active: var(--channels-text-active);
+$channels-text-hover: var(--channels-text-hover);
+
+// === MENTION COLORS ===
+$mention-foreground: var(--mention-foreground);
+$mention-background: var(--mention-background);
+$mention-background-hover: var(--mention-background-hover);
+
+// === BUTTON COLORS ===
+$button-secondary-bg: var(--button-secondary-bg);
+$button-secondary-bg-hover: var(--button-secondary-bg-hover);
+$button-danger-bg: var(--button-danger-bg);
+$button-danger-bg-hover: var(--button-danger-bg-hover);
+$button-positive-bg: var(--button-positive-bg);
+$button-positive-bg-hover: var(--button-positive-bg-hover);
+
+// === MODAL ===
+$modal-bg: var(--modal-bg);
+$modal-footer-bg: var(--modal-footer-bg);
+
+// === BORDERS ===
+$border-subtle: var(--border-subtle);
+$border-strong: var(--border-strong);
+
+// === FOCUS ===
+$focus-primary: var(--focus-primary);
+
+// === SCROLLBAR ===
+$scrollbar-thin-thumb: var(--scrollbar-thin-thumb);
+$scrollbar-thin-track: var(--scrollbar-thin-track);
+$scrollbar-auto-thumb: var(--scrollbar-auto-thumb);
+$scrollbar-auto-track: var(--scrollbar-auto-track);
+
+// === EMBED ===
+$embed-bg: var(--embed-bg);
+$code-block-bg: var(--code-block-bg);
+$inline-code-bg: var(--inline-code-bg);
+
+// === SPOILER ===
+$spoiler-hidden-bg: var(--spoiler-hidden-bg);
+$spoiler-revealed-bg: var(--spoiler-revealed-bg);
+
+// === DEPRECATED / ACTIVITY ===
+$deprecated-card-bg: var(--deprecated-card-bg);
+$activity-card-bg: var(--activity-card-bg);
+
+// === ACCENT HIGHLIGHT (magenta pink) ===
+$accent-highlight: var(--accent-highlight);
+
+// === LAYOUT DIMENSIONS ===
+$header-height: 48px;
+$server-sidebar-width: 72px;
+$channel-sidebar-width: 240px;
+$member-sidebar-width: 240px;
+$user-panel-height: 52px;
+$title-bar-height: 32px;
+
+// === BORDER RADIUS ===
+$radius-sm: 3px;
+$radius-md: 4px;
+$radius-lg: 8px;
+$radius-xl: 16px;
+$radius-round: 50%;
+$radius-server-icon: 16px;
+
+// === SHADOWS ===
+$shadow-elevation-low: 0 1px 0 rgba(0, 0, 0, 0.2);
+$shadow-elevation-medium: 0 4px 8px rgba(0, 0, 0, 0.24);
+$shadow-elevation-high: 0 8px 16px rgba(0, 0, 0, 0.24);
+$shadow-popover: 0 8px 16px rgba(0, 0, 0, 0.24);
+$shadow-header: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1.5px 0 rgba(0, 0, 0, 0.05), 0 2px 0 rgba(0, 0, 0, 0.025);
+
+// === TRANSITIONS ===
+$transition-fast: 100ms ease-out;
+$transition-normal: 150ms ease-out;
+$transition-slow: 200ms ease-out;
+$transition-spring: 200ms cubic-bezier(0.2, 0, 0, 1);
+
+// === Z-INDEX SCALE ===
+$z-base: 0;
+$z-sticky: 1;
+$z-header: 100;
+$z-action-bar: 200;
+$z-scroll-btn: 300;
+$z-typing: 400;
+$z-voice-bar: 500;
+$z-popover: 1000;
+$z-tooltip: 1100;
+$z-context-menu: 1200;
+$z-modal-backdrop: 2000;
+$z-modal-content: 2100;
+$z-toast: 3000;
+
+// === SERVER SIDEBAR SPECIFICS ===
+$server-icon-size: 48px;
+$server-list-gap: 8px;
+$pill-width: 4px;
+$pill-unread-height: 8px;
+$pill-hover-height: 20px;
+$pill-active-height: 40px;
+$separator-color: var(--separator-color);
+
+// === FONTS ===
+$font-primary: var(--font-primary);
+$font-display: var(--font-display);
+$font-code: 'Consolas', 'Monaco', 'Courier New', monospace;

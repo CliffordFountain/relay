@@ -1,0 +1,142 @@
+// ============================================================================
+//  Relay theme palettes (runtime CSS custom properties)
+// ----------------------------------------------------------------------------
+//  Two selectable themes:
+//    - "relay"   : the new default — dark navy "esports/gamer glass" look.
+//
+//  variables.scss maps every colour $token to var(--token), so component SCSS
+//  (which references the $tokens) recolours automatically when [data-theme]
+//  changes on <html>/<body>. Default (:root, no attribute) = Relay.
+// ============================================================================
+
+// ---- shared palette mixins -------------------------------------------------
+
+@mixin relay-palette {
+  // backgrounds
+  --bg-primary: #0c1838;
+  --bg-secondary: #0a1533;
+  --bg-secondary-alt: #091430;
+  --bg-tertiary: #060e22;
+  --bg-floating: #050b1c;
+  --bg-nested-floating: #081029;
+  --bg-accent: #12224d;
+  --bg-modifier-hover: rgba(95, 161, 255, 0.08);
+  --bg-modifier-active: rgba(95, 161, 255, 0.14);
+  --bg-modifier-selected: rgba(95, 161, 255, 0.18);
+  --bg-modifier-accent: rgba(95, 161, 255, 0.24);
+
+  // mentioned
+  --bg-mentioned: rgba(232, 163, 23, 0.08);
+  --bg-mentioned-hover: rgba(232, 163, 23, 0.12);
+
+  // input areas
+  --channeltextarea-bg: #0e1a3a;
+  --input-bg: #060e22;
+  --input-placeholder: #5c6e92;
+
+  // text
+  --text-normal: #e6ecf5;
+  --text-muted: #8fa0c2;
+  --text-faint: #6e809f;
+  --text-link: #5fa1ff;
+  --text-positive: #4fc16f;
+  --text-warning: #e8a317;
+  --text-danger: #ff5c6c;
+
+  // headers
+  --header-primary: #ffffff;
+  --header-secondary: #c7d5ee;
+
+  // brand / accent
+  --brand-color: #3b82f6;
+  --brand-hover: #2e63c8;
+  --brand-active: #1e4391;
+  --brand-light: #5fa1ff;
+
+  // status
+  --status-online: #4fc16f;
+  --status-idle: #e8a317;
+  --status-dnd: #ff5c6c;
+  --status-offline: #5c6e92;
+  --status-streaming: #2e63c8;
+
+  // RGB channel triplets (for rgba(var(--x-rgb), a) alpha usages)
+  --brand-color-rgb: 59, 130, 246;
+  --text-danger-rgb: 255, 92, 108;
+  --text-warning-rgb: 232, 163, 23;
+  --status-online-rgb: 79, 193, 111;
+  --status-idle-rgb: 232, 163, 23;
+  --status-dnd-rgb: 255, 92, 108;
+
+  // interactive
+  --interactive-normal: #8fa0c2;
+  --interactive-hover: #e6ecf5;
+  --interactive-active: #ffffff;
+  --interactive-muted: #3d4f78;
+
+  // channels
+  --channel-icon: #6e809f;
+  --channels-default: #7d8fb0;
+  --channels-text-active: #ffffff;
+  --channels-text-hover: #e6ecf5;
+
+  // mentions
+  --mention-foreground: #dbe7ff;
+  --mention-background: rgba(59, 130, 246, 0.28);
+  --mention-background-hover: rgba(59, 130, 246, 0.42);
+
+  // buttons
+  --button-secondary-bg: #182c5c;
+  --button-secondary-bg-hover: #22376b;
+  --button-danger-bg: #d94452;
+  --button-danger-bg-hover: #b23543;
+  --button-positive-bg: #2f8f4d;
+  --button-positive-bg-hover: #256f3d;
+
+  // modal
+  --modal-bg: #0c1838;
+  --modal-footer-bg: #0a1533;
+
+  // borders
+  --border-subtle: rgba(95, 161, 255, 0.14);
+  --border-strong: rgba(95, 161, 255, 0.24);
+
+  // focus
+  --focus-primary: #3b82f6;
+
+  // scrollbar
+  --scrollbar-thin-thumb: rgba(95, 161, 255, 0.16);
+  --scrollbar-thin-track: transparent;
+  --scrollbar-auto-thumb: rgba(95, 161, 255, 0.16);
+  --scrollbar-auto-track: transparent;
+
+  // embed / code
+  --embed-bg: #0a1533;
+  --code-block-bg: #060e22;
+  --inline-code-bg: rgba(95, 161, 255, 0.14);
+
+  // spoiler
+  --spoiler-hidden-bg: #081029;
+  --spoiler-revealed-bg: rgba(95, 161, 255, 0.14);
+
+  // deprecated / activity
+  --deprecated-card-bg: rgba(10, 21, 51, 0.6);
+  --activity-card-bg: #050b1c;
+
+  // misc
+  --separator-color: #12224d;
+  --accent-highlight: #ff73fa; // magenta highlight accent
+
+  // fonts
+  --font-primary: 'DM Sans', 'Outfit', 'Noto Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Outfit', 'DM Sans', system-ui, sans-serif;
+}
+
+
+// ---- apply -----------------------------------------------------------------
+// Default (no data-theme yet, e.g. first paint before JS) = Relay.
+:root { @include relay-palette; }
+
+:root[data-theme='relay'],
+[data-theme='relay'] { @include relay-palette; }
+
