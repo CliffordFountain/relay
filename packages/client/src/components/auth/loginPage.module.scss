@@ -1,0 +1,479 @@
+@use '../../styles/variables' as *;
+
+/* ============================================================================
+   Relay "Nexus" login — dark navy esports glass.
+   NOTE: this stylesheet is shared with RegisterPage.tsx. All the register
+   class names (.form, .title, .subtitle, .label, .dob*, .tosNotice, .button,
+   .error, .switch, .verifyBanner) are preserved and restyled to tokens so
+   both pages stay on-theme in the "relay" theme.
+   ========================================================================== */
+
+.page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 28% 18%, color-mix(in srgb, $bg-accent, transparent 25%), transparent 42%),
+    radial-gradient(circle at 74% 82%, color-mix(in srgb, $brand-active, transparent 55%), transparent 46%),
+    linear-gradient(160deg, $bg-nested-floating 0%, $bg-floating 55%, $bg-tertiary 100%);
+}
+
+/* ─── Decorative background (login only) ─── */
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blobA {
+  width: 460px;
+  height: 460px;
+  top: -120px;
+  left: -80px;
+  background: radial-gradient(circle, color-mix(in srgb, $brand-color, transparent 30%), transparent 70%);
+  animation: rl-flow-a 20s ease-in-out infinite;
+}
+
+.blobB {
+  width: 520px;
+  height: 520px;
+  bottom: -160px;
+  right: -120px;
+  background: radial-gradient(circle, color-mix(in srgb, $brand-light, transparent 45%), transparent 70%);
+  animation: rl-flow-b 24s ease-in-out infinite;
+}
+
+.rings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1100px;
+  height: 1100px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      transparent 0,
+      transparent 78px,
+      color-mix(in srgb, $brand-light, transparent 92%) 79px,
+      transparent 80px
+    );
+  mask-image: radial-gradient(circle at center, #000 0%, transparent 62%);
+  -webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 62%);
+}
+
+@keyframes rl-flow-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(60px, 40px) scale(1.12); }
+}
+
+@keyframes rl-flow-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-50px, -30px) scale(1.08); }
+}
+
+/* ─── Top-left brand ─── */
+
+.brand {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 2;
+}
+
+.brandLogo {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  background: linear-gradient(135deg, $brand-active 0%, $brand-hover 45%, $brand-color 100%);
+  box-shadow: 0 6px 20px rgba(var(--brand-color-rgb), 0.3);
+
+  svg {
+    display: block;
+  }
+}
+
+.brandName {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: $header-primary;
+}
+
+/* ─── Glass login card ─── */
+
+.loginContainer {
+  position: relative;
+  z-index: 1;
+  width: min(480px, 94vw);
+  max-width: 480px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: color-mix(in srgb, $bg-secondary, transparent 28%);
+  border: 1px solid color-mix(in srgb, $brand-light, transparent 84%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 30px 80px rgba(3, 8, 22, 0.7);
+}
+
+.loginLeft {
+  padding: 44px 40px;
+}
+
+/* ─── Register form (standalone centered — RegisterPage) ─── */
+
+.form {
+  position: relative;
+  z-index: 1;
+  background: color-mix(in srgb, $bg-secondary, transparent 24%);
+  border: 1px solid color-mix(in srgb, $brand-light, transparent 84%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 40px;
+  border-radius: 24px;
+  width: min(480px, 94vw);
+  box-shadow: 0 30px 80px rgba(3, 8, 22, 0.7);
+}
+
+/* When the form lives inside the login card, drop its own frame */
+.loginLeft .form {
+  background: none;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+  width: auto;
+}
+
+.title {
+  font-family: $font-display;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: $header-primary;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: $text-muted;
+  margin-bottom: 26px;
+}
+
+.required {
+  color: $text-danger;
+}
+
+.label {
+  display: block;
+  margin-bottom: 18px;
+
+  & > span {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: $text-muted;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    background: $input-bg;
+    border: 1px solid color-mix(in srgb, $brand-light, transparent 84%);
+    border-radius: 10px;
+    color: $text-normal;
+    font-size: 15px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color $transition-fast, box-shadow $transition-fast;
+
+    &::placeholder {
+      color: $input-placeholder;
+    }
+
+    &:focus {
+      border-color: $brand-color;
+      box-shadow: 0 0 0 4px rgba(var(--brand-color-rgb), 0.18);
+    }
+  }
+}
+
+/* ─── Input with leading/trailing icons (login) ─── */
+
+.inputWrap {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: $text-faint;
+  pointer-events: none;
+}
+
+.hasLeftIcon {
+  padding-left: 42px !important;
+}
+
+.hasRightIcon {
+  padding-right: 42px !important;
+}
+
+.eyeToggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: $text-faint;
+  cursor: pointer;
+  transition: color $transition-fast, background $transition-fast;
+
+  &:hover {
+    color: $text-normal;
+    background: $bg-modifier-hover;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.forgotPassword {
+  display: block;
+  font-size: 13px;
+  color: $text-link;
+  cursor: pointer;
+  margin-bottom: 22px;
+  margin-top: -6px;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ─── Date of birth (RegisterPage) ─── */
+
+.dobSection {
+  margin-bottom: 20px;
+}
+
+.dobLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: $text-muted;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.dobSelects {
+  display: flex;
+  gap: 8px;
+}
+
+.dobSelect {
+  flex: 1;
+  padding: 12px;
+  background: $input-bg;
+  border: 1px solid color-mix(in srgb, $brand-light, transparent 84%);
+  border-radius: 10px;
+  color: $text-normal;
+  font-size: 15px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%238fa0c2' d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 30px;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+
+  &:focus {
+    border-color: $brand-color;
+    box-shadow: 0 0 0 4px rgba(var(--brand-color-rgb), 0.18);
+  }
+
+  option {
+    background: $bg-secondary;
+    color: $text-normal;
+  }
+}
+
+/* ─── ToS notice (RegisterPage) ─── */
+
+.tosNotice {
+  font-size: 12px;
+  color: $text-muted;
+  margin-bottom: 20px;
+  line-height: 1.5;
+
+  a {
+    color: $text-link;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* ─── Primary button (gradient) ─── */
+
+.button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  background: linear-gradient(135deg, $brand-hover 0%, $brand-color 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: $font-display;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(var(--brand-color-rgb), 0.3);
+  transition: transform $transition-fast, box-shadow $transition-fast, filter $transition-fast;
+
+  &:hover {
+    filter: brightness(1.06);
+    box-shadow: 0 8px 26px rgba(var(--brand-color-rgb), 0.42);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.error {
+  color: $text-danger;
+  font-size: 14px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(var(--text-danger-rgb), 0.1);
+  border: 1px solid rgba(var(--text-danger-rgb), 0.35);
+}
+
+.switch {
+  margin-top: 22px;
+  font-size: 14px;
+  color: $text-muted;
+  text-align: center;
+
+  a {
+    color: $text-link;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* ─── Verification banner (RegisterPage success) ─── */
+
+.verifyBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(var(--status-online-rgb), 0.1);
+  border: 1px solid $text-positive;
+  border-radius: 10px;
+  color: $text-positive;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+/* ─── Footer ─── */
+
+.footer {
+  position: absolute;
+  bottom: 22px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  color: $text-faint;
+  z-index: 2;
+
+  a {
+    color: $text-faint;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--text-normal);
+      text-decoration: underline;
+    }
+  }
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 720px) {
+  .brand {
+    top: 20px;
+    left: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blobA,
+  .blobB {
+    animation: none;
+  }
+}
