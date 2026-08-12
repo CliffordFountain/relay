@@ -1,0 +1,761 @@
+@use '../../styles/variables' as *;
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sidebar {
+  width: $channel-sidebar-width;
+  min-width: $channel-sidebar-width;
+  background: $bg-secondary;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+// === SERVER HEADER ===
+.header {
+  height: $header-height;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+  color: $header-primary;
+  border-bottom: 1px solid $bg-tertiary;
+  box-shadow: $shadow-elevation-low;
+  flex-shrink: 0;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+
+  &.headerOpen {
+    background: $bg-modifier-active;
+  }
+}
+
+.headerClickArea {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  padding: 0 16px;
+  height: 100%;
+  cursor: pointer;
+}
+
+.headerArrow {
+  flex-shrink: 0;
+  color: $interactive-normal;
+  transition: transform $transition-fast;
+  margin-left: 4px;
+}
+
+.headerArrowOpen {
+  color: $interactive-hover;
+}
+
+.headerName {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: $header-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.headerInviteBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+  flex-shrink: 0;
+  margin-right: 8px;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.createChannelBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+  flex-shrink: 0;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+// === SERVER BANNER ===
+.bannerArea {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.bannerImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bannerOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(transparent, $bg-secondary);
+  pointer-events: none;
+}
+
+// === CHANNEL LIST ===
+.channelList {
+  padding: 0 8px 66px;
+  overflow-y: auto;
+  flex: 1;
+  margin-top: 8px;
+}
+
+// === CATEGORY HEADER ===
+.category {
+  display: flex;
+  align-items: center;
+  padding: 16px 0 4px 2px;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover .categoryName {
+    color: $interactive-hover;
+  }
+}
+
+.categoryArrow {
+  width: 12px;
+  height: 12px;
+  margin-right: 2px;
+  color: $text-muted;
+  transition: transform $transition-fast;
+  flex-shrink: 0;
+
+  &.collapsed {
+    transform: rotate(-90deg);
+  }
+}
+
+.categoryName {
+  font-family: $font-display;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $channels-default;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color $transition-fast;
+}
+
+.categoryAction {
+  width: 18px;
+  height: 18px;
+  color: $interactive-normal;
+  opacity: 0;
+  transition: opacity $transition-fast, color $transition-fast;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.category:hover .categoryAction {
+  opacity: 1;
+}
+
+// === CHANNEL ITEM ===
+.channel {
+  display: flex;
+  align-items: center;
+  padding: 1px 0;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  color: $channels-default;
+  height: 34px;
+  position: relative;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    color: $channels-text-hover;
+
+    .channelActions {
+      opacity: 1;
+    }
+  }
+
+  &.active {
+    background: $bg-modifier-active;
+    color: $channels-text-active;
+
+    .channelActions {
+      opacity: 1;
+    }
+  }
+
+  &.muted {
+    opacity: 0.3;
+  }
+
+  &.unread {
+    color: $interactive-active;
+
+    .name {
+      font-weight: 600;
+    }
+  }
+}
+
+// === CHANNEL ICON ===
+.hash {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 8px;
+  color: $channel-icon;
+  transition: color $transition-fast;
+}
+
+.channel.active .hash,
+.channel:hover .hash {
+  color: $interactive-hover;
+}
+
+// === CHANNEL NAME ===
+.name {
+  font-size: 15px;
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 20px;
+}
+
+// === CHANNEL ACTIONS (visible on hover) ===
+.channelActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity $transition-fast;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.channelAction {
+  width: 16px;
+  height: 16px;
+  color: $interactive-normal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-sm;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+// === VOICE CHANNEL STATUS ===
+.voiceChannelStatus {
+  padding: 0 8px 2px 44px;
+}
+
+.voiceStatusText {
+  font-size: 12px;
+  color: $text-faint;
+  cursor: pointer;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+
+  &:hover {
+    color: $text-muted;
+    text-decoration: underline;
+  }
+}
+
+.voiceStatusInput {
+  font-size: 12px;
+  color: $text-normal;
+  background: $input-bg;
+  border: 1px solid $brand-color;
+  border-radius: $radius-sm;
+  padding: 2px 6px;
+  width: 100%;
+  max-width: 160px;
+  outline: none;
+  font-family: inherit;
+
+  &::placeholder {
+    color: $text-faint;
+  }
+}
+
+// === VOICE USER LIST (under voice channel) ===
+.voiceUserList {
+  padding: 0 0 0 8px;
+}
+
+.voiceUser {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px 0 28px;
+  gap: 8px;
+  color: $text-muted;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: $radius-md;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    color: $interactive-hover;
+  }
+}
+
+.voiceUserAvatarWrapper {
+  width: 24px;
+  height: 24px;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow $transition-fast;
+
+  &.voiceUserSpeaking {
+    box-shadow: 0 0 0 2px $status-online;
+    animation: speakingPulse 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes speakingPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px $status-online;
+  }
+  50% {
+    box-shadow: 0 0 0 2px $status-online, 0 0 4px 1px rgba(40, 170, 94, 0.4);
+  }
+}
+
+.voiceUserAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: $radius-round;
+  object-fit: cover;
+}
+
+.voiceUserAvatarFallback {
+  width: 24px;
+  height: 24px;
+  border-radius: $radius-round;
+  background: $brand-color;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.voiceUserName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.voiceUserIcons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.voiceUserStreamIcon {
+  color: $text-danger;
+  flex-shrink: 0;
+}
+
+.voiceUserLiveBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border-radius: $radius-sm;
+  background: $text-danger;
+  color: #fff;
+  font-family: $font-primary;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.voiceUserMuteIcon {
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+// === STAGE PARTICIPANT COUNT ===
+.stageParticipantCount {
+  font-size: 12px;
+  font-weight: 600;
+  color: $status-online;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+// === VOICE CHANNEL USER LIMIT ===
+.voiceUserLimit {
+  font-size: 12px;
+  font-weight: 500;
+  color: $channels-default;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.voiceUserLimitFull {
+  color: $text-danger;
+}
+
+// === VOICE CHANNEL CONNECTED USER COUNT (no user limit) ===
+.voiceUserCount {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: $channels-default;
+  flex-shrink: 0;
+  margin-right: 4px;
+
+  svg {
+    opacity: 0.8;
+  }
+}
+
+// === UNREAD INDICATOR DOT ===
+.unreadDot {
+  width: 8px;
+  height: 8px;
+  border-radius: $radius-round;
+  background: $text-normal;
+  flex-shrink: 0;
+  position: absolute;
+  left: -4px;
+}
+
+// === MENTION BADGE ===
+.mentionBadge {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: $text-danger;
+  color: #fff;
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+// === INVITE BUTTON ===
+.inviteBtn {
+  width: 16px;
+  height: 16px;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: $radius-sm;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+// === SERVER HEADER DROPDOWN ===
+.serverDropdown {
+  position: fixed;
+  z-index: $z-popover;
+  padding: 6px 8px;
+  background: $bg-floating;
+  border-radius: $radius-md;
+  box-shadow: $shadow-elevation-high;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 2px;
+  background: none;
+  color: $interactive-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  line-height: 18px;
+
+  &:hover {
+    background: $brand-color;
+    color: white;
+
+    svg {
+      color: white;
+    }
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: $interactive-normal;
+  }
+}
+
+.dropdownDanger {
+  color: $text-danger;
+
+  svg {
+    color: $text-danger;
+  }
+
+  &:hover {
+    background: $text-danger;
+    color: white;
+
+    svg {
+      color: white;
+    }
+  }
+}
+
+.dropdownHighlight {
+  color: $brand-light;
+
+  svg {
+    color: $brand-light;
+  }
+
+  &:hover {
+    background: $brand-color;
+    color: white;
+
+    svg {
+      color: white;
+    }
+  }
+}
+
+.dropdownToggle {
+  width: 28px;
+  height: 16px;
+  border-radius: 14px;
+  background: $bg-accent;
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color $transition-normal;
+}
+
+.dropdownToggleActive {
+  background: $status-online;
+}
+
+.dropdownToggleHandle {
+  width: 12px;
+  height: 12px;
+  border-radius: $radius-round;
+  background: white;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform $transition-normal;
+
+  .dropdownToggleActive & {
+    transform: translateX(12px);
+  }
+}
+
+// Checkbox style (used for Hide Muted Channels)
+.dropdownCheckbox {
+  width: 18px;
+  height: 18px;
+  border-radius: $radius-sm;
+  border: 2px solid $interactive-normal;
+  background: none;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color $transition-fast, border-color $transition-fast;
+}
+
+.dropdownCheckboxChecked {
+  background: $brand-color;
+  border-color: $brand-color;
+
+  svg {
+    color: white;
+  }
+}
+
+.dropdownSeparator {
+  height: 1px;
+  margin: 4px;
+  background: $border-subtle;
+}
+
+
+// === QUICK LINKS SECTION (Events, etc.) ===
+.quickLinksSection {
+  padding: 0 8px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.quickLinkItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 34px;
+  padding: 0 8px;
+  border: none;
+  border-radius: $radius-lg;
+  background: none;
+  color: $channels-default;
+  font-family: $font-primary;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    color: $channels-text-hover;
+  }
+}
+
+.quickLinkIcon {
+  flex-shrink: 0;
+  color: $channel-icon;
+}
+
+
+// === THREAD ITEMS (under parent channel) ===
+.threadItem {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px 0 36px;
+  gap: 6px;
+  color: $channels-default;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: $radius-lg;
+  transition: background-color $transition-fast, color $transition-fast;
+  margin: 1px 0;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    color: $channels-text-hover;
+  }
+}
+
+.threadItemActive {
+  background: $bg-modifier-active;
+  color: $channels-text-active;
+}
+
+.threadItemIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.threadItemName {
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 18px;
+}

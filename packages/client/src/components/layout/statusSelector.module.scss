@@ -1,0 +1,287 @@
+@use '../../styles/variables' as *;
+
+.popup {
+  position: fixed;
+  width: 300px;
+  background: $bg-floating;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-popover;
+  z-index: $z-popover;
+  padding: 8px 0;
+  animation: fadeIn 100ms ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.customStatusSection {
+  padding: 8px 12px;
+}
+
+.customStatusHeader {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: $header-secondary;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.customStatusInputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.customStatusInput {
+  flex: 1;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-md;
+  padding: 8px 10px;
+  color: $text-normal;
+  font-size: 14px;
+  font-family: $font-primary;
+  outline: none;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.separator {
+  height: 1px;
+  background: $border-subtle;
+  margin: 4px 12px;
+}
+
+.statusList {
+  padding: 4px 8px;
+}
+
+.statusOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: $radius-md;
+  background: transparent;
+  color: $text-normal;
+  cursor: pointer;
+  font-family: $font-primary;
+  text-align: left;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+
+  &.statusOptionActive {
+    background: $bg-modifier-selected;
+  }
+}
+
+.statusDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.dotOnline {
+    background: $status-online;
+  }
+
+  &.dotIdle {
+    background: $status-idle;
+  }
+
+  &.dotDnd {
+    background: $status-dnd;
+  }
+
+  &.dotInvisible {
+    background: $status-offline;
+  }
+}
+
+.dndLine {
+  width: 6px;
+  height: 2px;
+  background: $bg-floating;
+  border-radius: 1px;
+}
+
+.idleMoon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  // Create moon shape by overlapping a circle
+  box-shadow: -3px -2px 0 0 $bg-floating inset;
+}
+
+.statusInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.statusLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-normal;
+  line-height: 18px;
+}
+
+.statusDescription {
+  font-size: 12px;
+  color: $text-muted;
+  line-height: 16px;
+  margin-top: 2px;
+}
+
+.checkmark {
+  color: $brand-color;
+  flex-shrink: 0;
+}
+
+// Emoji button
+.emojiBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-md;
+  border: none;
+  background: $bg-tertiary;
+  color: $text-muted;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-accent;
+    color: $text-normal;
+  }
+}
+
+// Emoji grid
+.emojiGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.emojiGridItem {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-md;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color $transition-fast;
+  color: $text-normal;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.emojiGridItemSelected {
+  background: $bg-modifier-selected;
+  outline: 2px solid $brand-color;
+  outline-offset: -2px;
+}
+
+.emojiGridClear {
+  color: $text-muted;
+
+  &:hover {
+    color: $text-danger;
+    background: rgba(var(--text-danger-rgb), 0.1);
+  }
+}
+
+// Clear After row
+.clearAfterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.clearAfterLabel {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: $header-secondary;
+  letter-spacing: 0.02em;
+}
+
+.clearAfterSelect {
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-md;
+  color: $text-normal;
+  font-size: 13px;
+  font-family: $font-primary;
+  padding: 4px 8px;
+  outline: none;
+  cursor: pointer;
+
+  &:focus {
+    outline: 2px solid $focus-primary;
+    outline-offset: -2px;
+  }
+
+  option {
+    background: $bg-floating;
+    color: $text-normal;
+  }
+}
+
+// Save button
+.saveStatusBtn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: $font-primary;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $brand-hover;
+  }
+}

@@ -1,0 +1,88 @@
+@use '../../styles/variables' as *;
+
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: $bg-tertiary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-modal-content;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.logo {
+  color: $brand-color;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.loadingBar {
+  width: 200px;
+  height: 4px;
+  background-color: $bg-modifier-accent;
+  border-radius: $radius-md;
+  overflow: hidden;
+}
+
+.loadingBarFill {
+  height: 100%;
+  width: 30%;
+  background-color: $brand-color;
+  border-radius: $radius-md;
+  animation: slide 1.5s ease-in-out infinite;
+}
+
+.message {
+  color: $text-muted;
+  font-family: $font-primary;
+  font-size: 14px;
+  margin: 0;
+}
+
+.tip {
+  color: $text-muted;
+  font-family: $font-primary;
+  font-size: 14px;
+  margin: 0;
+  max-width: 400px;
+  text-align: center;
+  line-height: 1.4;
+  transition: opacity 0.3s ease;
+}
+
+.tipVisible {
+  opacity: 1;
+}
+
+.tipHidden {
+  opacity: 0;
+}
+
+.tipLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: $header-secondary;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes slide {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(350%); }
+  100% { transform: translateX(-100%); }
+}

@@ -1,0 +1,117 @@
+@use '../../styles/variables' as *;
+
+.titlebar {
+  height: 32px;
+  background: $bg-tertiary;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  -webkit-app-region: drag;
+  user-select: none;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.drag {
+  flex: 1;
+  padding-left: 12px;
+}
+
+.centerTitle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.titleIcon {
+  width: 14px;
+  height: 14px;
+  color: $text-muted;
+}
+
+.waveIcon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.title {
+  font-family: $font-display;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: $text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.titleActions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding-right: 8px;
+  -webkit-app-region: no-drag;
+}
+
+.titleActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: $interactive-normal;
+  cursor: pointer;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+
+  &.titleActionBtnActive {
+    color: $interactive-active;
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+}
+
+.controls {
+  display: flex;
+  -webkit-app-region: no-drag;
+}
+
+.btn {
+  width: 46px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: $interactive-normal;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+
+  &.close:hover {
+    background: #E81123;
+    color: white;
+  }
+}

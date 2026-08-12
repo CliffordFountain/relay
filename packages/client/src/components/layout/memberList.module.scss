@@ -1,0 +1,223 @@
+@use '../../styles/variables' as *;
+
+.memberList {
+  width: $member-sidebar-width;
+  background: $bg-secondary;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.headerSpacer {
+  height: $header-height;
+  flex-shrink: 0;
+  background: $bg-secondary;
+  border-bottom: 1px solid $bg-tertiary;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.scroller {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 4px;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    min-height: 40px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.roleGroup {
+  margin-top: 16px;
+
+  &:first-child {
+    margin-top: 8px;
+  }
+}
+
+.roleHeader {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: $font-display;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $header-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.memberItem {
+  height: 42px;
+  padding: 1px 0;
+  display: flex;
+  align-items: center;
+  border-radius: $radius-lg;
+  padding-left: 8px;
+  padding-right: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+
+  &:active {
+    background: $bg-modifier-active;
+  }
+}
+
+.memberItemOffline {
+  opacity: 0.3;
+}
+
+.avatarWrapper {
+  position: relative;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.avatarOffline {
+  filter: grayscale(100%);
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInitials {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: $font-primary;
+}
+
+.statusDot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 3px solid $bg-secondary;
+  box-sizing: content-box;
+}
+
+.memberInfo {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.crownIcon {
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.memberName {
+  font-size: 14px;
+  font-weight: 500;
+  font-family: $font-primary;
+  color: $header-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 20px;
+}
+
+.memberNameOffline {
+  color: $text-muted;
+}
+
+// Skeleton loading styles
+.skeletonContainer {
+  padding: 16px 8px;
+}
+
+.skeletonItem {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 8px;
+}
+
+.skeletonAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: $bg-modifier-accent;
+  margin-right: 12px;
+  flex-shrink: 0;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonName {
+  width: 80px;
+  height: 14px;
+  border-radius: 4px;
+  background: $bg-modifier-accent;
+  animation: shimmer 1.5s ease-in-out infinite;
+  animation-delay: 0.1s;
+}
+
+.nicknameInput {
+  width: 100%;
+  padding: 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 16px;
+  outline: none;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}

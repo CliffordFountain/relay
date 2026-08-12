@@ -1,0 +1,54 @@
+// Standalone window controls for the frameless Electron window, shown on screens
+// that don't render the main app TitleBar (the auth pages). A thin, transparent,
+// draggable strip pinned to the top with the min/max/close buttons top-right.
+
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  display: flex;
+  z-index: 10000;
+  // Let the whole strip act as the window drag handle (Electron frameless).
+  -webkit-app-region: drag;
+  // The strip itself is transparent; only the buttons are visible.
+  pointer-events: none;
+}
+
+.drag {
+  flex: 1;
+}
+
+.controls {
+  display: flex;
+  // Buttons must be clickable and must NOT drag the window.
+  -webkit-app-region: no-drag;
+  pointer-events: auto;
+}
+
+.btn {
+  width: 46px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--interactive-normal);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: var(--bg-modifier-hover);
+    color: var(--interactive-hover);
+  }
+}
+
+.close:hover {
+  background: var(--text-danger);
+  color: #fff;
+}

@@ -1,0 +1,320 @@
+@use '../../styles/variables' as *;
+
+.sidebar {
+  width: $server-sidebar-width;
+  background: $bg-tertiary;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0 66px;
+  overflow-y: auto;
+  flex-shrink: 0;
+
+  // Hidden scrollbar, visible on hover
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+
+  &:hover::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 2px;
+  }
+}
+
+// === SERVER ITEM WRAPPER ===
+.serverItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $server-sidebar-width;
+  height: $server-icon-size;
+  margin-bottom: $server-list-gap;
+}
+
+// === PILL INDICATOR ===
+.pill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: $pill-width;
+  border-radius: 0 4px 4px 0;
+  background: $brand-light;
+  transition: height $transition-slow, opacity $transition-slow;
+  height: 0;
+  opacity: 0;
+}
+
+.pillUnread {
+  height: $pill-unread-height;
+  opacity: 1;
+}
+
+.pillHover {
+  height: $pill-hover-height;
+  opacity: 1;
+}
+
+.pillActive {
+  height: $pill-active-height;
+  opacity: 1;
+}
+
+// === ICON WRAPPER ===
+.iconWrapper {
+  position: relative;
+  width: $server-icon-size;
+  height: $server-icon-size;
+  cursor: pointer;
+}
+
+// === SERVER ICON (generic) ===
+.icon {
+  width: $server-icon-size;
+  height: $server-icon-size;
+  border-radius: 24px; // idle: more rounded square, morphs to 16px on hover/active
+  background: $bg-accent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  color: $text-normal;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-radius 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color $transition-slow,
+    color $transition-slow,
+    box-shadow $transition-slow;
+  user-select: none;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// === HOME BUTTON ===
+.homeButton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $server-sidebar-width;
+  height: $server-icon-size;
+  margin-bottom: $server-list-gap;
+}
+
+.homeIcon {
+  @extend .icon;
+  // Primary Relay mark: sits on the brand gradient at all times.
+  border-radius: $radius-server-icon;
+  background: linear-gradient(135deg, $brand-active, $brand-color);
+  color: $interactive-active;
+  box-shadow: 0 4px 16px rgba(var(--brand-color-rgb), 0.4);
+
+  svg {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+.serverItem:hover .homeIcon {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(var(--brand-color-rgb), 0.5);
+}
+
+.serverItem.homeActive .homeIcon {
+  box-shadow:
+    0 4px 16px rgba(var(--brand-color-rgb), 0.4),
+    0 0 0 2px rgba(var(--brand-color-rgb), 0.5);
+}
+
+// === HOME ACTIVITY DOT ===
+.activityDot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid $bg-tertiary;
+  z-index: 1;
+}
+
+.activityDotGreen {
+  background: $status-online;
+}
+
+.activityDotYellow {
+  background: $status-idle;
+}
+
+// === GUILD ICON ===
+.guildIcon {
+  @extend .icon;
+}
+
+.serverItem:hover .guildIcon {
+  border-radius: $radius-server-icon;
+  transform: translateY(-1px);
+}
+
+.serverItem.active .guildIcon {
+  border-radius: $radius-server-icon;
+  box-shadow: 0 0 0 2px rgba(var(--brand-color-rgb), 0.5);
+}
+
+// === SEPARATOR ===
+.separator {
+  width: 32px;
+  height: 2px;
+  background: $separator-color;
+  border-radius: 1px;
+  margin-bottom: $server-list-gap;
+  flex-shrink: 0;
+}
+
+// === ADD SERVER BUTTON ===
+.addServerItem {
+  @extend .serverItem;
+}
+
+.addIcon {
+  @extend .icon;
+  color: $status-online;
+  font-size: 24px;
+  font-weight: 300;
+  background: rgba(var(--status-online-rgb), 0.12);
+}
+
+.addServerItem:hover .addIcon {
+  border-radius: $radius-server-icon;
+  background: $status-online;
+  color: $interactive-active;
+  transform: translateY(-1px);
+}
+
+// === GUILD ITEM WRAPPER (used by updated ServerSidebar) ===
+.guildItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $server-sidebar-width;
+  height: $server-icon-size;
+  margin-bottom: $server-list-gap;
+}
+
+.guildItem:hover .guildIcon {
+  border-radius: $radius-server-icon;
+  transform: translateY(-1px);
+}
+
+// === PILL INDICATOR WRAPPER (used by updated ServerSidebar) ===
+.pillIndicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: $pill-width;
+  display: flex;
+  align-items: center;
+}
+
+// === ACTIVE STATE (marker on .serverItem wrapper) ===
+// Visuals live on `.serverItem.active .guildIcon` (radius morph + brand ring)
+// and on the `.pill` indicator; the wrapper itself stays transparent.
+.active {
+  position: relative;
+}
+
+// === ADD BUTTON (used by ServerSidebar component) ===
+.addButton {
+  width: $server-icon-size;
+  height: $server-icon-size;
+  border-radius: $radius-round;
+  background: $bg-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $status-online;
+  cursor: pointer;
+  transition: border-radius $transition-slow, background-color $transition-slow, color $transition-slow;
+
+  &:hover {
+    border-radius: $radius-server-icon;
+    background: $status-online;
+    color: $interactive-active;
+  }
+}
+
+// === DISCOVER / EXPLORE BUTTON ===
+.discoverItem {
+  @extend .serverItem;
+}
+
+.discoverIcon {
+  @extend .icon;
+  color: $status-online;
+  font-size: 24px;
+  font-weight: 300;
+  background: rgba(var(--status-online-rgb), 0.12);
+}
+
+.discoverItem:hover .discoverIcon {
+  border-radius: $radius-server-icon;
+  background: $status-online;
+  color: $interactive-active;
+  transform: translateY(-1px);
+}
+
+// === EXPLORE "NEW" BADGE ===
+.exploreBadge {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 4px;
+  border-radius: 3px;
+  background: $status-online;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+// === UNREAD BADGE ===
+.badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: $text-danger;
+  color: $interactive-active;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid $bg-tertiary;
+  box-sizing: content-box;
+  line-height: 1;
+}
