@@ -1,0 +1,2671 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-content;
+  display: flex;
+  background: $bg-tertiary;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+// --- Left Nav ---
+.nav {
+  width: 218px;
+  flex-shrink: 0;
+  background: $bg-secondary;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.navScroll {
+  width: 218px;
+  padding: 60px 6px 60px 20px;
+  overflow-y: auto;
+}
+
+.navHeader {
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: $text-muted;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.navItem {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  border-radius: $radius-md;
+  font-size: 15px;
+  font-weight: 500;
+  color: $interactive-normal;
+  cursor: pointer;
+  text-align: left;
+  font-family: $font-primary;
+  margin-bottom: 2px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: $interactive-hover;
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.06);
+    color: $interactive-active;
+  }
+
+  &.danger {
+    color: $text-danger;
+
+    &:hover {
+      background: rgba(var(--text-danger-rgb), 0.1);
+    }
+  }
+}
+
+.separator {
+  height: 1px;
+  margin: 8px 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+// --- Right Content ---
+.contentWrapper {
+  flex: 1;
+  display: flex;
+}
+
+.content {
+  flex: 0 1 740px;
+  padding: 60px 40px 80px;
+  overflow-y: auto;
+}
+
+.closeBtn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 60px;
+  margin-left: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-muted;
+  padding: 0;
+
+  &:hover {
+    color: $text-normal;
+
+    .closeIcon {
+      border-color: $text-normal;
+    }
+  }
+}
+
+.closeIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-round;
+  border: 2px solid $text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeLabel {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+// --- Sections ---
+.section {
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: $header-primary;
+    margin: 0 0 20px;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: $header-primary;
+    margin: 0 0 16px;
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: $header-primary;
+    margin: 0 0 12px;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  h2 {
+    margin-bottom: 0;
+  }
+}
+
+// --- Form Elements ---
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.formHint {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 2px 0 0;
+}
+
+.formInput {
+  width: 100%;
+  padding: 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 16px;
+  outline: none;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+}
+
+.formTextarea {
+  width: 100%;
+  padding: 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+}
+
+.formSelect {
+  width: 100%;
+  padding: 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+}
+
+.rangeInput {
+  width: 100%;
+  accent-color: $brand-color;
+}
+
+// --- Toggle ---
+.toggleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.toggle {
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  background: $bg-accent;
+  padding: 2px;
+  cursor: pointer;
+  position: relative;
+  transition: background $transition-normal;
+  flex-shrink: 0;
+
+  &.toggleOn {
+    background: $status-online;
+  }
+}
+
+.toggleKnob {
+  width: 20px;
+  height: 20px;
+  border-radius: $radius-round;
+  background: white;
+  transition: transform $transition-normal;
+
+  .toggleOn & {
+    transform: translateX(16px);
+  }
+}
+
+// --- Buttons ---
+.createBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $brand-hover;
+  }
+}
+
+.saveBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.cancelBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.dangerBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $button-danger-bg;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $button-danger-bg-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.unbanBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $button-secondary-bg;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $button-secondary-bg-hover;
+  }
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-family: $font-primary;
+
+  &:hover {
+    color: $interactive-hover;
+    background: $bg-modifier-hover;
+  }
+
+  &.dangerIcon {
+    &:hover {
+      color: $text-danger;
+    }
+  }
+}
+
+// --- Overview ---
+.overviewGrid {
+  display: flex;
+  gap: 24px;
+}
+
+.iconUploadArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.guildIconLarge {
+  width: 100px;
+  height: 100px;
+  border-radius: $radius-round;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 40px;
+  color: white;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  font-family: $font-primary;
+  transition: opacity $transition-normal;
+
+  &:hover .iconUploadOverlay {
+    opacity: 1;
+  }
+}
+
+.iconPreviewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: $radius-round;
+}
+
+.iconUploadOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity $transition-normal;
+  border-radius: $radius-round;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: white;
+}
+
+.removeIconBtn {
+  background: none;
+  border: none;
+  color: $text-danger;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.iconHint {
+  font-size: 12px;
+  color: $text-muted;
+  text-align: center;
+  max-width: 140px;
+}
+
+.overviewFields {
+  flex: 1;
+}
+
+.saveBar {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+// --- Roles ---
+.rolesLayout {
+  display: flex;
+  gap: 16px;
+}
+
+.rolesList {
+  width: 200px;
+  flex-shrink: 0;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-md;
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+.roleItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+
+  &.roleSelected {
+    background: $bg-modifier-selected;
+  }
+}
+
+.roleColor {
+  width: 12px;
+  height: 12px;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+}
+
+.roleName {
+  font-size: 14px;
+  color: $text-normal;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// --- Drag handle (Fix 7) ---
+.dragHandle {
+  display: flex;
+  align-items: center;
+  color: $text-faint;
+  cursor: grab;
+  flex-shrink: 0;
+  padding: 0 2px;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.roleDragOver {
+  border-top: 2px solid $brand-color;
+}
+
+.roleEditor {
+  flex: 1;
+  background: $bg-tertiary;
+  border-radius: $radius-lg;
+  padding: 16px;
+}
+
+.roleActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+// --- Unsaved changes bar (Fix 2) ---
+.unsavedBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: $bg-floating;
+  border-radius: $radius-lg;
+  margin-top: 16px;
+  box-shadow: $shadow-elevation-medium;
+}
+
+.unsavedText {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-normal;
+}
+
+.unsavedActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+// --- Add member section (Fix 1) ---
+.addMemberSection {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.addMemberDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: $bg-floating;
+  border-radius: $radius-md;
+  padding: 8px;
+  box-shadow: $shadow-elevation-medium;
+  margin-top: 4px;
+}
+
+.addMemberResults {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.addMemberResultItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  background: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: $font-primary;
+  text-align: left;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+// --- Custom color button (Fix 5) ---
+.customColorBtn {
+  background: linear-gradient(135deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.permissionsTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 12px;
+}
+
+.permCategoryLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 20px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid $border-subtle;
+}
+
+// --- Administrator Warning Banner ---
+.adminWarning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(var(--status-idle-rgb), 0.1);
+  border: 1px solid rgba(var(--status-idle-rgb), 0.4);
+  border-radius: $radius-md;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: $text-normal;
+  line-height: 1.4;
+}
+
+.adminWarningIcon {
+  flex-shrink: 0;
+  color: $status-idle;
+  margin-top: 1px;
+}
+
+.permissionDanger {
+  background: rgba(247, 68, 72, 0.08);
+  border-radius: 4px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.permissionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.permissionItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid $border-subtle;
+}
+
+.permissionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.permissionName {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-normal;
+}
+
+.permissionDesc {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+// --- Color Picker ---
+.colorRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.colorPicker {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: $radius-md;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: $radius-md;
+  }
+}
+
+.colorHexInput {
+  width: 100px;
+  padding: 8px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-family: $font-code;
+  font-size: 14px;
+  outline: none;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+}
+
+// --- Color Preset Swatches ---
+.colorSwatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.colorSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: $radius-round;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.colorSwatchActive {
+    border-color: $interactive-active;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.colorSwatchDefault {
+  width: 28px;
+  height: 28px;
+  border-radius: $radius-round;
+  border: 2px solid $border-strong;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-muted;
+  transition: transform $transition-fast;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+}
+
+// --- Channels ---
+.channelsList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.channelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: $radius-md;
+  position: relative;
+
+  &:hover {
+    background: $bg-modifier-hover;
+
+    .channelRowActions {
+      opacity: 1;
+    }
+  }
+}
+
+.channelType {
+  font-size: 16px;
+  color: $channel-icon;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.channelName {
+  font-size: 16px;
+  color: $text-normal;
+  flex: 1;
+}
+
+.channelRowActions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity $transition-fast;
+}
+
+.deleteConfirm {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: $bg-floating;
+  border-radius: $radius-md;
+  padding: 12px;
+  z-index: 10;
+  box-shadow: $shadow-elevation-medium;
+
+  p {
+    font-size: 14px;
+    color: $text-normal;
+    margin: 0 0 8px;
+  }
+}
+
+.confirmActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.editPanel {
+  margin-top: 20px;
+  background: $bg-tertiary;
+  border-radius: $radius-lg;
+  padding: 16px;
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+// --- Members ---
+.membersList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: $radius-md;
+  position: relative;
+  flex-wrap: wrap;
+
+  &:hover {
+    background: $bg-modifier-hover;
+
+    .memberActions {
+      opacity: 1;
+    }
+  }
+}
+
+.memberAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-round;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.memberInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.memberName {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-normal;
+}
+
+.memberUsername {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.memberRoles {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.rolePill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: $radius-md;
+  border: 1px solid;
+  font-size: 12px;
+  color: $text-normal;
+  background: $bg-tertiary;
+}
+
+.roleDot {
+  width: 8px;
+  height: 8px;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+}
+
+.memberActions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity $transition-fast;
+  align-items: center;
+}
+
+.inlineEdit {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+
+  .formInput {
+    flex: 1;
+  }
+}
+
+.roleDropdown {
+  width: 100%;
+  background: $bg-floating;
+  border-radius: $radius-md;
+  padding: 4px;
+  margin-top: 8px;
+  box-shadow: $shadow-elevation-medium;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.roleDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: $font-primary;
+  text-align: left;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+
+  &.roleDropdownActive {
+    background: $bg-modifier-selected;
+  }
+}
+
+.checkmark {
+  margin-left: auto;
+  color: $status-online;
+}
+
+// --- Bans ---
+.banDescription {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.banSearchSection {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.banSearchInput {
+  flex: 1;
+  height: 32px;
+  padding: 0 10px;
+  border: none;
+  border-radius: $radius-md;
+  background: $input-bg;
+  color: $text-normal;
+  font-size: 14px;
+  font-family: $font-primary;
+  outline: none;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 1px $brand-color;
+  }
+}
+
+.banSearchBtn {
+  height: 32px;
+  padding: 0 16px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  white-space: nowrap;
+
+  &:hover {
+    background: $brand-hover;
+  }
+}
+
+.bansList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.banRow {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: $radius-md;
+  cursor: pointer;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.banUser {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.banAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-round;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.banUserInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.banDisplayName {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-normal;
+  line-height: 1.2;
+}
+
+.banUsername {
+  font-size: 12px;
+  color: $text-muted;
+  line-height: 1.3;
+}
+
+// Ban detail modal
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-modal-backdrop;
+}
+
+.banModal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  padding: 24px;
+  width: 440px;
+  max-width: 90vw;
+  position: relative;
+  z-index: $z-modal-content;
+}
+
+.banModalClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.banModalTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0 0 20px;
+}
+
+.banModalReason {
+  margin-bottom: 24px;
+}
+
+.banModalReasonLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.banModalReasonText {
+  font-size: 14px;
+  color: $text-normal;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.banModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.revokeBanBtn {
+  padding: 2px 16px;
+  height: 38px;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-danger;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.banModalDoneBtn {
+  padding: 2px 24px;
+  height: 38px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $brand-hover;
+  }
+}
+
+// --- Audit Log ---
+.auditFilterBar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.auditFilterSelect {
+  height: 32px;
+  padding: 0 28px 0 10px;
+  border: none;
+  border-radius: $radius-md;
+  background: $input-bg;
+  color: $text-normal;
+  font-size: 14px;
+  font-family: $font-primary;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23949BA4' d='M3.5 4.5l2.5 3 2.5-3z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  min-width: 160px;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px $brand-color;
+  }
+}
+
+.auditEmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.auditEmptyIcon {
+  opacity: 0.2;
+  margin-bottom: 16px;
+  color: $text-muted;
+}
+
+.auditEmptyTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.auditEmptySubtitle {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0;
+  max-width: 360px;
+  line-height: 1.4;
+}
+
+.auditList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.auditRow {
+  padding: 10px 12px;
+  border-radius: $radius-md;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.auditEntryAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-round;
+  background: $bg-accent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.auditEntryContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.auditMain {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.auditUser {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-normal;
+}
+
+.auditAction {
+  font-size: 14px;
+  color: $text-muted;
+}
+
+.auditTarget {
+  font-size: 12px;
+  color: $text-faint;
+}
+
+.auditTime {
+  font-size: 12px;
+  color: $text-faint;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.auditReason {
+  font-size: 12px;
+  color: $text-muted;
+  font-style: italic;
+  display: block;
+  margin-top: 2px;
+}
+
+.auditChanges {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  padding-left: 4px;
+}
+
+.auditChange {
+  font-size: 12px;
+  color: $text-faint;
+  font-family: $font-code;
+}
+
+// --- Invites ---
+.invitesList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inviteRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border-radius: $radius-md;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.inviteInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.inviteCode {
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-normal;
+  font-family: $font-code;
+}
+
+.inviteChannel {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.inviteCreator {
+  font-size: 12px;
+  color: $text-faint;
+}
+
+.inviteMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+}
+
+.inviteUses {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.inviteExpiry {
+  font-size: 12px;
+  color: $text-faint;
+}
+
+// --- Delete Server ---
+.dangerZone {
+  background: rgba(var(--text-danger-rgb), 0.05);
+  border: 1px solid rgba(var(--text-danger-rgb), 0.3);
+  border-radius: $radius-lg;
+  padding: 20px;
+}
+
+.dangerText {
+  font-size: 14px;
+  color: $text-normal;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.dangerDescription {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 8px 0 16px;
+  line-height: 1.5;
+}
+
+// --- Empty / Loading States ---
+.loading {
+  text-align: center;
+  color: $text-muted;
+  padding: 40px 0;
+  font-size: 14px;
+}
+
+.emptyState {
+  text-align: center;
+  color: $text-muted;
+  padding: 40px 0;
+  font-size: 14px;
+}
+
+// --- Context Menu ---
+.contextMenuBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: $z-context-menu;
+}
+
+.contextMenu {
+  position: fixed;
+  background: $bg-floating;
+  border-radius: $radius-md;
+  padding: 6px 8px;
+  min-width: 180px;
+  box-shadow: $shadow-popover;
+  z-index: $z-context-menu;
+}
+
+.contextMenuItem {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  background: none;
+  border-radius: $radius-sm;
+  font-size: 14px;
+  color: $interactive-normal;
+  cursor: pointer;
+  text-align: left;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $brand-color;
+    color: white;
+  }
+
+  &.danger {
+    color: $text-danger;
+
+    &:hover {
+      background: $text-danger;
+      color: white;
+    }
+  }
+}
+
+.contextMenuSep {
+  height: 1px;
+  margin: 4px 8px;
+  background: $border-subtle;
+}
+
+// --- Dialog Overlay ---
+.dialogOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  padding: 24px;
+  width: 440px;
+  max-width: 90vw;
+
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: $header-primary;
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 14px;
+    color: $text-muted;
+    margin: 0 0 16px;
+  }
+}
+
+.dialogActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+// --- Error banner (Bug 6) ---
+.errorBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(var(--text-danger-rgb), 0.1);
+  border: 1px solid rgba(var(--text-danger-rgb), 0.3);
+  border-radius: $radius-md;
+  color: $text-danger;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.errorDismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  color: $text-danger;
+  cursor: pointer;
+  padding: 0;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(var(--text-danger-rgb), 0.2);
+  }
+}
+
+// --- Role editor sub-tabs (Bug 7) ---
+.roleEditorTabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid $border-subtle;
+  margin-bottom: 16px;
+}
+
+.roleEditorTab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: $interactive-normal;
+  cursor: pointer;
+  font-family: $font-primary;
+  position: relative;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+
+  &.roleEditorTabActive {
+    color: $interactive-active;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: $brand-color;
+      border-radius: 1px;
+    }
+  }
+}
+
+// --- Role members list (Bug 7) ---
+.roleMembersList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 12px;
+}
+
+.roleMemberItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: $radius-md;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+
+  .iconBtn {
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity $transition-fast;
+  }
+
+  &:hover .iconBtn {
+    opacity: 1;
+  }
+}
+
+.roleMemberName {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-normal;
+}
+
+.roleMemberUsername {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+// --- AutoMod ---
+.sectionDescription {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0 0 24px;
+  line-height: 1.4;
+}
+
+.loadingText {
+  font-size: 14px;
+  color: $text-muted;
+  padding: 16px 0;
+}
+
+.automodContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.automodRule {
+  background: $bg-secondary;
+  border-radius: $radius-lg;
+  padding: 16px;
+}
+
+.automodRuleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+    color: $header-primary;
+  }
+}
+
+.automodRuleDescription {
+  font-size: 13px;
+  color: $text-muted;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.automodRuleBody {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid $border-subtle;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.automodKeywordInput {
+  display: flex;
+  gap: 8px;
+
+  .input {
+    flex: 1;
+    height: 36px;
+  }
+}
+
+.automodKeywordList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.automodKeywordTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: $bg-accent;
+  border-radius: $radius-md;
+  font-size: 13px;
+  color: $text-normal;
+}
+
+.automodKeywordRemove {
+  background: none;
+  border: none;
+  color: $text-muted;
+  cursor: pointer;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+
+  &:hover {
+    color: $text-danger;
+  }
+}
+
+.automodEmptyText {
+  font-size: 13px;
+  color: $text-muted;
+  font-style: italic;
+}
+
+.automodActionSelect {
+  .label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: $header-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+}
+
+.automodMentionLimit {
+  .label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: $header-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+}
+
+.select {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+
+  &:focus {
+    outline: 2px solid $focus-primary;
+    outline-offset: -2px;
+  }
+}
+
+// --- Webhooks / Integrations ---
+.webhooksList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.webhookRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: $bg-secondary;
+  border-radius: $radius-md;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.webhookAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-round;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+
+.webhookInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.webhookName {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-normal;
+}
+
+.webhookChannel {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.webhookCreator {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.webhookCopyBtn {
+  padding: 2px 12px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $button-secondary-bg;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $button-secondary-bg-hover;
+  }
+}
+
+.webhookCreateForm {
+  background: $bg-secondary;
+  border-radius: $radius-lg;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.webhookCreateActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.confirmDialog {
+  background: $bg-primary;
+  border-radius: $radius-lg;
+  padding: 24px;
+  max-width: 440px;
+  width: 100%;
+
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: $header-primary;
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 14px;
+    color: $text-normal;
+    margin: 0 0 24px;
+    line-height: 1.5;
+  }
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.errorMessage {
+  color: $text-danger;
+  font-size: 14px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: rgba(247, 68, 72, 0.1);
+  border-radius: $radius-sm;
+}
+
+// --- Emoji Section ---
+.emojiCountBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: $text-muted;
+}
+
+.emojiCountTrack {
+  flex: 1;
+  height: 8px;
+  background: $bg-tertiary;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.emojiCountFill {
+  height: 100%;
+  background: $brand-color;
+  border-radius: 4px;
+  transition: width $transition-normal;
+}
+
+.emojiUploadForm {
+  padding: 16px;
+  background: $bg-secondary;
+  border-radius: $radius-lg;
+  margin-bottom: 20px;
+}
+
+.emojiUploadRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.emojiUploadBtn {
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-md;
+  border: 2px dashed $border-strong;
+  background: $bg-tertiary;
+  color: $text-muted;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  overflow: hidden;
+
+  &:hover {
+    border-color: $text-muted;
+    color: $text-normal;
+  }
+}
+
+.emojiPreviewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.emojiUploadPlaceholder {
+  line-height: 1;
+}
+
+.emojiNameInput {
+  flex: 1;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-md;
+  padding: 8px 12px;
+  color: $text-normal;
+  font-size: 14px;
+  font-family: $font-primary;
+  outline: none;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+
+  &:focus {
+    outline: 2px solid $focus-primary;
+    outline-offset: -2px;
+  }
+}
+
+.btnPrimary {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  white-space: nowrap;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.errorText {
+  color: $text-danger;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.emptyText {
+  color: $text-muted;
+  font-size: 14px;
+  text-align: center;
+  padding: 24px;
+}
+
+.emojiList {
+  display: flex;
+  flex-direction: column;
+}
+
+.emojiRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: $radius-md;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+
+    .emojiDeleteBtn {
+      opacity: 1;
+    }
+  }
+}
+
+.emojiImage {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+
+  img {
+    border-radius: $radius-md;
+    object-fit: contain;
+  }
+}
+
+.emojiName {
+  flex: 1;
+  font-size: 14px;
+  color: $text-normal;
+  font-family: $font-code;
+}
+
+.emojiUploader {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.emojiDeleteBtn {
+  background: none;
+  border: none;
+  color: $text-danger;
+  cursor: pointer;
+  opacity: 0;
+  padding: 4px;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity $transition-fast;
+
+  &:hover {
+    background: rgba(var(--text-danger-rgb), 0.1);
+  }
+}
+
+// --- Community Section ---
+.settingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid $border-subtle;
+  gap: 16px;
+
+  &:first-of-type {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.settingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.settingLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+}
+
+.settingDescription {
+  font-size: 14px;
+  color: $text-muted;
+  line-height: 1.4;
+}
+
+.selectInput {
+  width: 100%;
+  padding: 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23B5BAC1' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+}
+
+.fieldHint {
+  font-size: 13px;
+  color: $text-muted;
+  margin-top: 8px;
+}
+
+// ─── Shared new section styles ───
+.primaryBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  margin-top: 12px;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.secondaryBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.buttonRow {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.uploadForm {
+  background: $bg-tertiary;
+  border-radius: $radius-lg;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+// ─── Stickers ───
+.stickerList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.stickerItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: $bg-tertiary;
+  border-radius: $radius-md;
+}
+
+.stickerPreview {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $bg-secondary-alt;
+  border-radius: $radius-md;
+  flex-shrink: 0;
+}
+
+.stickerEmoji {
+  font-size: 20px;
+}
+
+.stickerInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stickerName {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-normal;
+}
+
+.stickerDesc {
+  font-size: 12px;
+  color: $text-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ─── Soundboard ───
+.soundGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.soundItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: $bg-tertiary;
+  border-radius: $radius-md;
+}
+
+.soundPlayBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-round;
+  background: $brand-color;
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $brand-hover;
+  }
+}
+
+.soundName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.soundDeleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity $transition-fast;
+
+  .soundItem:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    color: $text-danger;
+  }
+}
+
+// ─── Widget ───
+.widgetPreview {
+  margin-top: 20px;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.widgetPreviewHeader {
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: $text-muted;
+  background: $bg-tertiary;
+}
+
+.widgetPreviewCard {
+  padding: 20px 16px;
+  background: $bg-secondary;
+  text-align: center;
+}
+
+.widgetPreviewTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: $header-primary;
+  margin-bottom: 4px;
+}
+
+.widgetPreviewOnline {
+  font-size: 14px;
+  color: $text-muted;
+  margin-bottom: 16px;
+}
+
+.widgetPreviewInvite {
+  margin-top: 12px;
+}
+
+.widgetPreviewJoinBtn {
+  padding: 8px 24px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $button-positive-bg;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: not-allowed;
+  font-family: $font-primary;
+  opacity: 0.7;
+}
+
+// ─── Soundboard Enhancements ───
+.soundDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.soundEmoji {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.soundVolumeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.soundVolumeLabel {
+  font-size: 11px;
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+// ─── Server Template ───
+.templateCreateForm {
+  margin-top: 16px;
+}
+
+.templateList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.templateItem {
+  padding: 16px;
+  background: $bg-secondary;
+  border-radius: $radius-lg;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.templateInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.templateName {
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+}
+
+.templateDesc {
+  font-size: 14px;
+  color: $text-muted;
+}
+
+.templateUrl {
+  font-size: 13px;
+  font-family: $font-code;
+  color: $text-link;
+}
+
+// ─── Vanity URL ───
+.vanityInputRow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.vanityPrefix {
+  padding: 10px 0 10px 10px;
+  background: $input-bg;
+  border-radius: $radius-sm 0 0 $radius-sm;
+  color: $text-muted;
+  font-size: 16px;
+  font-family: $font-primary;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.vanityInputRow .formInput {
+  border-radius: 0 $radius-sm $radius-sm 0;
+}
+
+
+// ─── Safety Setup ───
+// Reuses existing .settingRow, .toggle, .selectInput etc.
+
+// ─── Onboarding ───
+.channelCheckboxList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 8px;
+  background: $bg-secondary;
+  border-radius: $radius-lg;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: $text-normal;
+  cursor: pointer;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.checkbox {
+  accent-color: $brand-color;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.promptCard {
+  padding: 16px;
+  background: $bg-secondary;
+  border-radius: $radius-lg;
+  margin-bottom: 12px;
+}
+
+.promptHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.promptOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 16px;
+}
+
+.promptOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// ─── Welcome Screen ───
+.welcomeChannelCard {
+  padding: 16px;
+  background: $bg-secondary;
+  border-radius: $radius-lg;
+  margin-bottom: 12px;
+}
+
+.welcomeChannelRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 8px;
+}

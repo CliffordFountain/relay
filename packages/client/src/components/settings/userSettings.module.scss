@@ -1,0 +1,1561 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  background: $bg-tertiary;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+// --- Left Nav ---
+.nav {
+  width: 218px;
+  flex-shrink: 0;
+  background: $bg-secondary;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.navScroll {
+  width: 218px;
+  padding: 60px 6px 60px 20px;
+  overflow-y: auto;
+}
+
+// --- Search Bar ---
+.searchContainer {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $text-muted;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 10px 8px 32px;
+  background: $input-bg;
+  border: none;
+  border-radius: 4px;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  outline: none;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+}
+
+.navHeader {
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: $text-muted;
+  letter-spacing: 0.02em;
+}
+
+// --- User Profile Card above search ---
+.userProfileCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.userAvatarFallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.userProfileInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.userDisplayName {
+  font-size: 14px;
+  font-weight: 600;
+  color: $header-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editProfileLink {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: $text-link;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+// --- Nav item icons ---
+.navItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-right: 8px;
+  color: inherit;
+}
+
+.navItemLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 500;
+  color: $interactive-normal;
+  cursor: pointer;
+  text-align: left;
+  font-family: $font-primary;
+  margin-bottom: 2px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: $interactive-hover;
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.06);
+    color: $interactive-active;
+  }
+
+  &.danger {
+    color: $status-dnd;
+
+    &:hover {
+      background: rgba(var(--status-dnd-rgb), 0.1);
+      color: color-mix(in srgb, $status-dnd, white 10%);
+    }
+  }
+}
+
+.newBadge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: $brand-color;
+  color: white;
+  padding: 2px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.separator {
+  height: 1px;
+  margin: 8px 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.buildInfo {
+  padding: 6px 10px;
+  font-size: 12px;
+  color: $text-faint;
+}
+
+// --- Right Content ---
+.contentWrapper {
+  flex: 1;
+  display: flex;
+}
+
+.content {
+  flex: 0 1 740px;
+  padding: 60px 40px 80px;
+  overflow-y: auto;
+}
+
+.closeBtn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 60px;
+  margin-left: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-muted;
+  padding: 0;
+
+  &:hover {
+    color: $text-normal;
+
+    .closeIcon {
+      border-color: $text-normal;
+    }
+  }
+}
+
+.closeIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid $text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeLabel {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+// --- Sections ---
+.section {
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: $header-primary;
+    margin: 0 0 20px;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: $header-primary;
+    margin: 0 0 16px;
+  }
+}
+
+.subsection {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid $border-subtle;
+}
+
+.subsectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 16px;
+}
+
+// --- Account Tabs ---
+.accountTabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid $border-subtle;
+}
+
+.accountTab {
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  color: $text-muted;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: $font-primary;
+  cursor: pointer;
+  position: relative;
+  margin-bottom: -2px;
+  border-bottom: 2px solid transparent;
+
+  &:hover {
+    color: $text-normal;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.accountTabActive {
+  color: $header-primary;
+  border-bottom-color: $brand-color;
+}
+
+// --- Standing ---
+.standingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.standingTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 16px 0 8px;
+}
+
+.standingDescription {
+  font-size: 14px;
+  color: $text-muted;
+  max-width: 400px;
+  margin: 0;
+}
+
+// --- Reveal Button ---
+.revealBtn {
+  background: none;
+  border: none;
+  color: $text-link;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  padding: 0;
+  margin-left: 8px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// --- Edit User Profile Button ---
+.editUserProfileBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: 3px;
+  background: $button-secondary-bg;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  flex-shrink: 0;
+  margin-left: auto;
+  white-space: nowrap;
+
+  &:hover {
+    background: $button-secondary-bg-hover;
+  }
+}
+
+// --- My Account Card ---
+.card {
+  border-radius: 8px;
+  overflow: hidden;
+  background: $bg-tertiary;
+}
+
+.cardBanner {
+  height: 100px;
+  background: $brand-color;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.bannerBtn {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.bannerOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity $transition-fast;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: $font-primary;
+
+  .bannerBtn:hover & {
+    opacity: 1;
+  }
+}
+
+.cardBody {
+  padding: 16px;
+  padding-top: 36px;
+  position: relative;
+}
+
+.cardAvatarRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: absolute;
+  top: -32px;
+  left: 16px;
+}
+
+.avatarBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 32px;
+  color: white;
+  border: 6px solid $bg-tertiary;
+  overflow: hidden;
+  position: relative;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity $transition-fast;
+  border-radius: 50%;
+
+  .avatarBtn:hover & {
+    opacity: 1;
+  }
+}
+
+.avatarFileInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.cardUsername {
+  font-size: 20px;
+  font-weight: 600;
+  color: $header-primary;
+  margin-top: 16px;
+}
+
+.cardInfo {
+  background: $bg-primary;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 0;
+
+  & + & {
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+  }
+}
+
+.infoContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.infoLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+
+.infoValue {
+  font-size: 15px;
+  color: $text-normal;
+}
+
+.editBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: 3px;
+  background: $button-secondary-bg;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  flex-shrink: 0;
+  margin-left: 12px;
+
+  &:hover {
+    background: $button-secondary-bg-hover;
+  }
+}
+
+// --- Form Elements ---
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.textInput {
+  width: 100%;
+  padding: 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: 4px;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 15px;
+  outline: none;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+}
+
+.editField {
+  margin-top: 4px;
+}
+
+.editActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-end;
+}
+
+.cancelBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.saveBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: 3px;
+  background: $brand-color;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.primaryBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: 3px;
+  background: $brand-color;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $brand-hover;
+  }
+}
+
+.dangerBtn {
+  padding: 2px 16px;
+  height: 32px;
+  border: none;
+  border-radius: 3px;
+  background: $button-danger-bg;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $button-danger-bg-hover;
+  }
+}
+
+.dangerText {
+  color: $text-muted;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.fieldError {
+  color: $text-danger;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.fieldSuccess {
+  color: $text-positive;
+  font-size: 13px;
+}
+
+.passwordForm,
+.deleteConfirm {
+  background: $bg-primary;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+// --- Options ---
+.option {
+  margin-bottom: 20px;
+}
+
+.optionLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.optionHint {
+  font-size: 14px;
+  color: $text-muted;
+  margin-top: 4px;
+}
+
+// --- Theme ---
+.themeOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.themeBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background: $bg-tertiary;
+  color: $text-normal;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: $font-primary;
+  text-align: left;
+
+  &.selected {
+    outline: 2px solid $brand-color;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, $bg-tertiary, white 3%);
+  }
+}
+
+.themeRadio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid $text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .selected & {
+    border-color: $brand-color;
+  }
+}
+
+.themeRadioInner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: $brand-color;
+}
+
+.radioHint {
+  font-size: 12px;
+  color: $text-muted;
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+// --- Toggle ---
+.toggleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toggle {
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  background: $bg-accent;
+  padding: 2px;
+  cursor: pointer;
+  position: relative;
+  transition: background $transition-normal;
+  flex-shrink: 0;
+
+  &.toggleOn {
+    background: $status-online;
+  }
+}
+
+.toggleKnob {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  transition: transform $transition-normal;
+
+  .toggleOn & {
+    transform: translateX(16px);
+  }
+}
+
+// --- Slider ---
+.sliderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sliderValue {
+  font-size: 13px;
+  color: $text-muted;
+  font-weight: 600;
+}
+
+.slider {
+  width: 100%;
+  height: 8px;
+  appearance: none;
+  background: $bg-tertiary;
+  border-radius: 4px;
+  outline: none;
+  margin-top: 8px;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: $brand-color;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  &::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: $brand-color;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.sliderMarks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: $text-faint;
+  margin-top: 4px;
+}
+
+.toggleHandle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  transition: transform $transition-normal;
+
+  .toggleOn & {
+    transform: translateX(16px);
+  }
+}
+
+// --- Accessibility Section ---
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0 0 20px;
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid $border-subtle;
+  gap: 16px;
+
+  &:first-of-type {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.settingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 150px;
+}
+
+// Constrain range sliders placed directly inside a settingRow so they
+// don't steal all horizontal space from the label/description.
+.settingRow > .slider {
+  flex: 0 0 auto;
+  width: 40%;
+  max-width: 260px;
+}
+
+.settingLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+}
+
+.settingDescription {
+  font-size: 14px;
+  color: $text-muted;
+  line-height: 1.4;
+}
+
+// --- Bio ---
+.bioInput {
+  width: 100%;
+  background: $input-bg;
+  border: none;
+  border-radius: 4px;
+  padding: 10px;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+}
+
+// --- Color Picker ---
+.colorPickerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.colorInput {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  overflow: hidden;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  &::-webkit-color-swatch {
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+  }
+}
+
+.colorHexInput {
+  width: 100px;
+  padding: 8px 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: 4px;
+  color: $text-normal;
+  font-family: $font-code;
+  font-size: 14px;
+  outline: none;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+}
+
+// --- Profile Preview ---
+.profileLayout {
+  display: flex;
+  gap: 40px;
+}
+
+.profileForm {
+  flex: 1;
+  min-width: 0;
+}
+
+.profilePreview {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.previewLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.previewCard {
+  border-radius: 8px;
+  overflow: hidden;
+  background: $bg-floating;
+}
+
+.previewBanner {
+  height: 60px;
+  background: $brand-color;
+  background-size: cover;
+  background-position: center;
+}
+
+.previewBody {
+  padding: 12px;
+  padding-top: 36px;
+  position: relative;
+}
+
+.previewAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 22px;
+  color: white;
+  border: 4px solid $bg-floating;
+  position: absolute;
+  top: -28px;
+  left: 12px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.previewName {
+  font-size: 18px;
+  font-weight: 600;
+  color: $header-primary;
+}
+
+.previewUsername {
+  font-size: 14px;
+  color: $text-muted;
+  margin-top: 2px;
+}
+
+.previewDivider {
+  height: 1px;
+  background: $border-subtle;
+  margin: 12px 0;
+}
+
+.previewBioLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+
+.previewBio {
+  font-size: 14px;
+  color: $text-normal;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+// --- Select ---
+.selectInput {
+  width: 100%;
+  padding: 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: 4px;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23B5BAC1' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+}
+
+// --- Two Column ---
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+// --- Video Preview ---
+.videoPreview {
+  margin-top: 20px;
+}
+
+.videoPreviewPlaceholder {
+  width: 100%;
+  height: 200px;
+  background: $bg-tertiary;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: $text-muted;
+  font-size: 14px;
+}
+
+// --- Keybinds ---
+.keybindList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;
+}
+
+.keybindRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: $bg-primary;
+  border-radius: 4px;
+}
+
+.keybindAction {
+  font-size: 15px;
+  font-weight: 500;
+  color: $text-normal;
+}
+
+.keybindKey {
+  padding: 4px 12px;
+  height: 28px;
+  border: none;
+  border-radius: 3px;
+  background: $bg-tertiary;
+  color: $text-normal;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: $font-primary;
+  cursor: pointer;
+  min-width: 80px;
+  text-align: center;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: color-mix(in srgb, $bg-tertiary, white 5%);
+  }
+
+  &.recording {
+    background: $brand-color;
+    color: white;
+    animation: pulse 1s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+// --- Language Section ---
+.languageList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 20px;
+}
+
+.languageItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: $text-normal;
+  cursor: pointer;
+  font-family: $font-primary;
+  text-align: left;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+
+  &.languageItemSelected {
+    background: $bg-modifier-selected;
+  }
+}
+
+.languageItemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.languageItemName {
+  font-size: 15px;
+  font-weight: 500;
+  color: $text-normal;
+}
+
+.languageItemNative {
+  font-size: 13px;
+  color: $text-muted;
+}
+
+.checkmark {
+  color: $status-online;
+  flex-shrink: 0;
+}
+
+// --- Connections Section ---
+.connectionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.connectionBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px;
+  border: none;
+  border-radius: 8px;
+  background: $bg-tertiary;
+  color: $text-normal;
+  cursor: pointer;
+  font-family: $font-primary;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: color-mix(in srgb, $bg-tertiary, white 4%);
+  }
+}
+
+.connectionIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  color: white;
+}
+
+.connectionName {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.comingSoonBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  background: $bg-tertiary;
+  color: $text-muted;
+  font-size: 14px;
+
+  svg {
+    flex-shrink: 0;
+    color: $brand-color;
+  }
+
+  span {
+    flex: 1;
+  }
+}
+
+.comingSoonClose {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+
+  &:hover {
+    color: $text-normal;
+  }
+}
+
+// --- Empty State ---
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: $text-muted;
+
+  svg {
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+}
+
+.emptyStateTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: $header-primary;
+  margin-bottom: 8px;
+}
+
+.emptyStateDescription {
+  font-size: 14px;
+  color: $text-muted;
+  line-height: 1.5;
+  max-width: 400px;
+}
+
+// --- Sessions ---
+.sessionCard {
+  background: $bg-tertiary;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.sessionHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  svg {
+    color: $status-online;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+.sessionInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.sessionDevice {
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sessionCurrent {
+  font-size: 12px;
+  font-weight: 600;
+  color: $status-online;
+  background: rgba(var(--status-online-rgb), 0.1);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+.sessionDetails {
+  font-size: 14px;
+  color: $text-muted;
+  margin-top: 4px;
+}
+
+// --- Premium ---
+.premiumPanel {
+  background: $bg-tertiary;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.premiumBanner {
+  background: linear-gradient(135deg, #3b82f6 0%, #f04aa3 100%);
+  padding: 32px;
+  text-align: center;
+  color: white;
+
+  svg {
+    margin-bottom: 12px;
+    opacity: 0.9;
+  }
+
+  h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+  }
+}
+
+.premiumFeatureList {
+  list-style: none;
+  padding: 20px 24px;
+  margin: 0;
+}
+
+.premiumFeatureItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 15px;
+  color: $text-normal;
+  border-bottom: 1px solid $border-subtle;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  svg {
+    color: $status-online;
+    flex-shrink: 0;
+  }
+}
+
+.premiumSubscribeBtn {
+  display: block;
+  width: calc(100% - 48px);
+  margin: 0 24px 20px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  background: $brand-color;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: $font-primary;
+  text-align: center;
+
+  &:hover {
+    background: $brand-hover;
+  }
+}
+
+
+// ── Mic Test ─────────────────────────────────────────────────────────
+.micTestBtn {
+  font-family: $font-primary;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: $brand-color;
+  border: none;
+  border-radius: $radius-sm;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+}
+
+.micTestMeter {
+  width: 100%;
+  height: 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.micTestMeterFill {
+  height: 100%;
+  width: 0;
+  border-radius: 6px;
+  background: linear-gradient(90deg, $status-online, #f5b737 70%, $status-dnd);
+  transition: width 0.08s linear;
+}
+
+.micTestError {
+  font-family: $font-primary;
+  font-size: 12px;
+  color: $status-dnd;
+  margin: 8px 0 0;
+}
