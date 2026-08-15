@@ -1,0 +1,88 @@
+@use '../../styles/variables' as *;
+
+.trigger {
+  display: inline-flex;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: $z-tooltip;
+  pointer-events: none;
+  animation: tooltipFadeIn 100ms ease-out forwards;
+}
+
+.content {
+  background: $bg-floating;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 16px;
+  padding: 8px 12px;
+  border-radius: $radius-md;
+  box-shadow: $shadow-popover;
+  white-space: nowrap;
+  max-width: 256px;
+  text-align: center;
+}
+
+.arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+}
+
+// === POSITION: TOP ===
+.top {
+  .arrow {
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-top-color: $bg-floating;
+    border-bottom: none;
+  }
+}
+
+// === POSITION: BOTTOM ===
+.bottom {
+  .arrow {
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-bottom-color: $bg-floating;
+    border-top: none;
+  }
+}
+
+// === POSITION: LEFT ===
+.left {
+  .arrow {
+    right: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left-color: $bg-floating;
+    border-right: none;
+  }
+}
+
+// === POSITION: RIGHT ===
+.right {
+  .arrow {
+    left: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-right-color: $bg-floating;
+    border-left: none;
+  }
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

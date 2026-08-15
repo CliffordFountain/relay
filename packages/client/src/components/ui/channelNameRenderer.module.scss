@@ -1,0 +1,18 @@
+@use '../../styles/variables' as *;
+
+.channelName {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  // Ensure native emoji font stack for Unicode emoji
+  font-family: 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
+}
+
+.customEmoji {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  vertical-align: middle;
+  flex-shrink: 0;
+}

@@ -1,0 +1,172 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  animation: fadeIn 150ms ease;
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 440px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-modal-content;
+  animation: scaleIn 150ms ease;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.header {
+  padding: 20px 24px 0;
+  position: relative;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.body {
+  padding: 16px 24px;
+}
+
+.description {
+  font-size: 14px;
+  color: $text-normal;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.version {
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-muted;
+  margin: 0;
+}
+
+.divider {
+  height: 1px;
+  background: $border-subtle;
+  margin: 16px 0;
+}
+
+.section {
+  margin-bottom: 4px;
+}
+
+.sectionTitle {
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0 0 12px;
+}
+
+.helpList {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: $text-normal;
+  line-height: 1.4;
+}
+
+.helpNote {
+  font-size: 13px;
+  color: $text-muted;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.footer {
+  padding: 16px 24px;
+  background: $modal-footer-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 0 0 $radius-lg $radius-lg;
+}
+
+.link {
+  font-family: $font-primary;
+  font-size: 13px;
+  color: $text-link;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.linkSep {
+  color: $text-faint;
+  font-size: 12px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

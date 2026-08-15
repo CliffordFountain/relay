@@ -1,0 +1,120 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-context-menu;
+  background: transparent;
+}
+
+.menu {
+  position: fixed;
+  z-index: $z-context-menu;
+  min-width: 188px;
+  max-width: 320px;
+  padding: 6px 8px;
+  background: $bg-floating;
+  border-radius: $radius-md;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 2px;
+  background: none;
+  color: $interactive-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  line-height: 18px;
+  gap: 8px;
+  user-select: none;
+
+  &:hover {
+    background: $brand-color;
+    color: white;
+
+    .itemIcon {
+      color: white;
+    }
+
+    .submenuArrow {
+      color: white;
+    }
+  }
+
+  &.danger {
+    color: $text-danger;
+
+    .itemIcon {
+      color: $text-danger;
+    }
+
+    &:hover {
+      background: $text-danger;
+      color: white;
+
+      .itemIcon {
+        color: white;
+      }
+    }
+  }
+
+  &.disabled {
+    color: $interactive-muted;
+    cursor: not-allowed;
+    pointer-events: none;
+
+    .itemIcon {
+      color: $interactive-muted;
+    }
+
+    &:hover {
+      background: none;
+    }
+  }
+
+  &.hasSubmenu {
+    padding-right: 24px;
+  }
+}
+
+.itemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: $interactive-normal;
+}
+
+.itemLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.submenuArrow {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  color: $interactive-normal;
+}
+
+.separator {
+  height: 1px;
+  margin: 4px;
+  background: $border-subtle;
+}

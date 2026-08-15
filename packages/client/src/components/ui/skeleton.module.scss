@@ -1,0 +1,127 @@
+@use '../../styles/variables' as *;
+
+// === SHIMMER BASE ===
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    $bg-modifier-active 0%,
+    $bg-modifier-hover 40%,
+    $bg-modifier-active 80%
+  );
+  background-size: 936px 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: $radius-md;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+// === SKELETON MESSAGE ===
+.skeletonMessage {
+  display: flex;
+  padding: 4px 16px;
+  margin-top: 16px;
+
+  &.grouped {
+    margin-top: 4px;
+  }
+}
+
+.skeletonAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+  margin-right: 16px;
+  margin-top: 2px;
+
+  @extend .shimmer;
+}
+
+.skeletonMessageContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.skeletonHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.skeletonAuthor {
+  height: 14px;
+  border-radius: 7px;
+
+  @extend .shimmer;
+}
+
+.skeletonTimestamp {
+  width: 40px;
+  height: 10px;
+  border-radius: 5px;
+
+  @extend .shimmer;
+}
+
+.skeletonTextLine {
+  height: 14px;
+  border-radius: 7px;
+  margin-top: 6px;
+
+  @extend .shimmer;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.skeletonGroupedContent {
+  padding-left: 56px;
+  flex: 1;
+  min-width: 0;
+}
+
+// === SKELETON CHANNEL ===
+.skeletonChannel {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: $radius-md;
+  gap: 8px;
+}
+
+.skeletonChannelIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+
+  @extend .shimmer;
+}
+
+.skeletonChannelName {
+  height: 14px;
+  border-radius: 7px;
+
+  @extend .shimmer;
+}
+
+.skeletonCategory {
+  padding: 16px 8px 4px 2px;
+}
+
+.skeletonCategoryName {
+  height: 10px;
+  width: 80px;
+  border-radius: 5px;
+
+  @extend .shimmer;
+}

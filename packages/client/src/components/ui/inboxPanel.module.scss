@@ -1,0 +1,367 @@
+@use '../../styles/variables' as *;
+
+.panel {
+  width: $member-sidebar-width;
+  background: $bg-secondary;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  border-left: 1px solid $bg-tertiary;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  height: $header-height;
+  box-sizing: border-box;
+  border-bottom: 1px solid $bg-tertiary;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: $radius-md;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.tabs {
+  display: flex;
+  padding: 0 16px;
+  border-bottom: 1px solid $bg-tertiary;
+  flex-shrink: 0;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: $text-muted;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: color $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+
+  &.activeTab {
+    color: $interactive-active;
+    border-bottom-color: $interactive-active;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: $text-danger;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 16px;
+  flex-shrink: 0;
+}
+
+.markAllRead {
+  background: none;
+  border: none;
+  color: $text-link;
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px 8px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+// Skeleton loading
+.skeleton {
+  padding: 8px 0;
+}
+
+.skeletonItem {
+  display: flex;
+  gap: 12px;
+  padding: 12px 8px;
+}
+
+.skeletonIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-round;
+  background: $bg-modifier-accent;
+  flex-shrink: 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeletonLines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.skeletonLine {
+  height: 12px;
+  background: $bg-modifier-accent;
+  border-radius: $radius-md;
+  width: 80%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeletonLineShort {
+  height: 12px;
+  background: $bg-modifier-accent;
+  border-radius: $radius-md;
+  width: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+  animation-delay: 0.3s;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+// Error state
+.error {
+  padding: 24px 16px;
+  text-align: center;
+  color: $text-danger;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+// Empty state
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 16px;
+  text-align: center;
+}
+
+.emptyIcon {
+  color: $text-faint;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0 0 8px;
+}
+
+.emptyDescription {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0;
+  line-height: 1.4;
+}
+
+// Mention items
+.mentionList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.mentionItem {
+  display: flex;
+  gap: 12px;
+  padding: 10px 8px;
+  background: $bg-primary;
+  border: none;
+  border-radius: $radius-md;
+  cursor: pointer;
+  text-align: left;
+  font-family: $font-primary;
+  width: 100%;
+  align-items: flex-start;
+  transition: background-color $transition-fast;
+  position: relative;
+
+  &:hover {
+    background: $bg-modifier-hover;
+
+    .markReadBtn {
+      opacity: 1;
+    }
+  }
+
+  &.read {
+    opacity: 0.5;
+  }
+}
+
+.mentionGuildIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-round;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.guildIconImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.guildIconFallback {
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+
+.mentionBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.mentionMeta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.mentionGuildName {
+  color: $text-normal;
+  font-weight: 600;
+}
+
+.mentionSep {
+  color: $text-faint;
+  font-size: 10px;
+}
+
+.mentionChannelName {
+  color: $text-muted;
+  font-weight: 500;
+}
+
+.mentionTimestamp {
+  color: $text-faint;
+  margin-left: auto;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.mentionMessage {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mentionAuthor {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-normal;
+}
+
+.mentionContent {
+  font-size: 13px;
+  color: $text-muted;
+  line-height: 1.375;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.markReadBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: $radius-md;
+  opacity: 0;
+  transition: opacity $transition-fast;
+  flex-shrink: 0;
+  margin-top: 2px;
+
+  &:hover {
+    color: $text-positive;
+  }
+}

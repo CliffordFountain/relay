@@ -1,0 +1,164 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-modal-backdrop;
+}
+
+.modal {
+  width: 520px;
+  max-width: 92vw;
+  background: $bg-primary;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-elevation-high;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: $z-modal-content;
+  outline: none;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: $header-primary;
+  font-family: $font-display;
+}
+
+.cropArea {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.viewport {
+  position: relative;
+  overflow: hidden;
+  background: $bg-tertiary;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  flex-shrink: 0;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.viewportCircle {
+  border-radius: 50%;
+}
+
+.viewportRect {
+  border-radius: $radius-md;
+}
+
+.cropImage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+.previewColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.previewLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: $text-muted;
+  text-transform: uppercase;
+  font-family: $font-primary;
+}
+
+.previewBox {
+  position: relative;
+  overflow: hidden;
+  background: $bg-tertiary;
+  border: 2px solid $bg-tertiary;
+  flex-shrink: 0;
+}
+
+.previewCircle {
+  border-radius: 50%;
+}
+
+.previewRect {
+  border-radius: $radius-md;
+}
+
+.zoomRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.zoomLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-muted;
+  flex-shrink: 0;
+  font-family: $font-primary;
+}
+
+.zoomSlider {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancelBtn {
+  padding: 8px 16px;
+  border-radius: $radius-sm;
+  border: none;
+  background: none;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.applyBtn {
+  padding: 8px 16px;
+  border-radius: $radius-sm;
+  border: none;
+  background: $brand-color;
+  color: white;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
