@@ -1,0 +1,215 @@
+@use '../../styles/variables' as *;
+
+.panel {
+  position: absolute;
+  top: $header-height;
+  right: 0;
+  width: 420px;
+  max-height: calc(100vh - #{$header-height} - 120px);
+  background: $bg-floating;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-popover;
+  z-index: $z-popover;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 8px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid $border-subtle;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus-primary;
+    outline-offset: 1px;
+  }
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.loadingState {
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeletonItem {
+  height: 72px;
+  border-radius: $radius-md;
+  background: $bg-modifier-hover;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.errorState {
+  padding: 24px 16px;
+  text-align: center;
+  color: $text-danger;
+  font-size: 14px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 16px;
+  gap: 12px;
+}
+
+.emptyIcon {
+  color: $text-faint;
+}
+
+.emptyText {
+  color: $text-muted;
+  font-size: 14px;
+  text-align: center;
+  margin: 0;
+}
+
+.messagesList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pinnedItem {
+  background: $bg-secondary;
+  border-radius: $radius-md;
+  padding: 12px;
+  position: relative;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+
+    .jumpButton {
+      opacity: 1;
+    }
+  }
+}
+
+.pinnedHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.pinnedAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: $radius-round;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+
+.pinnedUsername {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-normal;
+}
+
+.pinnedTimestamp {
+  font-size: 11px;
+  color: $text-muted;
+}
+
+.pinnedContent {
+  font-size: 14px;
+  color: $text-normal;
+  line-height: 1.375;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.jumpButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 2px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  background: $brand-color;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity $transition-fast, background-color $transition-fast;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid $focus-primary;
+    outline-offset: 1px;
+  }
+}

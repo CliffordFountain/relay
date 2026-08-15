@@ -1,0 +1,222 @@
+@use '../../styles/variables' as *;
+
+.gifPicker {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 8px;
+  width: 432px;
+  max-height: 420px;
+  background: $bg-floating;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-popover;
+  z-index: $z-popover;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  padding: 8px;
+  flex-shrink: 0;
+}
+
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  background: $bg-tertiary;
+  border-radius: $radius-md;
+  padding: 0 8px;
+  gap: 4px;
+}
+
+.searchIcon {
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  padding: 8px 4px;
+  min-width: 0;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+}
+
+.clearButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  border-radius: $radius-md;
+  color: $interactive-normal;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 4px;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.gifGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  padding: 0 8px 8px;
+}
+
+.gifItem {
+  border: none;
+  background: $bg-tertiary;
+  border-radius: $radius-md;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  aspect-ratio: 1;
+  position: relative;
+  transition: transform $transition-fast;
+
+  &:hover {
+    transform: scale(1.02);
+
+    .gifImage {
+      opacity: 1;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus-primary;
+    outline-offset: -2px;
+  }
+}
+
+.gifImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0.9;
+  transition: opacity $transition-fast;
+}
+
+// Loading skeleton
+.loadingState {
+  padding: 0 8px 8px;
+}
+
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+.skeletonItem {
+  aspect-ratio: 1;
+  background: $bg-tertiary;
+  border-radius: $radius-md;
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+// Error state
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  gap: 12px;
+}
+
+.errorText {
+  font-size: 14px;
+  color: $text-muted;
+  text-align: center;
+}
+
+.retryButton {
+  padding: 6px 16px;
+  border: none;
+  background: $brand-color;
+  color: white;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $brand-hover;
+  }
+}
+
+// Empty state
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: $text-muted;
+}
+
+// Footer with GIPHY branding
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 12px;
+  flex-shrink: 0;
+  border-top: 1px solid $border-subtle;
+}
+
+.gifBranding {
+  font-size: 11px;
+  color: $text-faint;
+  font-weight: 500;
+}

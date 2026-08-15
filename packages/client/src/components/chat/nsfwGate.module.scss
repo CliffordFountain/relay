@@ -1,0 +1,64 @@
+@use '../../styles/variables' as *;
+
+.container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $bg-primary;
+  padding: 24px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 400px;
+}
+
+.icon {
+  color: $text-danger;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-family: $font-primary;
+  font-size: 24px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0 0 8px;
+}
+
+.description {
+  font-family: $font-primary;
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.channelName {
+  font-family: $font-primary;
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-normal;
+  margin: 0 0 24px;
+}
+
+.acceptButton {
+  padding: 10px 24px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $button-danger-bg;
+  color: #fff;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background $transition-normal;
+
+  &:hover {
+    background: $button-danger-bg-hover;
+  }
+}

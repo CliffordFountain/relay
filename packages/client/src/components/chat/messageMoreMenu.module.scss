@@ -1,0 +1,72 @@
+@use '../../styles/variables' as *;
+
+.moreButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: $interactive-normal;
+  padding: 4px;
+  transition: color 0.1s ease, background-color 0.1s ease;
+
+  &:hover {
+    color: $interactive-hover;
+    background: $bg-modifier-hover;
+  }
+}
+
+.dropdown {
+  position: fixed;
+  min-width: 188px;
+  padding: 6px 8px;
+  background: $bg-floating;
+  border-radius: $radius-md;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-context-menu;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  color: $interactive-normal;
+  font-size: 14px;
+  font-family: $font-primary;
+  text-align: left;
+  transition: color 0.1s ease, background-color 0.1s ease;
+
+  &:hover {
+    color: $interactive-active;
+    background: $brand-color;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.dropdownItemDanger {
+  color: $text-danger;
+
+  &:hover {
+    color: #fff;
+    background: $button-danger-bg;
+  }
+}
+
+.dropdownSeparator {
+  height: 1px;
+  margin: 4px;
+  background: $border-subtle;
+}

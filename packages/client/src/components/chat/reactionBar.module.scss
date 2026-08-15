@@ -1,0 +1,152 @@
+@use '../../styles/variables' as *;
+
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.pillWrapper {
+  position: relative;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: $bg-tertiary;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  color: $text-normal;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    border-color: $border-subtle;
+  }
+
+  &.active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: $brand-color;
+
+    .count {
+      color: $brand-color;
+    }
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.25);
+    }
+  }
+}
+
+.emoji {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.customEmoji {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.count {
+  font-size: 12px;
+  font-weight: 500;
+  font-family: $font-primary;
+  color: $text-normal;
+  min-width: 9px;
+  text-align: center;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  width: 36px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: $bg-tertiary;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: $text-muted;
+  position: relative;
+  transition: background-color 0.1s ease, color 0.1s ease;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    border-color: $border-subtle;
+    color: $interactive-hover;
+  }
+}
+
+.plusIcon {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+}
+
+// Who-reacted tooltip
+.reactorTooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: $bg-floating;
+  border-radius: $radius-lg;
+  padding: 8px 12px;
+  box-shadow: $shadow-popover;
+  z-index: $z-tooltip;
+  min-width: 120px;
+  max-width: 240px;
+  pointer-events: none;
+  text-align: center;
+
+  // Arrow
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: $bg-floating;
+  }
+}
+
+.reactorEmoji {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.reactorList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reactorName {
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reactorMore {
+  font-size: 11px;
+  color: $text-muted;
+  margin-top: 2px;
+}
+
+.reactorLoading {
+  font-size: 12px;
+  color: $text-muted;
+}

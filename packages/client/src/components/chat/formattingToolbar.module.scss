@@ -1,0 +1,41 @@
+@use '../../styles/variables' as *;
+
+.toolbar {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: $bg-floating;
+  border-radius: $radius-md;
+  box-shadow: $shadow-popover;
+  z-index: $z-popover;
+  transform: translateX(-50%) translateY(-100%);
+  margin-top: -8px;
+  user-select: none;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  color: $interactive-normal;
+  padding: 0;
+  transition: color $transition-fast, background-color $transition-fast;
+
+  &:hover {
+    color: $interactive-hover;
+    background: $bg-modifier-hover;
+  }
+
+  &:active {
+    color: $interactive-active;
+    background: $bg-modifier-active;
+  }
+}

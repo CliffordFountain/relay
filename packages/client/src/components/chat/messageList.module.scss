@@ -1,0 +1,797 @@
+@use '../../styles/variables' as *;
+
+.list {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.virtuosoContainer {
+  height: 100% !important;
+
+  // Custom scrollbar matching Relay
+  & > div {
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $scrollbar-thin-thumb;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }
+}
+
+.loadingMore {
+  padding: 16px;
+  text-align: center;
+  color: $text-muted;
+  font-size: 14px;
+}
+
+.beginning {
+  padding: 16px 16px 0;
+  text-align: left;
+  margin: 0 16px 8px;
+}
+
+.welcomeIcon {
+  width: 72px;
+  height: 72px;
+  color: $channel-icon;
+  margin-bottom: 8px;
+}
+
+.welcomeTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+
+.welcomeDescription {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0 0 16px;
+}
+
+.welcomeDivider {
+  height: 1px;
+  background: $border-subtle;
+}
+
+.jumpToBottom {
+  position: absolute;
+  bottom: 8px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: $bg-floating;
+  border: none;
+  color: $text-normal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: $bg-accent;
+  }
+}
+
+.message {
+  position: relative;
+  padding: 2px 48px 2px 72px;
+  margin-top: 17px;
+  transition: background-color $transition-fast;
+
+  &.grouped {
+    margin-top: 0;
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+
+  &:hover {
+    background: $bg-modifier-hover;
+
+    .hoverTimestamp {
+      opacity: 1;
+    }
+
+    .actionBar {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  &.editing {
+    background: rgba(255, 173, 31, 0.05);
+  }
+
+  // Mention highlight
+  &.mentioned {
+    background: $bg-mentioned;
+    border-left: 2px solid $text-warning;
+    padding-left: 70px;
+
+    &:hover {
+      background: $bg-mentioned-hover;
+    }
+  }
+
+  // System message (join, pin)
+  &.system {
+    padding-left: 72px;
+    color: $text-muted;
+    font-style: italic;
+    font-size: 14px;
+
+    .text {
+      color: $text-muted;
+    }
+  }
+}
+
+// Compact message display (Appearance > Message Display setting). Cozy is the
+// default spacing defined on .message above; compact just tightens it up.
+.list.compact {
+  .message {
+    margin-top: 2px;
+    padding-top: 0;
+    padding-bottom: 0;
+
+    &.grouped {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+  }
+}
+
+// Hover timestamp (shows to the left of grouped messages on hover)
+.hoverTimestamp {
+  position: absolute;
+  left: 16px;
+  top: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: $text-muted;
+  opacity: 0;
+  transition: opacity $transition-fast;
+  pointer-events: none;
+  user-select: none;
+  width: 48px;
+  text-align: right;
+}
+
+.messageBody {
+  display: flex;
+  position: relative;
+}
+
+// Reply preview above the message
+.replyPreview {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  margin-left: -36px;
+  padding-left: 36px;
+  position: relative;
+}
+
+.replyLine {
+  position: absolute;
+  left: 36px;
+  top: 50%;
+  width: 24px;
+  height: 12px;
+  border-left: 2px solid $interactive-muted;
+  border-top: 2px solid $interactive-muted;
+  border-top-left-radius: 6px;
+}
+
+.replyContent {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 32px;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 18px;
+  cursor: pointer;
+
+  &:hover .replyText {
+    color: $text-normal;
+  }
+}
+
+.replyAvatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+
+.replyUsername {
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-normal;
+  flex-shrink: 0;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.replyText {
+  font-size: 14px;
+  color: $text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+// Avatar wrapper (positions both avatar and status dot)
+.avatarWrapper {
+  position: absolute;
+  left: -56px;
+  margin-top: 2px;
+  width: 40px;
+  height: 40px;
+}
+
+// Avatar
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: opacity $transition-fast;
+  user-select: none;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.avatarStatusDot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 3px solid $bg-primary;
+  box-sizing: content-box;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.contentGrouped {
+  flex: 1;
+  min-width: 0;
+}
+
+.messageHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.username {
+  font-weight: 500;
+  font-size: 16px;
+  color: $text-normal;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.timestamp {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.publishedBadge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 0 4px;
+  border-radius: $radius-sm;
+  background: rgba(40, 170, 94, 0.15);
+  color: $text-positive;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 16px;
+}
+
+.text {
+  // Driven by the Appearance > Chat Font Scaling setting; App.tsx and settingsSlice
+  // set this the same way they set --saturation. 16px matches the historical default.
+  font-size: var(--chat-font-scale, 16px);
+  line-height: 1.375;
+  color: $text-normal;
+  word-wrap: break-word;
+}
+
+.emojiOnly {
+  font-size: 48px;
+  line-height: 54px;
+
+  img {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.edited {
+  font-size: 10px;
+  color: $text-muted;
+  margin-left: 4px;
+}
+
+.embedsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+// Inline GIF embed (Relay gifv-style rendering)
+.gifEmbed {
+  display: inline-block;
+  margin-top: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 400px;
+  max-height: 300px;
+  cursor: pointer;
+  position: relative;
+
+  &::after {
+    content: 'GIF';
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    pointer-events: none;
+  }
+}
+
+.gifEmbedImage {
+  display: block;
+  max-width: 400px;
+  max-height: 300px;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+// Paused GIF placeholder, shown instead of .gifEmbed when the
+// "Automatically play GIFs" setting is off, until the user clicks to play it.
+.gifEmbedPaused {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  background: $bg-modifier-hover;
+  color: $text-muted;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-accent;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus-primary;
+    outline-offset: 1px;
+  }
+}
+
+// Pending / failed message states
+.pendingMessage {
+  opacity: 0.5;
+}
+
+.failedMessage {
+  opacity: 0.7;
+}
+
+.failedIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  font-size: 12px;
+  color: $text-danger;
+}
+
+.retryButton,
+.dismissButton {
+  background: none;
+  border: none;
+  color: $text-danger;
+  font-size: 12px;
+  font-family: $font-primary;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    color: color-mix(in srgb, $text-danger, white 10%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus-primary;
+    outline-offset: 1px;
+    border-radius: 2px;
+  }
+}
+
+.failedIcon {
+  width: 16px;
+  height: 16px;
+  color: $text-danger;
+}
+
+// Edit mode
+.editContainer {
+  margin-top: 4px;
+}
+
+.editTextarea {
+  width: 100%;
+  background: $channeltextarea-bg;
+  border: none;
+  border-radius: 8px;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 16px;
+  line-height: 1.375;
+  padding: 11px 16px;
+  resize: none;
+  outline: none;
+  min-height: 44px;
+  max-height: 300px;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.editActions {
+  margin-top: 4px;
+}
+
+.editHint {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.editLink {
+  background: none;
+  border: none;
+  color: $text-link;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Message action bar (floating, top-right on hover)
+.actionBar {
+  position: absolute;
+  top: -16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  background: $bg-primary;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-md;
+  padding: 0 2px;
+  z-index: $z-action-bar;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity $transition-fast;
+}
+
+// Quick-react emoji buttons in action bar
+.quickReactButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  transition: background-color 0.1s ease, transform 0.1s ease;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    transform: scale(1.15);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.actionButtonWrapper {
+  position: relative;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: $interactive-normal;
+  padding: 4px;
+  transition: color 0.1s ease, background-color 0.1s ease;
+
+  &:hover {
+    color: $interactive-hover;
+    background: $bg-modifier-hover;
+  }
+
+  &.dangerAction:hover {
+    color: $text-danger;
+  }
+}
+
+.reactionPickerContainer {
+  // Portaled to <body> and positioned in viewport-fixed coordinates (top/left set inline
+  // from the trigger's location) so the picker opens next to where the user clicked and is
+  // never clipped by the virtualized message list.
+  position: fixed;
+  z-index: $z-popover;
+
+  // The EmojiPicker root is styled for the message composer (position:absolute;
+  // bottom:100%; right:0 — opens UP from the bottom-right). Reused here as a reaction
+  // popover it would fly off; neutralize its self-positioning so it renders exactly at
+  // the fixed top/left we set.
+  > div {
+    position: static;
+    bottom: auto;
+    margin-bottom: 0;
+  }
+}
+
+// Date divider between messages from different days
+.dateDivider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  margin: 24px 14px 8px;
+  height: 0;
+  border-top: 1px solid $border-subtle;
+  position: relative;
+  z-index: $z-sticky;
+}
+
+.dateDividerText {
+  position: absolute;
+  top: -6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-muted;
+  background: $bg-primary;
+  padding: 0 8px;
+  text-transform: uppercase;
+  line-height: 13px;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+
+// System messages (join, pin, thread)
+.systemMessage {
+  display: flex;
+  align-items: center;
+  padding: 4px 48px 4px 72px;
+  min-height: 28px;
+  cursor: default;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.systemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+.systemText {
+  font-size: 14px;
+  color: $text-muted;
+  line-height: 1.375;
+}
+
+.systemUsername {
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.systemTimestamp {
+  font-size: 11px;
+  color: $text-faint;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+// New messages separator (red "NEW" line)
+.newMessagesSeparator {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  margin: 6px 0;
+  height: 0;
+  border-top: 1px solid $text-danger;
+  position: relative;
+  z-index: 1;
+}
+
+.newMessagesText {
+  position: absolute;
+  right: 14px;
+  top: -6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: $text-danger;
+  background: $bg-primary;
+  padding: 0 4px;
+  text-transform: uppercase;
+  line-height: 13px;
+  user-select: none;
+}
+
+// Blocked message placeholder
+.blockedPlaceholder {
+  display: flex;
+  align-items: center;
+  padding: 4px 48px 4px 72px;
+  min-height: 28px;
+  color: $text-muted;
+  font-size: 14px;
+  cursor: default;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.blockedText {
+  color: $text-muted;
+  font-size: 14px;
+}
+
+.blockedShowButton {
+  background: none;
+  border: none;
+  color: $text-link;
+  font-size: 14px;
+  font-family: $font-primary;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus-primary;
+    outline-offset: 1px;
+    border-radius: 2px;
+  }
+}
+
+// --- Context menu quick react row ---
+.contextQuickReactRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 4px;
+  border-bottom: 1px solid $border-subtle;
+  margin-bottom: 4px;
+}
+
+.contextQuickReactBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
