@@ -1,0 +1,79 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 440px;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-modal-content;
+  animation: modalFadeIn 200ms ease-out;
+  padding: 24px;
+  text-align: center;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  color: $text-muted;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0 0 8px;
+}
+
+.description {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0 0 24px;
+  line-height: 1.4;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 24px;
+  background: $button-secondary-bg;
+  color: $text-normal;
+  border: none;
+  border-radius: $radius-sm;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: $font-primary;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $button-secondary-bg-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus-primary;
+    outline-offset: 2px;
+  }
+}

@@ -1,0 +1,291 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 460px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-modal-content;
+  animation: modalFadeIn 200ms ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.header {
+  padding: 16px;
+  position: relative;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.body {
+  padding: 0 16px 16px;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.typeSelector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.typeOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: $radius-md;
+  background: $bg-modifier-hover;
+  color: $text-normal;
+  cursor: pointer;
+  font-family: $font-primary;
+  text-align: left;
+  width: 100%;
+  transition: background $transition-normal;
+
+  &:hover {
+    background: $bg-modifier-active;
+  }
+
+  &.typeSelected {
+    background: $bg-modifier-selected;
+  }
+}
+
+.typeIcon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: $interactive-normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.typeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.typeName {
+  font-size: 16px;
+  font-weight: 500;
+  color: $text-normal;
+}
+
+.typeDescription {
+  font-size: 12px;
+  color: $text-muted;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.typeRadio {
+  width: 20px;
+  height: 20px;
+  border-radius: $radius-round;
+  border: 2px solid $interactive-normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .typeSelected & {
+    border-color: $brand-color;
+  }
+}
+
+.typeRadioInner {
+  width: 10px;
+  height: 10px;
+  border-radius: $radius-round;
+  background: $brand-color;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  background: $input-bg;
+  border-radius: $radius-sm;
+
+  &:focus-within {
+    outline: 2px solid $focus-primary;
+    outline-offset: -2px;
+  }
+}
+
+.inputPrefix {
+  padding-left: 10px;
+  font-size: 16px;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  height: 40px;
+  padding: 0 10px;
+  background: transparent;
+  border: none;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 16px;
+  outline: none;
+  min-width: 0;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+}
+
+.select {
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%23949BA4' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 32px;
+
+  &:focus {
+    outline: 2px solid $focus-primary;
+    outline-offset: -2px;
+  }
+}
+
+.error {
+  font-size: 13px;
+  color: $text-danger;
+  margin: 8px 0 0;
+}
+
+.footer {
+  padding: 16px;
+  background: $modal-footer-bg;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.cancelButton {
+  padding: 2px 16px;
+  height: 38px;
+  min-width: 96px;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.createButton {
+  padding: 2px 16px;
+  height: 38px;
+  min-width: 96px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  transition: background $transition-normal;
+
+  &:hover:not(:disabled) {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

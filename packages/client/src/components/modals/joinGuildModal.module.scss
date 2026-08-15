@@ -1,0 +1,179 @@
+@use '../../styles/variables' as *;
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: 8px;
+  width: 440px;
+  max-width: 90vw;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 0;
+}
+
+.title {
+  font-family: $font-primary;
+  font-size: 24px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 4px;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.body {
+  padding: 8px 16px 0;
+}
+
+.description {
+  font-family: $font-primary;
+  font-size: 14px;
+  color: $text-muted;
+  text-align: center;
+  margin: 0 0 20px;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: $header-secondary;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: none;
+  background: $input-bg;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 16px;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px $focus-primary;
+  }
+
+  &.inputError {
+    box-shadow: 0 0 0 1px $text-danger;
+  }
+}
+
+.error {
+  color: $text-danger;
+  font-size: 13px;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.examples {
+  margin-bottom: 16px;
+}
+
+.examplesTitle {
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: $header-secondary;
+  margin-bottom: 4px;
+  letter-spacing: 0.02em;
+}
+
+.exampleItem {
+  font-family: $font-primary;
+  font-size: 14px;
+  color: $text-muted;
+  line-height: 1.6;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px;
+  background: $modal-footer-bg;
+}
+
+.cancelButton {
+  padding: 2px 16px;
+  min-height: 38px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.joinButton {
+  padding: 2px 16px;
+  min-height: 38px;
+  border: none;
+  border-radius: 3px;
+  background: $brand-color;
+  color: #fff;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

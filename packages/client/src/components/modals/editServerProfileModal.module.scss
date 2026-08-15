@@ -1,0 +1,253 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-modal-content;
+  animation: modalFadeIn 200ms ease-out;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.header {
+  padding: 24px 24px 0;
+  position: relative;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.body {
+  padding: 16px 24px;
+}
+
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.avatarWrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-round;
+  cursor: pointer;
+  overflow: hidden;
+
+  &:hover .avatarOverlay {
+    opacity: 1;
+  }
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: $radius-round;
+}
+
+.avatarFallback {
+  width: 100%;
+  height: 100%;
+  border-radius: $radius-round;
+  background: $brand-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-round;
+  opacity: 0;
+  transition: opacity $transition-fast;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.avatarOverlayIcon {
+  margin-bottom: 2px;
+}
+
+.avatarHiddenInput {
+  display: none;
+}
+
+.avatarLabel {
+  font-size: 12px;
+  color: $text-muted;
+  margin-top: 8px;
+}
+
+.fieldGroup {
+  margin-bottom: 16px;
+}
+
+.fieldLabel {
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.textInput {
+  width: 100%;
+  padding: 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-md;
+  color: $text-normal;
+  font-size: 14px;
+  font-family: $font-primary;
+  outline: none;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+
+  &:focus {
+    outline: 2px solid $focus-primary;
+    outline-offset: -2px;
+  }
+}
+
+.errorText {
+  font-size: 12px;
+  color: $text-danger;
+  margin-top: 4px;
+}
+
+.footer {
+  padding: 16px;
+  background: $modal-footer-bg;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancelButton {
+  padding: 2px 16px;
+  height: 38px;
+  min-width: 96px;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.saveButton {
+  padding: 2px 16px;
+  height: 38px;
+  min-width: 96px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  transition: background $transition-normal;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

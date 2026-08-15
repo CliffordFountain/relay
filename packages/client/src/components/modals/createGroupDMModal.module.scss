@@ -1,0 +1,308 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 440px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-modal-content;
+  animation: modalFadeIn 200ms ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.header {
+  padding: 16px 16px 0;
+  position: relative;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0 0 4px;
+  line-height: 1.25;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: $text-muted;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.body {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.searchContainer {
+  padding: 16px 0 8px;
+  border-bottom: 1px solid $border-subtle;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+}
+
+.selectedTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 0 4px;
+}
+
+.selectedTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: $radius-md;
+  background: $bg-accent;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.removeTag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.friendList {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
+  margin-top: 8px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 4px;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    min-height: 40px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.friendRow {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: $radius-md;
+  cursor: pointer;
+  gap: 12px;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.friendRowSelected {
+  background: $bg-modifier-active;
+}
+
+.friendRowDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.friendAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.friendAvatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.friendAvatarFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $brand-color;
+  color: #fff;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.friendName {
+  flex: 1;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friendUsername {
+  font-family: $font-primary;
+  font-size: 12px;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid $interactive-normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background $transition-fast, border-color $transition-fast;
+}
+
+.checkboxChecked {
+  background: $brand-color;
+  border-color: $brand-color;
+  color: #fff;
+}
+
+.emptyState {
+  padding: 24px;
+  text-align: center;
+  color: $text-muted;
+  font-family: $font-primary;
+  font-size: 14px;
+}
+
+.error {
+  font-size: 13px;
+  color: $text-danger;
+  margin: 8px 0 0;
+}
+
+.footer {
+  padding: 16px;
+  background: $modal-footer-bg;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.footerInfo {
+  flex: 1;
+  font-family: $font-primary;
+  font-size: 12px;
+  color: $text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.createButton {
+  padding: 2px 16px;
+  height: 38px;
+  min-width: 96px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  transition: background $transition-normal;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

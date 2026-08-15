@@ -1,0 +1,74 @@
+@use '../../styles/variables' as *;
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.content {
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.image {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: $radius-md;
+  user-select: none;
+}
+
+.toolbar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: $bg-floating;
+  border-radius: $radius-md;
+  padding: 8px 16px;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-modal-content;
+}
+
+.openOriginal {
+  color: $text-link;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}

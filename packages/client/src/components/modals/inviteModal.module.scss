@@ -1,0 +1,375 @@
+@use '../../styles/variables' as *;
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: 8px;
+  width: 460px;
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 16px 0;
+}
+
+.title {
+  font-family: $font-primary;
+  font-size: 20px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-family: $font-primary;
+  font-size: 12px;
+  color: $header-secondary;
+  margin-top: 4px;
+}
+
+.channelRef {
+  font-weight: 600;
+  color: $text-normal;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 4px;
+  flex-shrink: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.error {
+  color: $text-danger;
+  font-size: 14px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgba(247, 68, 72, 0.1);
+}
+
+// --- Search ---
+
+.searchWrapper {
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $text-muted;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 10px 8px 32px;
+  border-radius: 4px;
+  border: none;
+  background: $input-bg;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+// --- Friends list ---
+
+.friendsList {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+
+  // Thin scrollbar
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-auto-thumb;
+    border-radius: 4px;
+  }
+}
+
+.emptyState {
+  font-family: $font-primary;
+  font-size: 14px;
+  color: $text-muted;
+  text-align: center;
+  padding: 20px 8px;
+}
+
+.friendRow {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 4px;
+  gap: 12px;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.friendAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $brand-color;
+  color: #fff;
+  font-family: $font-primary;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.friendInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.friendName {
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 600;
+  color: $header-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friendUsername {
+  font-family: $font-primary;
+  font-size: 12px;
+  color: $header-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inviteBtn {
+  padding: 4px 16px;
+  border: 1px solid $interactive-normal;
+  border-radius: 3px;
+  background: transparent;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    border-color: $header-primary;
+    color: $header-primary;
+  }
+
+  &.inviteSent {
+    background: $button-positive-bg;
+    border-color: $button-positive-bg;
+    color: #fff;
+    cursor: default;
+
+    &:hover {
+      background: $button-positive-bg;
+      border-color: $button-positive-bg;
+    }
+  }
+}
+
+// --- Link section ---
+
+.linkSection {
+  border-top: 1px solid $bg-modifier-accent;
+  padding-top: 12px;
+}
+
+.linkLabel {
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  margin-bottom: 8px;
+}
+
+.linkRow {
+  display: flex;
+  gap: 8px;
+}
+
+.linkInput {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: none;
+  background: $input-bg;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px $focus-primary;
+  }
+}
+
+.copyButton {
+  padding: 0 16px;
+  border: none;
+  border-radius: 3px;
+  background: $brand-color;
+  color: #fff;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.copied {
+    background: $button-positive-bg;
+
+    &:hover {
+      background: $button-positive-bg-hover;
+    }
+  }
+}
+
+.expiryInfo {
+  font-family: $font-primary;
+  font-size: 12px;
+  color: $text-muted;
+  margin-top: 8px;
+}
+
+.editLinkBtn {
+  background: none;
+  border: none;
+  color: $text-link;
+  font-family: $font-primary;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// --- Edit settings (collapsed) ---
+
+.editSettings {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid $bg-modifier-accent;
+}
+
+.settingsRow {
+  display: flex;
+  gap: 16px;
+}
+
+.settingGroup {
+  flex: 1;
+}
+
+.settingLabel {
+  display: block;
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: $header-secondary;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: none;
+  background: $input-bg;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px $focus-primary;
+  }
+}

@@ -1,0 +1,289 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-modal-content;
+  animation: modalFadeIn 200ms ease-out;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.header {
+  padding: 24px 24px 0;
+  position: relative;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.body {
+  padding: 16px 24px;
+}
+
+.section {
+  margin-bottom: 8px;
+}
+
+.sectionTitle {
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0 0 12px;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radioOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.radioOptionSelected {
+  background: $bg-modifier-active;
+}
+
+.radioInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radioCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: $radius-round;
+  border: 2px solid $interactive-normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+
+  .radioOptionSelected & {
+    border-color: $brand-color;
+  }
+}
+
+.radioCircleInner {
+  width: 10px;
+  height: 10px;
+  border-radius: $radius-round;
+  background: $brand-color;
+}
+
+.radioLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.radioLabelText {
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-normal;
+}
+
+.radioDescription {
+  font-family: $font-primary;
+  font-size: 12px;
+  color: $text-muted;
+  line-height: 1.4;
+}
+
+.divider {
+  height: 1px;
+  background: $border-subtle;
+  margin: 16px 0;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  gap: 16px;
+}
+
+.toggleInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.toggleLabel {
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-normal;
+}
+
+.toggleDescription {
+  font-family: $font-primary;
+  font-size: 12px;
+  color: $text-muted;
+  line-height: 1.4;
+}
+
+.toggle {
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  background: $bg-accent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background $transition-normal;
+}
+
+.toggleOn {
+  background: $button-positive-bg;
+}
+
+.toggleHandle {
+  width: 18px;
+  height: 18px;
+  border-radius: $radius-round;
+  background: #fff;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform $transition-normal;
+
+  .toggleOn & {
+    transform: translateX(16px);
+  }
+}
+
+.footer {
+  padding: 16px;
+  background: $modal-footer-bg;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancelButton {
+  padding: 2px 16px;
+  height: 38px;
+  min-width: 96px;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.saveButton {
+  padding: 2px 16px;
+  height: 38px;
+  min-width: 96px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  transition: background $transition-normal;
+
+  &:hover {
+    background: $brand-hover;
+  }
+}

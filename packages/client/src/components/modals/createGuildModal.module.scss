@@ -1,0 +1,295 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 440px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-modal-content;
+  animation: modalFadeIn 200ms ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.header {
+  padding: 24px 24px 0;
+  text-align: center;
+  position: relative;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0 0 8px;
+  line-height: 1.25;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+  padding: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.body {
+  padding: 24px;
+}
+
+.iconUpload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  cursor: pointer;
+}
+
+.iconPreview {
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-round;
+  border: 2px dashed $interactive-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: $text-muted;
+  background: transparent;
+  transition: border-color $transition-normal;
+
+  &:hover {
+    border-color: $interactive-normal;
+  }
+}
+
+.iconUploadLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-top: 8px;
+}
+
+.formGroup {
+  margin-bottom: 0;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: 2px solid $focus-primary;
+    outline-offset: -2px;
+  }
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+}
+
+.error {
+  font-size: 13px;
+  color: $text-danger;
+  margin: 8px 0 0;
+}
+
+.footer {
+  padding: 16px;
+  background: $modal-footer-bg;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cancelButton {
+  padding: 2px 16px;
+  height: 38px;
+  min-width: 96px;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.createButton {
+  padding: 2px 16px;
+  height: 38px;
+  min-width: 96px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  transition: background $transition-normal;
+
+  &:hover:not(:disabled) {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// --- Templates ---
+.templateList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.templateCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  background: none;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background $transition-normal, border-color $transition-normal;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    border-color: $border-strong;
+  }
+}
+
+.templateIcon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-round;
+  background: $bg-accent;
+  font-size: 18px;
+  flex-shrink: 0;
+  color: $text-normal;
+}
+
+.templateName {
+  flex: 1;
+}
+
+.templateArrow {
+  flex-shrink: 0;
+  color: $text-muted;
+}
+
+.templateSectionLabel {
+  padding: 16px 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.footerText {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0;
+}
+
+.joinButton {
+  width: 100%;
+  padding: 2px 16px;
+  height: 38px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $bg-accent;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  margin-top: 8px;
+  transition: background $transition-normal;
+
+  &:hover {
+    background: $button-secondary-bg-hover;
+  }
+}
