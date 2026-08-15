@@ -1,0 +1,592 @@
+@use '../../styles/variables' as *;
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: $bg-primary;
+  min-width: 0;
+}
+
+// === Header ===
+.header {
+  height: $header-height;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $border-subtle;
+  box-shadow: $shadow-elevation-low;
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+}
+
+.headerIcon {
+  color: $brand-light;
+  flex-shrink: 0;
+}
+
+.headerTitles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.headerName {
+  font-family: $font-display;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-size: 16px;
+  color: $header-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerServer {
+  font-size: 12px;
+  color: $text-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.headerBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-lg;
+  transition: color $transition-fast, background-color $transition-fast;
+
+  &:hover {
+    color: $text-danger;
+    background: rgba(var(--status-dnd-rgb), 0.16);
+  }
+}
+
+// === Stage topic banner ===
+.topicBanner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: $bg-secondary;
+  border-bottom: 1px solid $border-subtle;
+  flex-shrink: 0;
+}
+
+.topicLiveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: $status-dnd;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 16px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: $radius-round;
+    background: #fff;
+    animation: rvLive 1s infinite;
+  }
+}
+
+@keyframes rvLive {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes rvSpeak {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(var(--status-online-rgb), 0.55),
+      0 0 14px 2px rgba(var(--status-online-rgb), 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(var(--status-online-rgb), 0.35),
+      0 0 20px 4px rgba(var(--status-online-rgb), 0.5);
+  }
+}
+
+.topicText {
+  font-family: $font-display;
+  font-size: 16px;
+  font-weight: 700;
+  color: $header-primary;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topicParticipants {
+  font-size: 13px;
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+// === Main content ===
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 16px 24px;
+}
+
+.sectionHeader {
+  font-family: $font-display;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $header-secondary;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.speakerGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+// === Speaker tile (glass card) ===
+.speakerTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 28px;
+  border-radius: 14px;
+  background: $bg-secondary;
+  border: 1px solid $border-subtle;
+  min-width: 180px;
+  transition: border-color $transition-fast, transform $transition-fast;
+
+  &:hover {
+    border-color: $border-strong;
+    transform: translateY(-2px);
+  }
+
+  &.speakerTileSpeaking {
+    border-color: rgba(var(--status-online-rgb), 0.5);
+  }
+}
+
+.speakerAvatar {
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-round;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow $transition-fast;
+
+  &.speakerAvatarSpeaking {
+    animation: rvSpeak 1.3s ease-in-out infinite;
+  }
+}
+
+.speakerAvatarImg {
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-round;
+  object-fit: cover;
+}
+
+.speakerAvatarFallback {
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $brand-active, $brand-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-display;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.speakerName {
+  font-family: $font-display;
+  font-size: 14px;
+  font-weight: 600;
+  color: $header-primary;
+  text-align: center;
+}
+
+.speakerBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+}
+
+// Gold role tag (IGL / Moderator)
+.roleTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: rgba(var(--status-idle-rgb), 0.18);
+  color: $status-idle;
+  font-family: $font-display;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+// === Audience section ===
+.audienceList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.audienceItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: $bg-secondary;
+  border: 1px solid $border-subtle;
+  cursor: default;
+  transition: border-color $transition-fast, background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    border-color: $border-strong;
+  }
+}
+
+.audienceAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: $radius-round;
+  object-fit: cover;
+}
+
+.audienceAvatarFallback {
+  width: 24px;
+  height: 24px;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $brand-active, $brand-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-display;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.audienceName {
+  font-size: 13px;
+  color: $text-normal;
+  white-space: nowrap;
+}
+
+.handRaiseIcon {
+  color: $status-idle;
+  flex-shrink: 0;
+}
+
+// === Floating control cluster ===
+.controlBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  flex-shrink: 0;
+}
+
+.controlCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 16px;
+  background: $bg-secondary;
+  border: 1px solid $border-subtle;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+}
+
+.controlBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: $bg-accent;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: rgba(var(--brand-color-rgb), 0.16);
+    color: $interactive-hover;
+  }
+
+  // request-to-speak active → gold
+  &.controlBtnActive {
+    background: rgba(var(--status-idle-rgb), 0.18);
+    color: $status-idle;
+  }
+
+  // mic / deafen muted → red
+  &.controlBtnMuted {
+    background: rgba(var(--status-dnd-rgb), 0.16);
+    color: $status-dnd;
+
+    &:hover {
+      background: rgba(var(--status-dnd-rgb), 0.24);
+    }
+  }
+
+  // leave → red
+  &.controlBtnLeave {
+    background: $status-dnd;
+    color: #fff;
+
+    &:hover {
+      background: $button-danger-bg-hover;
+      color: #fff;
+    }
+  }
+}
+
+.controlDivider {
+  width: 1px;
+  height: 28px;
+  background: $border-subtle;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+// === Empty stage state ===
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: $text-muted;
+}
+
+.emptyIcon {
+  color: $brand-light;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+
+.emptyTitle {
+  font-family: $font-display;
+  font-size: 20px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0;
+}
+
+// === Start stage button ===
+.startStageBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 11px;
+  background: linear-gradient(135deg, $brand-hover, $brand-color);
+  color: #fff;
+  font-family: $font-display;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 16px;
+  box-shadow: 0 6px 20px rgba(var(--brand-color-rgb), 0.3);
+  transition: filter $transition-fast;
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+}
+
+// === Moderator action buttons ===
+.modAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid $border-subtle;
+  border-radius: 8px;
+  background: $bg-accent;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    background: rgba(var(--brand-color-rgb), 0.16);
+    border-color: $border-strong;
+  }
+}
+
+.modActions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+// === Start stage modal overlay ===
+.startStageOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.startStageModal {
+  background: $modal-bg;
+  border: 1px solid $border-subtle;
+  border-radius: 16px;
+  width: 440px;
+  max-width: 90vw;
+  padding: 24px;
+  box-shadow: $shadow-elevation-high;
+}
+
+.startStageModalTitle {
+  font-family: $font-display;
+  font-size: 20px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0 0 16px;
+}
+
+.startStageModalLabel {
+  font-family: $font-display;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $header-secondary;
+  margin-bottom: 8px;
+}
+
+.startStageModalInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid $border-subtle;
+  border-radius: 10px;
+  background: $input-bg;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+
+  &:focus {
+    border-color: $brand-color;
+    box-shadow: 0 0 0 4px rgba(var(--brand-color-rgb), 0.18);
+  }
+}
+
+.startStageModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.startStageModalCancel {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.startStageModalConfirm {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, $brand-hover, $brand-color);
+  color: #fff;
+  font-family: $font-display;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(var(--brand-color-rgb), 0.3);
+  transition: filter $transition-fast;
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}

@@ -1,0 +1,189 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 720px;
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $shadow-elevation-high;
+  animation: modalFadeIn 200ms ease-out;
+  overflow: hidden;
+}
+
+@keyframes modalFadeIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// === Header ===
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 0;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0;
+}
+
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-md;
+  background: transparent;
+  color: $interactive-normal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+// === Body ===
+.body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.sourceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: $radius-md;
+  background: $bg-tertiary;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color $transition-fast, background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    border-color: $brand-color;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: $brand-color;
+  }
+}
+
+.thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: #000;
+  border-radius: $radius-sm;
+  display: block;
+}
+
+.sourceName {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.appIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.sourceLabel {
+  font-size: 13px;
+  color: $text-normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  font-size: 14px;
+  color: $text-muted;
+  text-align: center;
+  padding: 24px 0;
+}
+
+// === Footer ===
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px;
+  background: $modal-footer-bg;
+}
+
+.cancelBtn {
+  padding: 2px 16px;
+  height: 38px;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  transition: color $transition-fast;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

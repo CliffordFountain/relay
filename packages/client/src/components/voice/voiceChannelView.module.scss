@@ -1,0 +1,810 @@
+@use '../../styles/variables' as *;
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: $bg-primary;
+  min-width: 0;
+}
+
+// === Header / top bar ===
+.header {
+  height: $header-height;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $border-subtle;
+  box-shadow: $shadow-elevation-low;
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.headerIcon {
+  color: $brand-light;
+  flex-shrink: 0;
+}
+
+.headerTitles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.headerName {
+  font-family: $font-display;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-size: 16px;
+  color: $header-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerServer {
+  font-size: 12px;
+  color: $text-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-lg;
+  transition: color $transition-fast, background-color $transition-fast;
+
+  &:hover {
+    color: $interactive-hover;
+    background: rgba(var(--brand-color-rgb), 0.16);
+  }
+
+  &.headerBtnActive {
+    color: $interactive-active;
+    background: $bg-modifier-active;
+  }
+}
+
+// === Main area (content + optional chat) ===
+.mainArea {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 24px;
+  min-width: 0;
+
+  &.contentWithChat {
+    flex: 1;
+  }
+}
+
+// === Empty state ===
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: $text-muted;
+}
+
+.emptyIcon {
+  color: $brand-light;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+
+.emptyTitle {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 20px;
+  color: $header-primary;
+  margin: 0;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: $text-muted;
+  margin: 0;
+}
+
+// === User grid ===
+.userGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 920px;
+  margin: auto;
+  align-content: center;
+}
+
+.aloneMessage {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.aloneText {
+  font-size: 15px;
+  color: $text-muted;
+  margin: 0;
+}
+
+// === Focus layout ===
+.focusLayout {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  gap: 12px;
+}
+
+.focusMain {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.focusStrip {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 4px 0;
+  flex-shrink: 0;
+  overflow-x: auto;
+
+  .userTile {
+    width: 208px;
+    flex: none;
+  }
+}
+
+// === Participant video tile (16:10) ===
+.userTile {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 14px;
+  overflow: hidden;
+  background: $bg-nested-floating;
+  border: 1px solid $border-subtle;
+  cursor: pointer;
+  transition: border-color $transition-fast, box-shadow $transition-fast, transform $transition-fast;
+
+  &:hover {
+    border-color: $border-strong;
+    transform: translateY(-2px);
+
+    .watchStreamBtn {
+      opacity: 1;
+    }
+  }
+
+  // Speaking: inset green glow ring
+  &.userTileSpeaking {
+    border-color: transparent;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      pointer-events: none;
+      z-index: 3;
+      animation: rvSpeak 1.3s ease-in-out infinite;
+    }
+  }
+
+  // Live / streaming: red glow border
+  &.userTileStreaming {
+    border-color: rgba(var(--status-dnd-rgb), 0.55);
+    box-shadow: 0 0 0 1px rgba(var(--status-dnd-rgb), 0.3), 0 0 22px rgba(var(--status-dnd-rgb), 0.2);
+  }
+
+  &.userTileFocused {
+    width: 100%;
+    max-width: 760px;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@keyframes rvSpeak {
+  0%, 100% {
+    box-shadow: inset 0 0 0 2px rgba(var(--status-online-rgb), 0.8),
+      inset 0 0 12px 2px rgba(var(--status-online-rgb), 0.28);
+  }
+  50% {
+    box-shadow: inset 0 0 0 3px rgba(var(--status-online-rgb), 0.95),
+      inset 0 0 22px 4px rgba(var(--status-online-rgb), 0.5);
+  }
+}
+
+@keyframes rvLive {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.tileMedia {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.tileVideo,
+.tileImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tileMonogram {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 40px;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: linear-gradient(135deg, $brand-active, $brand-color);
+}
+
+// Badge cluster top-right
+.tileBadges {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 4;
+}
+
+.mutedBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: $status-dnd;
+  color: #fff;
+}
+
+.deafBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: rgba(var(--status-dnd-rgb), 0.85);
+  color: #fff;
+}
+
+.videoBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: rgba(var(--brand-color-rgb), 0.9);
+  color: #fff;
+}
+
+// Name / role pill bottom-left
+.tilePill {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  max-width: calc(100% - 16px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: rgba(6, 14, 34, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 4;
+}
+
+.roleTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: rgba(var(--status-idle-rgb), 0.18);
+  color: $status-idle;
+  font-family: $font-display;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.tileName {
+  font-family: $font-display;
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.youBadge {
+  color: $text-muted;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+// LIVE badge (pulsing dot)
+.liveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: $status-dnd;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.liveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: $radius-round;
+  background: #fff;
+  animation: rvLive 1s infinite;
+}
+
+// === Focused stream / screen-share tile ===
+.focusedStream {
+  display: flex;
+  flex-direction: column;
+  background: $bg-nested-floating;
+  border: 1px solid rgba(var(--status-dnd-rgb), 0.4);
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px rgba(var(--status-dnd-rgb), 0.3), 0 0 30px rgba(var(--status-dnd-rgb), 0.18);
+  flex-shrink: 0;
+  margin: 16px 16px 0;
+  overflow: hidden;
+  max-height: 400px;
+}
+
+.focusedStreamMedia {
+  position: relative;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.focusedStreamVideo {
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  background: #000;
+  cursor: pointer; // click the stream to toggle fullscreen
+}
+
+// When the stage is fullscreen the video must fill the viewport — otherwise the
+// browser enters fullscreen but the video stays capped at max-height in a black void,
+// which reads as "fullscreen doesn't work".
+.focusedStream:fullscreen,
+.focusedStream:-webkit-full-screen {
+  max-height: none;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+
+  .focusedStreamMedia {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+  }
+
+  .focusedStreamVideo {
+    max-height: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  .presenterFooter {
+    display: none;
+  }
+}
+
+.focusedLiveBadge {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 2;
+}
+
+.watchingChip {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(6, 14, 34, 0.75);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.presenterFooter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: $bg-secondary;
+}
+
+.presenterAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-round;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.presenterAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.presenterAvatarFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, $brand-active, $brand-color);
+}
+
+.presenterInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.presenterName {
+  font-family: $font-display;
+  font-size: 14px;
+  font-weight: 600;
+  color: $header-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.presenterSub {
+  font-size: 12px;
+  color: $text-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// === Focused stream controls (fullscreen / minimize) ===
+.focusedStreamControls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.focusedStreamCtrlBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 9px;
+  background: rgba(6, 14, 34, 0.72);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color $transition-fast, filter $transition-fast;
+
+  &:hover {
+    background: rgba(var(--brand-color-rgb), 0.9);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.focusedStreamCtrlBtnActive {
+  background: rgba(var(--status-dnd-rgb), 0.9);
+
+  &:hover {
+    background: rgba(var(--status-dnd-rgb), 1);
+  }
+}
+
+// === Presenter camera PiP overlaid on the screen-share ===
+.cameraPip {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 3;
+  width: 168px;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.cameraPipVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cameraPipLabel {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  max-width: calc(100% - 12px);
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: rgba(6, 14, 34, 0.7);
+  color: #fff;
+  font-family: $font-display;
+  font-size: 10px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// === Minimized floating PiP for the whole focused stream ===
+.focusedStreamMinimized {
+  position: fixed;
+  right: 20px;
+  bottom: 96px;
+  width: 300px;
+  max-width: calc(100vw - 40px);
+  max-height: none;
+  margin: 0;
+  z-index: 60;
+
+  .focusedStreamVideo {
+    max-height: 170px;
+  }
+
+  .presenterFooter {
+    display: none;
+  }
+
+  .cameraPip {
+    width: 96px;
+  }
+}
+
+// === Watch Stream overlay button ===
+.watchStreamBtn {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, $brand-hover, $brand-color);
+  color: #fff;
+  font-family: $font-display;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0;
+  box-shadow: 0 6px 20px rgba(var(--brand-color-rgb), 0.3);
+  transition: opacity $transition-fast, filter $transition-fast;
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+// === Text-in-Voice Chat Panel ===
+.chatPanel {
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid $border-subtle;
+  background: $bg-primary;
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+.chatPanelHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid $border-subtle;
+  color: $header-secondary;
+  flex-shrink: 0;
+}
+
+.chatPanelTitle {
+  font-family: $font-display;
+  font-size: 14px;
+  font-weight: 600;
+  color: $header-secondary;
+}
+
+.chatMessages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// === Floating control cluster ===
+.controlBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  flex-shrink: 0;
+}
+
+.controlCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 16px;
+  background: $bg-secondary;
+  border: 1px solid $border-subtle;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+}
+
+.controlBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: $bg-accent;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: rgba(var(--brand-color-rgb), 0.16);
+    color: $interactive-hover;
+  }
+
+  // mic / deafen active → red
+  &.controlBtnActive {
+    background: rgba(var(--status-dnd-rgb), 0.16);
+    color: $status-dnd;
+
+    &:hover {
+      background: rgba(var(--status-dnd-rgb), 0.24);
+    }
+  }
+
+  // camera active → blue tint
+  &.controlBtnVideoActive {
+    background: rgba(var(--brand-color-rgb), 0.18);
+    color: $brand-light;
+  }
+
+  // sharing active → blue gradient
+  &.controlBtnSharing {
+    background: linear-gradient(135deg, $brand-hover, $brand-color);
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(var(--brand-color-rgb), 0.3);
+
+    &:hover {
+      background: linear-gradient(135deg, $brand-hover, $brand-color);
+      filter: brightness(1.08);
+      color: #fff;
+    }
+  }
+
+  // leave → red
+  &.controlBtnLeave {
+    background: $status-dnd;
+    color: #fff;
+
+    &:hover {
+      background: $button-danger-bg-hover;
+      color: #fff;
+    }
+  }
+}
+
+.controlDivider {
+  width: 1px;
+  height: 28px;
+  background: $border-subtle;
+  margin: 0 4px;
+  flex-shrink: 0;
+}

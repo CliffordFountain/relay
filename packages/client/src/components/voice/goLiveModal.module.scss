@@ -1,0 +1,225 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 440px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $shadow-elevation-high;
+  animation: modalFadeIn 200ms ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// === Header ===
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 0;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0;
+}
+
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-md;
+  background: transparent;
+  color: $interactive-normal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+// === Body ===
+.body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.previewArea {
+  border-radius: $radius-md;
+  background: $bg-tertiary;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.previewPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: $text-muted;
+  padding: 24px;
+  text-align: center;
+}
+
+.previewText {
+  font-size: 14px;
+  color: $text-muted;
+}
+
+// === Quality Section ===
+.qualitySection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qualityTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.qualityRow {
+  display: flex;
+  gap: 12px;
+}
+
+.qualityField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-muted;
+}
+
+.select {
+  width: 100%;
+  padding: 8px 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+
+  &:focus {
+    outline: 2px solid $brand-color;
+  }
+}
+
+// === Audio Toggle ===
+.audioToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  margin-top: 4px;
+}
+
+.audioCheckbox {
+  width: 18px;
+  height: 18px;
+  accent-color: $brand-color;
+  cursor: pointer;
+}
+
+.audioLabel {
+  font-size: 14px;
+  color: $text-normal;
+}
+
+// === Footer ===
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px;
+  background: $modal-footer-bg;
+  border-radius: 0 0 $radius-lg $radius-lg;
+}
+
+.cancelBtn {
+  padding: 2px 16px;
+  height: 38px;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: $font-primary;
+  transition: color $transition-fast;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.goLiveBtn {
+  padding: 2px 24px;
+  height: 38px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: $font-primary;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:active {
+    background: $brand-active;
+  }
+}

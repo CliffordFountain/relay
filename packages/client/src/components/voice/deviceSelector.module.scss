@@ -1,0 +1,106 @@
+@use '../../styles/variables' as *;
+
+.popup {
+  position: fixed;
+  bottom: 80px;
+  left: 80px;
+  width: 260px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: $bg-floating;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-popover;
+  z-index: $z-popover;
+  padding: 8px 0;
+  animation: fadeIn 100ms ease-out;
+
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $scrollbar-thin-track;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sectionHeader {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: $header-secondary;
+  padding: 8px 12px 4px;
+  letter-spacing: 0.02em;
+}
+
+.deviceList {
+  padding: 0 4px;
+}
+
+.deviceOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: $radius-md;
+  background: transparent;
+  color: $text-normal;
+  cursor: pointer;
+  font-family: $font-primary;
+  font-size: 13px;
+  text-align: left;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+
+  &.deviceOptionSelected {
+    background: $bg-modifier-selected;
+  }
+}
+
+.deviceLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkmark {
+  color: $brand-color;
+  flex-shrink: 0;
+}
+
+.separator {
+  height: 1px;
+  background: $border-subtle;
+  margin: 4px 12px;
+}
+
+.noDevices {
+  font-size: 13px;
+  color: $text-muted;
+  padding: 8px 12px;
+  font-style: italic;
+}
