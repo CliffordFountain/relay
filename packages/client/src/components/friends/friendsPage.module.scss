@@ -1,0 +1,537 @@
+@use '../../styles/variables' as *;
+
+.outerContainer {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: $bg-primary;
+  min-width: 0;
+}
+
+// === Header / Tab Bar ===
+
+.header {
+  height: $header-height;
+  min-height: $header-height;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  border-bottom: 1px solid $bg-tertiary;
+  box-shadow: $shadow-elevation-low;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+
+.friendsIcon {
+  color: $interactive-normal;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.headerTitle {
+  font-family: $font-primary;
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.headerDivider {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: $bg-modifier-accent;
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+.tabBar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+// Regular tabs: Online, All, Pending, Blocked
+.tab {
+  font-family: $font-primary;
+  font-size: 16px;
+  font-weight: 500;
+  color: $interactive-normal;
+  background: none;
+  border: none;
+  padding: 2px 8px;
+  margin: 0 4px;
+  border-radius: $radius-md;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 20px;
+  transition: background $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    color: $interactive-hover;
+  }
+}
+
+.tabActive {
+  background: $bg-modifier-selected;
+  color: $interactive-active;
+  font-weight: 500;
+}
+
+// Add Friend button - filled accent pill, lighter when active
+.tabAddFriend {
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: $brand-color;
+  border: none;
+  padding: 2px 8px;
+  margin: 0 8px;
+  border-radius: $radius-md;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 20px;
+  transition: background $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: $brand-hover;
+    color: #fff;
+  }
+}
+
+.tabAddFriendActive {
+  color: $brand-color;
+  background: transparent;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    color: $brand-color;
+  }
+}
+
+// Pending badge (red pill)
+.pendingBadge {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: $text-danger;
+  color: #fff;
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// === Search Bar ===
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  background: $bg-tertiary;
+  border-radius: $radius-md;
+  padding: 0 8px;
+  margin: 16px 0 0;
+}
+
+.searchInput {
+  flex: 1;
+  background: none;
+  border: none;
+  font-family: $font-primary;
+  font-size: 14px;
+  color: $text-normal;
+  padding: 6px 0;
+  outline: none;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+}
+
+.searchIcon {
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+// === Content Area ===
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px 20px 30px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 4px;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    min-height: 40px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.errorBanner {
+  padding: 8px 16px;
+  margin: 8px 0;
+  border-radius: $radius-md;
+  background: rgba(247, 68, 72, 0.1);
+  color: $text-danger;
+  font-family: $font-primary;
+  font-size: 14px;
+}
+
+// === Add Friend Section ===
+
+.addFriendSection {
+  padding-top: 20px;
+  border-bottom: 1px solid $bg-modifier-accent;
+  padding-bottom: 20px;
+}
+
+.addFriendTitle {
+  font-family: $font-primary;
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+.addFriendDescription {
+  font-family: $font-primary;
+  font-size: 14px;
+  color: $header-secondary;
+  margin: 0 0 16px;
+}
+
+.addFriendForm {
+  display: flex;
+  align-items: center;
+  background: $bg-tertiary;
+  border-radius: $radius-lg;
+  padding: 0 12px;
+  border: 1px solid $bg-tertiary;
+
+  &:focus-within {
+    border-color: $brand-color;
+  }
+}
+
+.addFriendFormError {
+  border-color: $text-danger;
+
+  &:focus-within {
+    border-color: $text-danger;
+  }
+}
+
+.addFriendFormSuccess {
+  border-color: $text-positive;
+
+  &:focus-within {
+    border-color: $text-positive;
+  }
+}
+
+.addFriendInput {
+  flex: 1;
+  background: none;
+  border: none;
+  font-family: $font-primary;
+  font-size: 16px;
+  color: $text-normal;
+  padding: 12px 0;
+  outline: none;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+}
+
+.addFriendButton {
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: $brand-color;
+  border: none;
+  border-radius: $radius-sm;
+  padding: 8px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background $transition-fast;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.addFriendStatusMessage {
+  font-family: $font-primary;
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
+.statusSuccess {
+  color: $text-positive;
+}
+
+.statusError {
+  color: $text-danger;
+}
+
+// === List Sections ===
+
+.listHeader {
+  padding: 16px 0 8px;
+}
+
+.listHeaderText {
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 600;
+  color: $header-secondary;
+  letter-spacing: 0.02em;
+}
+
+.loadingState {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton {
+  height: 62px;
+  background: $bg-modifier-hover;
+  border-radius: $radius-lg;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.emptyIllustration {
+  color: $interactive-muted;
+  margin-bottom: 16px;
+}
+
+.emptyText {
+  font-family: $font-primary;
+  font-size: 16px;
+  color: $text-muted;
+  text-align: center;
+}
+
+// === Friends List ===
+
+.friendsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.friendItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-top: 1px solid $bg-modifier-accent;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+
+    .friendActions {
+      visibility: visible;
+    }
+  }
+}
+
+.friendInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.friendAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+  overflow: visible;
+  position: relative;
+}
+
+.friendStatusDot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: $radius-round;
+  border: 2px solid $bg-primary;
+  box-sizing: content-box;
+}
+
+.friendAvatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: $radius-round;
+}
+
+.friendAvatarFallback {
+  width: 100%;
+  height: 100%;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $brand-color;
+  color: #fff;
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: $radius-round;
+}
+
+.friendDetails {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.friendNameRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.friendDisplayName {
+  font-family: $font-primary;
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friendUsername {
+  font-family: $font-primary;
+  font-size: 12px;
+  font-weight: 400;
+  color: $text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.friendStatus {
+  font-family: $font-primary;
+  font-size: 12px;
+  color: $header-secondary;
+}
+
+.friendCustomStatus {
+  font-family: $font-primary;
+  font-size: 12px;
+  color: $text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.friendActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.actionButton {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-round;
+  background: $bg-secondary;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color $transition-fast, background $transition-fast;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.actionButtonAccept {
+  &:hover {
+    color: $text-positive;
+  }
+}
+
+.actionButtonDanger {
+  &:hover {
+    color: $text-danger;
+  }
+}
