@@ -1,0 +1,195 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-modal-backdrop;
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 480px;
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-modal-content;
+}
+
+.header {
+  padding: 16px 16px 0;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0;
+}
+
+.body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: $header-secondary;
+}
+
+.labelRequired {
+  color: $text-danger;
+  margin-left: 2px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-size: 16px;
+  font-family: $font-primary;
+  outline: none;
+  transition: border-color $transition-fast;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 1px $focus-primary;
+  }
+}
+
+.textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px 12px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-size: 16px;
+  font-family: $font-primary;
+  outline: none;
+  resize: vertical;
+  line-height: 1.375;
+  transition: border-color $transition-fast;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 1px $focus-primary;
+  }
+}
+
+.tagsSection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tagToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border: 1px solid $border-subtle;
+  border-radius: 100px;
+  background: none;
+  color: $text-muted;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background $transition-fast, border-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    color: $text-normal;
+  }
+}
+
+.tagToggleActive {
+  background: $brand-color;
+  border-color: $brand-color;
+  color: #ffffff;
+
+  &:hover {
+    background: $brand-hover;
+    border-color: $brand-hover;
+  }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px;
+  background: $modal-footer-bg;
+  border-radius: 0 0 $radius-lg $radius-lg;
+}
+
+.cancelButton {
+  padding: 2px 16px;
+  height: 38px;
+  border: none;
+  border-radius: $radius-sm;
+  background: none;
+  color: $text-normal;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.submitButton {
+  padding: 2px 16px;
+  height: 38px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $brand-color;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.error {
+  color: $text-danger;
+  font-size: 14px;
+}

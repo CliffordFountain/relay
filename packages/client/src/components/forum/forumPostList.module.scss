@@ -1,0 +1,224 @@
+@use '../../styles/variables' as *;
+
+// === List View ===
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: $bg-secondary;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.listAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: $bg-accent;
+}
+
+.listAvatarFallback {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $brand-color;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.listContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.listTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listPreview {
+  font-size: 14px;
+  color: $text-muted;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.listAuthor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.listAuthorAvatar {
+  width: 16px;
+  height: 16px;
+  border-radius: $radius-round;
+  object-fit: cover;
+  background: $bg-accent;
+}
+
+.listReplies {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.listRepliesIcon {
+  color: $text-faint;
+}
+
+.listActivity {
+  font-size: 12px;
+  color: $text-faint;
+}
+
+.listTags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tagPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: $bg-modifier-accent;
+  color: $text-normal;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+// === Grid View ===
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.gridCard {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: $bg-secondary;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: background $transition-fast;
+  min-height: 140px;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.gridTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: $header-primary;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gridPreview {
+  font-size: 14px;
+  color: $text-muted;
+  margin-bottom: 12px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.gridFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.gridAuthor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.gridAuthorAvatar {
+  width: 20px;
+  height: 20px;
+  border-radius: $radius-round;
+  object-fit: cover;
+  background: $bg-accent;
+}
+
+.gridAuthorAvatarFallback {
+  width: 20px;
+  height: 20px;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $brand-color;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.gridStats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: $text-faint;
+}
+
+.gridTags {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}

@@ -1,0 +1,196 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-modal-backdrop;
+}
+
+.modal {
+  background: $modal-bg;
+  border-radius: $radius-lg;
+  width: 440px;
+  max-width: 90vw;
+  box-shadow: $shadow-elevation-high;
+  z-index: $z-modal-content;
+}
+
+.header {
+  padding: 16px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: $header-primary;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: $text-muted;
+  margin-top: 4px;
+}
+
+.body {
+  padding: 0 16px 16px;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: $header-secondary;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-size: 16px;
+  font-family: $font-primary;
+  outline: none;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+
+  &:focus {
+    outline: 2px solid $focus-primary;
+    outline-offset: -2px;
+  }
+}
+
+.select {
+  width: 100%;
+  padding: 10px;
+  background: $input-bg;
+  border: none;
+  border-radius: $radius-sm;
+  color: $text-normal;
+  font-size: 14px;
+  font-family: $font-primary;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: 2px solid $focus-primary;
+    outline-offset: -2px;
+  }
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggleLabel {
+  font-size: 14px;
+  color: $text-normal;
+}
+
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 24px;
+  background: $interactive-muted;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+  padding: 0;
+
+  &.toggleActive {
+    background: $status-online;
+  }
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: $radius-round;
+  background: white;
+  transition: transform $transition-fast;
+
+  .toggleActive & {
+    transform: translateX(16px);
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px;
+  background: $modal-footer-bg;
+  border-radius: 0 0 $radius-lg $radius-lg;
+}
+
+.cancelButton {
+  padding: 2px 16px;
+  min-width: 60px;
+  min-height: 38px;
+  border: none;
+  background: transparent;
+  color: $text-normal;
+  font-size: 14px;
+  font-family: $font-primary;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: $radius-sm;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.createButton {
+  padding: 2px 16px;
+  min-width: 60px;
+  min-height: 38px;
+  border: none;
+  background: $brand-color;
+  color: white;
+  font-size: 14px;
+  font-family: $font-primary;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: $radius-sm;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.error {
+  color: $text-danger;
+  font-size: 12px;
+  margin-top: 4px;
+}

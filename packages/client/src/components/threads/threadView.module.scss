@@ -1,0 +1,141 @@
+@use '../../styles/variables' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: $bg-primary;
+}
+
+.header {
+  height: $header-height;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $bg-tertiary;
+  box-shadow: $shadow-elevation-low;
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+  gap: 8px;
+}
+
+.threadIcon {
+  color: $channel-icon;
+  flex-shrink: 0;
+}
+
+.threadName {
+  font-weight: 600;
+  font-size: 16px;
+  color: $header-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.parentChannel {
+  font-size: 12px;
+  color: $text-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  border-radius: $radius-md;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.metaBar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: $bg-secondary;
+  border-bottom: 1px solid $border-subtle;
+  font-size: 12px;
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.metaIcon {
+  width: 14px;
+  height: 14px;
+  color: $interactive-normal;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border: none;
+  background: $button-secondary-bg;
+  color: $text-normal;
+  cursor: pointer;
+  border-radius: $radius-sm;
+  font-size: 12px;
+  font-family: $font-primary;
+  gap: 4px;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: $button-secondary-bg-hover;
+  }
+}
+
+.actionButtonDanger {
+  background: $button-danger-bg;
+
+  &:hover {
+    background: $button-danger-bg-hover;
+  }
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
