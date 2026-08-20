@@ -1,0 +1,134 @@
+@use '../../styles/variables' as *;
+
+.container {
+  position: relative;
+  margin: 0 4px;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 8px;
+  padding: 2px 0;
+  height: 32px;
+  width: 244px;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: width 0.2s ease;
+
+  &:focus-within {
+    width: 280px;
+  }
+}
+
+.searchIcon {
+  flex-shrink: 0;
+  color: $text-muted;
+  margin: 0 4px;
+  width: 16px;
+  height: 16px;
+}
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  min-width: 0;
+  padding: 0 4px;
+
+  &::placeholder {
+    color: $input-placeholder;
+  }
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid $text-muted;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $interactive-normal;
+  cursor: pointer;
+  padding: 2px;
+  margin-left: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+
+  &:hover {
+    color: $interactive-hover;
+  }
+}
+
+.suggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 360px;
+  background: $bg-floating;
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 300;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+}
+
+.suggestionsHeader {
+  color: $header-secondary;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 8px 8px;
+  letter-spacing: 0.02em;
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  font-family: $font-primary;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.filterKey {
+  color: $text-normal;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: $font-code;
+}
+
+.filterDesc {
+  color: $text-muted;
+  font-size: 14px;
+}
