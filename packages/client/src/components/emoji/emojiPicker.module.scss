@@ -1,0 +1,122 @@
+@use '../../styles/variables' as *;
+
+.picker {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  width: 420px;
+  height: 400px;
+  background: $bg-floating;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.header {
+  padding: 12px;
+  flex-shrink: 0;
+}
+
+.search {
+  width: 100%;
+  padding: 8px 10px;
+  background: $bg-tertiary;
+  border: none;
+  border-radius: 4px;
+  color: $text-normal;
+  font-family: $font-primary;
+  font-size: 14px;
+  outline: none;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+
+  &:focus {
+    outline: 1px solid $brand-color;
+  }
+}
+
+.categories {
+  display: flex;
+  padding: 0 8px;
+  gap: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.categoryBtn {
+  padding: 4px 6px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  &.activeCat {
+    opacity: 1;
+    border-bottom-color: $brand-color;
+  }
+}
+
+.grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+}
+
+.categoryLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 4px 4px 8px;
+  position: sticky;
+  top: 0;
+  background: $bg-floating;
+}
+
+.emojiGrid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 2px;
+}
+
+.emoji {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: scale(1.15);
+  }
+}
+
+.noResults {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: $text-muted;
+  font-size: 14px;
+  padding: 24px 0;
+}

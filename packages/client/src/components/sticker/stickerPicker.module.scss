@@ -1,0 +1,127 @@
+@use '../../styles/variables' as *;
+
+.picker {
+  position: fixed;
+  bottom: 64px;
+  right: 200px;
+  width: 320px;
+  height: 400px;
+  background: $bg-floating;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-popover;
+  display: flex;
+  flex-direction: column;
+  z-index: $z-popover;
+  overflow: hidden;
+  font-family: $font-primary;
+}
+
+.header {
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid $border-subtle;
+}
+
+.headerTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: $header-primary;
+  margin: 0;
+}
+
+// === Category Tabs ===
+
+.categoryTabs {
+  display: flex;
+  padding: 4px 8px;
+  gap: 2px;
+  border-bottom: 1px solid $border-subtle;
+}
+
+.categoryTab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: none;
+  border: none;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $bg-modifier-hover;
+  }
+}
+
+.categoryTabActive {
+  background: $bg-modifier-selected;
+}
+
+.categoryIcon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.categoryName {
+  font-size: 12px;
+  font-weight: 600;
+  color: $header-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 8px 12px 4px;
+}
+
+// === Sticker Grid ===
+
+.stickerGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 4px 8px 8px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $scrollbar-thin-thumb;
+    border-radius: 4px;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    min-height: 40px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.stickerItem {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: background $transition-fast, transform $transition-fast;
+  padding: 4px;
+
+  &:hover {
+    background: $bg-modifier-hover;
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.stickerEmoji {
+  font-size: 36px;
+  line-height: 1;
+}
