@@ -314,6 +314,24 @@ CREATE INDEX idx_dm_channels_user_id ON dm_channels (user_id);
 CREATE INDEX idx_dm_channels_channel_id ON dm_channels (channel_id);
 
 -- --------------------------------------------------------------------------
+-- dm_pairs  (one row per 1:1 DM, keyed by the normalized user pair)
+--   dm_channels alone cannot enforce "at most one 1:1 DM per user pair": the
+--   two members live in separate rows, so nothing stops two concurrent
+--   get_or_create_dm calls from each creating a channel. This table holds the
+--   ordered pair (user_low < user_high) with a unique PRIMARY KEY, letting the
+--   create use INSERT ... ON CONFLICT to stay idempotent under concurrency.
+-- --------------------------------------------------------------------------
+CREATE TABLE dm_pairs (
+    user_low    BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_high   BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    channel_id  BIGINT NOT NULL REFERENCES channels(id) ON DELETE CASCADE,
+
+    PRIMARY KEY (user_low, user_high)
+);
+
+CREATE INDEX idx_dm_pairs_channel_id ON dm_pairs (channel_id);
+
+-- --------------------------------------------------------------------------
 -- relationships
 -- --------------------------------------------------------------------------
 CREATE TABLE relationships (
@@ -492,10 +510,27 @@ CREATE TABLE notification_settings (
     muted                   BOOLEAN NOT NULL DEFAULT FALSE,
     message_notifications   SMALLINT NOT NULL DEFAULT 0,
     suppress_everyone       BOOLEAN NOT NULL DEFAULT FALSE,
-    suppress_roles          BOOLEAN NOT NULL DEFAULT FALSE,
-
-    CONSTRAINT uq_notification_settings UNIQUE (user_id, guild_id, channel_id)
+    suppress_roles          BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+-- A plain UNIQUE (user_id, guild_id, channel_id) does NOT dedupe rows where
+-- guild_id/channel_id are NULL, because SQL treats NULLs as distinct -- so the
+-- "global" and "guild-wide" settings could accumulate duplicate rows and the
+-- upsert's ON CONFLICT would never fire for them. Use one partial unique index
+-- per NULL-combination instead; each has a non-NULL key that actually dedupes,
+-- and the upsert targets the matching index.
+CREATE UNIQUE INDEX uq_notification_settings_global
+    ON notification_settings (user_id)
+    WHERE guild_id IS NULL AND channel_id IS NULL;
+CREATE UNIQUE INDEX uq_notification_settings_guild
+    ON notification_settings (user_id, guild_id)
+    WHERE guild_id IS NOT NULL AND channel_id IS NULL;
+CREATE UNIQUE INDEX uq_notification_settings_channel
+    ON notification_settings (user_id, channel_id)
+    WHERE guild_id IS NULL AND channel_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_notification_settings_guild_channel
+    ON notification_settings (user_id, guild_id, channel_id)
+    WHERE guild_id IS NOT NULL AND channel_id IS NOT NULL;
 
 CREATE INDEX idx_notification_settings_user_id ON notification_settings (user_id);
 CREATE INDEX idx_notification_settings_guild_id ON notification_settings (guild_id) WHERE guild_id IS NOT NULL;

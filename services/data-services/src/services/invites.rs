@@ -175,43 +175,58 @@ impl InviteService for InviteServiceImpl {
         struct InviteInfo {
             guild_id: i64,
             channel_id: i64,
-            max_uses: i32,
-            uses: i32,
         }
 
-        let invite = sqlx::query_as!(
+        let mut tx = self.db.begin().await.map_err(sqlx_to_status)?;
+
+        // Atomically claim a use: increment only while under the limit (max_uses = 0
+        // means unlimited). Doing the check and the increment in one conditional
+        // UPDATE closes the check-then-increment race that let concurrent callers
+        // push uses past max_uses. Zero rows means the invite is gone or at its limit.
+        let claimed = sqlx::query_as!(
             InviteInfo,
-            "SELECT guild_id, channel_id, max_uses, uses FROM invites WHERE code = $1",
+            r#"UPDATE invites SET uses = uses + 1
+               WHERE code = $1 AND (max_uses = 0 OR uses < max_uses)
+               RETURNING guild_id, channel_id"#,
             req.code,
         )
-        .fetch_optional(&self.db)
-        .await
-        .map_err(sqlx_to_status)?
-        .ok_or_else(|| Status::not_found("invite not found"))?;
-
-        // Check if invite has been used up
-        if invite.max_uses > 0 && invite.uses >= invite.max_uses {
-            return Err(Status::permission_denied("invite has reached max uses"));
-        }
-
-        // Increment uses
-        sqlx::query!(
-            "UPDATE invites SET uses = uses + 1 WHERE code = $1",
-            req.code,
-        )
-        .execute(&self.db)
+        .fetch_optional(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
 
-        // Add user as guild member (if not already)
+        let invite = match claimed {
+            Some(invite) => invite,
+            None => {
+                tx.rollback().await.map_err(sqlx_to_status)?;
+                // Distinguish "missing" from "at limit" for the caller (404 vs 403).
+                let exists = sqlx::query_scalar!(
+                    "SELECT EXISTS(SELECT 1 FROM invites WHERE code = $1)",
+                    req.code,
+                )
+                .fetch_one(&self.db)
+                .await
+                .map_err(sqlx_to_status)?
+                .unwrap_or(false);
+                return if exists {
+                    Err(Status::permission_denied("invite has reached max uses"))
+                } else {
+                    Err(Status::not_found("invite not found"))
+                };
+            }
+        };
+
+        // Add user as guild member (if not already). Kept in the same transaction so
+        // a failure here does not consume a use without granting membership.
         sqlx::query!(
             "INSERT INTO guild_members (guild_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
             invite.guild_id,
             req.user_id,
         )
-        .execute(&self.db)
+        .execute(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
+
+        tx.commit().await.map_err(sqlx_to_status)?;
 
         Ok(Response::new(UseInviteResponse {
             guild_id: invite.guild_id,

@@ -157,6 +157,9 @@ async def update_channel(
     if "rate_limit_per_user" in updates:
         update_kwargs["rate_limit_per_user"] = updates["rate_limit_per_user"]
     if "parent_id" in updates:
+        # has_parent_id tells the data layer to apply parent_id (a null value moves
+        # the channel to the guild root); without it the update is left unchanged.
+        update_kwargs["has_parent_id"] = True
         update_kwargs["parent_id"] = int(updates["parent_id"]) if updates["parent_id"] else None
     if "position" in updates:
         update_kwargs["position"] = updates["position"]

@@ -143,6 +143,12 @@ impl GuildService for GuildServiceImpl {
             id: i64,
         }
 
+        // Provisioning a guild is several dependent inserts (guild, @everyone role,
+        // owner membership, default categories and channels). Run them in one
+        // transaction so a failure partway through rolls back cleanly instead of
+        // leaving a half-created guild with no owner/role/channels behind.
+        let mut tx = self.db.begin().await.map_err(sqlx_to_status)?;
+
         let guild_row = sqlx::query_as!(
             IdRow,
             r#"INSERT INTO guilds (name, owner_id, icon)
@@ -152,7 +158,7 @@ impl GuildService for GuildServiceImpl {
             req.owner_id,
             req.icon,
         )
-        .fetch_one(&self.db)
+        .fetch_one(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
 
@@ -162,7 +168,7 @@ impl GuildService for GuildServiceImpl {
                VALUES ($1, $1, '@everyone', 0, 104324673)"#,
             guild_row.id
         )
-        .execute(&self.db)
+        .execute(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
 
@@ -172,7 +178,7 @@ impl GuildService for GuildServiceImpl {
             guild_row.id,
             req.owner_id
         )
-        .execute(&self.db)
+        .execute(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
 
@@ -182,7 +188,7 @@ impl GuildService for GuildServiceImpl {
             "INSERT INTO channels (guild_id, name, type, position) VALUES ($1, 'TEXT CHANNELS', 4, 0) RETURNING id",
             guild_row.id
         )
-        .fetch_one(&self.db)
+        .fetch_one(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
 
@@ -192,7 +198,7 @@ impl GuildService for GuildServiceImpl {
             guild_row.id,
             text_cat_row.id
         )
-        .execute(&self.db)
+        .execute(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
 
@@ -202,7 +208,7 @@ impl GuildService for GuildServiceImpl {
             "INSERT INTO channels (guild_id, name, type, position) VALUES ($1, 'VOICE CHANNELS', 4, 1) RETURNING id",
             guild_row.id
         )
-        .fetch_one(&self.db)
+        .fetch_one(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
 
@@ -212,9 +218,11 @@ impl GuildService for GuildServiceImpl {
             guild_row.id,
             voice_cat_row.id
         )
-        .execute(&self.db)
+        .execute(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
+
+        tx.commit().await.map_err(sqlx_to_status)?;
 
         self.get_guild(Request::new(GetGuildRequest {
             guild_id: guild_row.id,

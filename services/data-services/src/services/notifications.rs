@@ -77,29 +77,112 @@ impl NotificationService for NotificationServiceImpl {
     ) -> Result<Response<NotificationSettings>, Status> {
         let req = request.into_inner();
 
-        let row = sqlx::query_as!(
-            NotifRow,
-            r#"INSERT INTO notification_settings (user_id, guild_id, channel_id,
-                                                   message_notifications, muted,
-                                                   suppress_everyone, suppress_roles)
-               VALUES ($1, $2, $3, $4, $5, $6, $7)
-               ON CONFLICT (user_id, guild_id, channel_id) DO UPDATE SET
-                   message_notifications = $4,
-                   muted = $5,
-                   suppress_everyone = $6,
-                   suppress_roles = $7
-               RETURNING user_id, guild_id, channel_id, message_notifications,
-                         muted, suppress_everyone, suppress_roles"#,
-            req.user_id,
-            req.guild_id,
-            req.channel_id,
-            req.message_notifications as i16,
-            req.muted,
-            req.suppress_everyone,
-            req.suppress_roles,
-        )
-        .fetch_one(&self.db)
-        .await
+        let notifs = req.message_notifications as i16;
+
+        // The uniqueness of a settings row depends on which of guild_id/channel_id
+        // are NULL, and each NULL-combination is deduped by its own partial unique
+        // index. ON CONFLICT can only name one arbiter per statement, so pick the
+        // index that matches this request's shape. (A single ON CONFLICT on all
+        // three columns would never fire when guild_id/channel_id are NULL, which is
+        // exactly how duplicate global/guild rows used to accumulate.)
+        let row = match (req.guild_id, req.channel_id) {
+            (None, None) => sqlx::query_as!(
+                NotifRow,
+                r#"INSERT INTO notification_settings (user_id, guild_id, channel_id,
+                                                       message_notifications, muted,
+                                                       suppress_everyone, suppress_roles)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7)
+                   ON CONFLICT (user_id) WHERE guild_id IS NULL AND channel_id IS NULL
+                   DO UPDATE SET
+                       message_notifications = $4,
+                       muted = $5,
+                       suppress_everyone = $6,
+                       suppress_roles = $7
+                   RETURNING user_id, guild_id, channel_id, message_notifications,
+                             muted, suppress_everyone, suppress_roles"#,
+                req.user_id,
+                req.guild_id,
+                req.channel_id,
+                notifs,
+                req.muted,
+                req.suppress_everyone,
+                req.suppress_roles,
+            )
+            .fetch_one(&self.db)
+            .await,
+            (Some(_), None) => sqlx::query_as!(
+                NotifRow,
+                r#"INSERT INTO notification_settings (user_id, guild_id, channel_id,
+                                                       message_notifications, muted,
+                                                       suppress_everyone, suppress_roles)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7)
+                   ON CONFLICT (user_id, guild_id) WHERE guild_id IS NOT NULL AND channel_id IS NULL
+                   DO UPDATE SET
+                       message_notifications = $4,
+                       muted = $5,
+                       suppress_everyone = $6,
+                       suppress_roles = $7
+                   RETURNING user_id, guild_id, channel_id, message_notifications,
+                             muted, suppress_everyone, suppress_roles"#,
+                req.user_id,
+                req.guild_id,
+                req.channel_id,
+                notifs,
+                req.muted,
+                req.suppress_everyone,
+                req.suppress_roles,
+            )
+            .fetch_one(&self.db)
+            .await,
+            (None, Some(_)) => sqlx::query_as!(
+                NotifRow,
+                r#"INSERT INTO notification_settings (user_id, guild_id, channel_id,
+                                                       message_notifications, muted,
+                                                       suppress_everyone, suppress_roles)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7)
+                   ON CONFLICT (user_id, channel_id) WHERE guild_id IS NULL AND channel_id IS NOT NULL
+                   DO UPDATE SET
+                       message_notifications = $4,
+                       muted = $5,
+                       suppress_everyone = $6,
+                       suppress_roles = $7
+                   RETURNING user_id, guild_id, channel_id, message_notifications,
+                             muted, suppress_everyone, suppress_roles"#,
+                req.user_id,
+                req.guild_id,
+                req.channel_id,
+                notifs,
+                req.muted,
+                req.suppress_everyone,
+                req.suppress_roles,
+            )
+            .fetch_one(&self.db)
+            .await,
+            (Some(_), Some(_)) => sqlx::query_as!(
+                NotifRow,
+                r#"INSERT INTO notification_settings (user_id, guild_id, channel_id,
+                                                       message_notifications, muted,
+                                                       suppress_everyone, suppress_roles)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7)
+                   ON CONFLICT (user_id, guild_id, channel_id) WHERE guild_id IS NOT NULL AND channel_id IS NOT NULL
+                   DO UPDATE SET
+                       message_notifications = $4,
+                       muted = $5,
+                       suppress_everyone = $6,
+                       suppress_roles = $7
+                   RETURNING user_id, guild_id, channel_id, message_notifications,
+                             muted, suppress_everyone, suppress_roles"#,
+                req.user_id,
+                req.guild_id,
+                req.channel_id,
+                notifs,
+                req.muted,
+                req.suppress_everyone,
+                req.suppress_roles,
+            )
+            .fetch_one(&self.db)
+            .await,
+        }
         .map_err(sqlx_to_status)?;
 
         Ok(Response::new(row_to_settings(row)))

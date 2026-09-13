@@ -667,6 +667,11 @@ message UpdateChannelRequest {
   optional int32  position   = 9;
   optional string rtc_region = 10;
   optional int32  video_quality_mode = 11;
+  // When true, parent_id is applied as given -- including an unset/NULL parent_id,
+  // which moves the channel out of its category to the guild root. When false
+  // (the default), parent_id is left unchanged. A plain optional parent_id cannot
+  // express "clear", the same way communication_disabled_until needs its own flag.
+  bool has_parent_id = 12;
 }
 
 message UpsertPermissionOverwriteRequest {

@@ -163,6 +163,10 @@ impl ChannelService for ChannelServiceImpl {
     ) -> Result<Response<Channel>, Status> {
         let req = request.into_inner();
 
+        // parent_id has three states: leave unchanged (has_parent_id = false),
+        // set to a category, or clear to the guild root (has_parent_id = true with
+        // parent_id unset). COALESCE cannot express "clear", so gate it on the flag
+        // with a CASE, mirroring the communication_disabled_until pattern in members.
         let row = sqlx::query_as!(
             ChannelRow,
             r#"UPDATE channels SET
@@ -172,7 +176,7 @@ impl ChannelService for ChannelServiceImpl {
                 bitrate = COALESCE($5, bitrate),
                 user_limit = COALESCE($6, user_limit),
                 rate_limit_per_user = COALESCE($7, rate_limit_per_user),
-                parent_id = COALESCE($8, parent_id),
+                parent_id = CASE WHEN $12 THEN $8 ELSE parent_id END,
                 position = COALESCE($9, position),
                 rtc_region = COALESCE($10, rtc_region),
                 video_quality_mode = COALESCE($11, video_quality_mode)
@@ -191,6 +195,7 @@ impl ChannelService for ChannelServiceImpl {
             req.position,
             req.rtc_region,
             req.video_quality_mode.map(|v| v as i16),
+            req.has_parent_id,
         )
         .fetch_optional(&self.db)
         .await
@@ -329,21 +334,23 @@ impl ChannelService for ChannelServiceImpl {
     ) -> Result<Response<Channel>, Status> {
         let req = request.into_inner();
 
-        // Check if DM channel already exists between these two users
+        // Normalize the pair so (a,b) and (b,a) map to the same dm_pairs row.
+        let (user_low, user_high) = if req.user_id <= req.target_id {
+            (req.user_id, req.target_id)
+        } else {
+            (req.target_id, req.user_id)
+        };
+
         struct DmRow {
             channel_id: i64,
         }
 
+        // Fast path: a DM for this pair already exists.
         let existing = sqlx::query_as!(
             DmRow,
-            r#"SELECT dc1.channel_id
-               FROM dm_channels dc1
-               INNER JOIN dm_channels dc2 ON dc1.channel_id = dc2.channel_id
-               WHERE dc1.user_id = $1 AND dc2.user_id = $2
-               AND (SELECT type FROM channels WHERE id = dc1.channel_id) = 1
-               LIMIT 1"#,
-            req.user_id,
-            req.target_id,
+            "SELECT channel_id FROM dm_pairs WHERE user_low = $1 AND user_high = $2",
+            user_low,
+            user_high,
         )
         .fetch_optional(&self.db)
         .await
@@ -357,34 +364,71 @@ impl ChannelService for ChannelServiceImpl {
                 .await;
         }
 
-        // Create new DM channel (type = 1)
+        // Create the channel and claim the pair inside one transaction. The unique
+        // PK on dm_pairs plus ON CONFLICT DO NOTHING makes this idempotent: if a
+        // concurrent caller won the race, our insert returns no row, and we discard
+        // the channel we speculatively created (rollback) and reuse the existing DM.
         struct IdRow {
             id: i64,
         }
+
+        let mut tx = self.db.begin().await.map_err(sqlx_to_status)?;
 
         let channel_row = sqlx::query_as!(
             IdRow,
             "INSERT INTO channels (type) VALUES (1) RETURNING id"
         )
-        .fetch_one(&self.db)
+        .fetch_one(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
 
-        // Add both users to dm_channels
-        sqlx::query!(
-            "INSERT INTO dm_channels (channel_id, user_id) VALUES ($1, $2), ($1, $3)",
+        let claimed = sqlx::query_as!(
+            DmRow,
+            r#"INSERT INTO dm_pairs (user_low, user_high, channel_id)
+               VALUES ($1, $2, $3)
+               ON CONFLICT (user_low, user_high) DO NOTHING
+               RETURNING channel_id"#,
+            user_low,
+            user_high,
             channel_row.id,
-            req.user_id,
-            req.target_id,
         )
-        .execute(&self.db)
+        .fetch_optional(&mut *tx)
         .await
         .map_err(sqlx_to_status)?;
 
-        self.get_channel(Request::new(GetChannelRequest {
-            channel_id: channel_row.id,
-        }))
-        .await
+        let channel_id = match claimed {
+            Some(_) => {
+                // We won: register both members and commit.
+                sqlx::query!(
+                    "INSERT INTO dm_channels (channel_id, user_id) VALUES ($1, $2), ($1, $3)",
+                    channel_row.id,
+                    req.user_id,
+                    req.target_id,
+                )
+                .execute(&mut *tx)
+                .await
+                .map_err(sqlx_to_status)?;
+                tx.commit().await.map_err(sqlx_to_status)?;
+                channel_row.id
+            }
+            None => {
+                // A concurrent caller already created the DM; read it and drop ours.
+                let existing = sqlx::query_as!(
+                    DmRow,
+                    "SELECT channel_id FROM dm_pairs WHERE user_low = $1 AND user_high = $2",
+                    user_low,
+                    user_high,
+                )
+                .fetch_one(&mut *tx)
+                .await
+                .map_err(sqlx_to_status)?;
+                tx.rollback().await.map_err(sqlx_to_status)?;
+                existing.channel_id
+            }
+        };
+
+        self.get_channel(Request::new(GetChannelRequest { channel_id }))
+            .await
     }
 
     async fn create_group_dm(
