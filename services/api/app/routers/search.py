@@ -8,7 +8,7 @@ from elasticsearch import AsyncElasticsearch
 
 from app.models.message import MessageResponse
 from app.middleware.auth import get_current_user_id
-from app.grpc_client import get_member_stub, get_message_stub, get_user_stub
+from app.grpc_client import get_member_stub, get_message_stub, get_user_stub, get_guild_stub
 from app.grpc_stubs import relay_pb2 as pb2
 
 router = APIRouter(prefix="/api/v10", tags=["search"])
@@ -85,6 +85,7 @@ async def _search_messages(
     content: str | None = None,
     author_id: int | None = None,
     channel_id: int | None = None,
+    channel_ids: list[int] | None = None,
     has: str | None = None,
     before: str | None = None,
     after: str | None = None,
@@ -101,6 +102,10 @@ async def _search_messages(
         query["bool"]["must"].append({"term": {"author_id": author_id}})
     if channel_id:
         query["bool"]["must"].append({"term": {"channel_id": channel_id}})
+    if channel_ids is not None:
+        # Restrict the whole query (hits AND the total count) to channels the searcher can
+        # VIEW, so the result never reveals how many messages exist in channels they can't see.
+        query["bool"]["must"].append({"terms": {"channel_id": channel_ids}})
     if has == "file":
         query["bool"]["must"].append({"term": {"has_attachment": True}})
     if has == "embed":
@@ -167,12 +172,40 @@ async def search_guild_messages(
             detail={"code": 50001, "message": "Missing Access"},
         )
 
+    # Compute the channels the searcher can VIEW and scope the search to them, so the result
+    # (content AND the total count) never reveals messages in channels they can't see. A
+    # targeted channel_id must itself be viewable.
+    from app.services.permissions import compute_channel_permissions, has_permission, VIEW_CHANNEL
+    guild_stub = await get_guild_stub()
+    try:
+        chans = await guild_stub.GetGuildChannels(pb2.GetGuildChannelsRequest(guild_id=guild_id))
+        all_channel_ids = [int(c.id) for c in chans.channels]
+    except grpc.RpcError:
+        all_channel_ids = []
+    viewable: list[int] = []
+    for cid in all_channel_ids:
+        try:
+            perms = await compute_channel_permissions(guild_id, cid, int(user_id))
+            if has_permission(perms, VIEW_CHANNEL):
+                viewable.append(cid)
+        except Exception:
+            pass
+    if channel_id is not None:
+        if channel_id not in viewable:
+            return {"total_results": 0, "messages": []}
+        channel_scope = [channel_id]
+    else:
+        channel_scope = viewable
+    if not channel_scope:
+        return {"total_results": 0, "messages": []}
+
     try:
         result = await _search_messages(
             guild_id=guild_id,
             content=content,
             author_id=author_id,
             channel_id=channel_id,
+            channel_ids=channel_scope,
             has=has,
             before=before,
             after=after,
@@ -192,22 +225,9 @@ async def search_guild_messages(
     msg_stub = await get_message_stub()
     user_stub = await get_user_stub()
 
-    # Never return messages from a channel the searcher cannot VIEW_CHANNEL. The ES query
-    # only filters by guild, so a member could otherwise read messages from private channels
-    # they have no access to. Cache the per-channel decision within this request.
-    from app.services.permissions import (
-        compute_channel_permissions, has_permission, VIEW_CHANNEL,
-    )
-    _view_cache: dict[int, bool] = {}
-
-    async def _can_view(cid: int) -> bool:
-        if cid not in _view_cache:
-            try:
-                perms = await compute_channel_permissions(guild_id, cid, int(user_id))
-                _view_cache[cid] = has_permission(perms, VIEW_CHANNEL)
-            except Exception:
-                _view_cache[cid] = False
-        return _view_cache[cid]
+    # The query is already scoped to channel_scope; keep a cheap set-lookup guard against any
+    # index skew (a message indexed under a channel no longer in the viewable set).
+    viewable_set = set(channel_scope)
 
     messages: list[list] = []
     for hit in result["hits"]["hits"]:
@@ -215,7 +235,7 @@ async def search_guild_messages(
         msg_id = doc["id"]
         ch_id = doc["channel_id"]
 
-        if not await _can_view(int(ch_id)):
+        if int(ch_id) not in viewable_set:
             continue
 
         try:

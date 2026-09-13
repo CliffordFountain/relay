@@ -19,7 +19,7 @@ from app.middleware.auth import get_current_user_id
 from app.db.connection import get_redis
 from app.grpc_client import (
     get_guild_stub, get_channel_stub, get_member_stub,
-    get_role_stub, get_user_stub, get_permission_stub, get_thread_stub,
+    get_role_stub, get_user_stub, get_permission_stub, get_thread_stub, get_ban_stub,
 )
 from app.grpc_errors import handle_grpc_error
 from app.grpc_stubs import relay_pb2 as pb2
@@ -697,6 +697,20 @@ async def join_discoverable_guild(
             status_code=403,
             detail={"code": 50001, "message": "This server is not open to public joining."},
         )
+
+    # A ban must not be bypassable by joining via discovery (the invite-accept path checks
+    # this too). If GetBan succeeds the user is banned; NOT_FOUND means they're clear.
+    ban_stub = await get_ban_stub()
+    try:
+        await ban_stub.GetBan(pb2.GetBanRequest(guild_id=gid, user_id=uid))
+        raise HTTPException(
+            status_code=403,
+            detail={"code": 40007, "message": "You are banned from this server"},
+        )
+    except grpc.RpcError as exc:
+        if exc.code() != grpc.StatusCode.NOT_FOUND:
+            handle_grpc_error(exc, resource="ban")
+        # NOT_FOUND -> not banned, continue
 
     member_stub = await get_member_stub()
     try:

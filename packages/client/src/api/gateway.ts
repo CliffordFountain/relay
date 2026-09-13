@@ -122,10 +122,9 @@ class GatewayClient {
     const url = import.meta.env.VITE_GATEWAY_URL || `${wsProto}//${window.location.host}/gateway`;
     this.ws = new WebSocket(url);
 
-    this.ws.onopen = () => {
-      this.reconnectAttempts = 0;
-    };
-
+    // reconnectAttempts resets on a successful READY/RESUMED handshake (see handleDispatch),
+    // NOT on raw socket open: a server that accepts the socket then immediately closes would
+    // otherwise reset the backoff every cycle and spin in a tight reconnect loop.
     this.ws.onmessage = (e: MessageEvent) => {
       try {
         const payload = JSON.parse(e.data as string) as GatewayPayload;
@@ -256,15 +255,17 @@ class GatewayClient {
         // payload.d is a boolean: true = resumable, false = not resumable
         const resumable = payload.d as boolean;
         if (resumable && this.sessionId) {
-          // Wait a random 1-5 seconds before resuming (spreads out reconnects after an outage)
-          setTimeout(() => this.attemptResume(), 1000 + Math.random() * 4000);
+          // Wait a random 1-5 seconds before resuming (spreads out reconnects after an outage).
+          // Track it in reconnectTimer so disconnect()/clearTimers cancels it — an untracked
+          // timer would fire after logout and silently revive the gateway.
+          this.reconnectTimer = setTimeout(() => this.attemptResume(), 1000 + Math.random() * 4000);
         } else {
           // Must re-identify with a fresh session
           this.sessionId = null;
           this.sequence = null;
           this.resumeGatewayUrl = null;
-          // Wait a random 1-5 seconds before identifying
-          setTimeout(() => this.identify(), 1000 + Math.random() * 4000);
+          // Wait a random 1-5 seconds before identifying (tracked so disconnect cancels it).
+          this.reconnectTimer = setTimeout(() => this.identify(), 1000 + Math.random() * 4000);
         }
         break;
       }
@@ -300,6 +301,8 @@ class GatewayClient {
       this.sessionId = readyData.session_id;
       this.resumeGatewayUrl = readyData.resume_gateway_url;
       this.setConnectionState('connected');
+      // A completed handshake means this connection is healthy — reset the reconnect backoff.
+      this.reconnectAttempts = 0;
 
       // Seed the voice roster from the initial state so we immediately see who is ALREADY
       // in each voice channel. Live VOICE_STATE_UPDATEs only cover post-connect changes,
@@ -315,6 +318,7 @@ class GatewayClient {
     // Handle RESUMED to confirm resume succeeded
     if (eventName === 'RESUMED') {
       this.setConnectionState('connected');
+      this.reconnectAttempts = 0;
     }
 
     // Voice state changes are applied directly to the shared voice store and are NOT
@@ -501,10 +505,7 @@ class GatewayClient {
       const url = this.resumeGatewayUrl ?? (import.meta.env.VITE_GATEWAY_URL || `${wsProto}//${window.location.host}/gateway`);
       this.ws = new WebSocket(url);
 
-      this.ws.onopen = () => {
-        this.reconnectAttempts = 0;
-      };
-
+      // reconnectAttempts resets on READY/RESUMED, not raw open (see connect()).
       this.ws.onmessage = (e: MessageEvent) => {
         try {
           const payload = JSON.parse(e.data as string) as GatewayPayload;

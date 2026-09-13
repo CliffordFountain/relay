@@ -135,24 +135,24 @@ async def verify_mfa_login(body: MfaTotpRequest):
         )
 
     # Per-ticket brute-force guard: a 6-digit TOTP has only 1e6 possibilities, so cap the
-    # number of guesses allowed against a single ticket and burn the ticket once exceeded
-    # (forcing the attacker back through username/password). Independent of IP, so it holds
-    # even against a distributed attack that would slip past the per-IP rate limit.
+    # guesses allowed against a single ticket and burn it once exceeded (forcing the attacker
+    # back through username/password). Reserve the attempt BEFORE verifying, so concurrent
+    # guesses reusing one ticket can't each verify before the counter catches up (a
+    # count-then-act TOCTOU). Independent of IP, so it holds even against a distributed burst.
     MAX_MFA_ATTEMPTS = 5
     attempts_key = f"mfa:attempts:{body.ticket}"
-
-    async def _record_failed_attempt():
-        n = await redis.incr(attempts_key)
-        if n == 1:
-            await redis.expire(attempts_key, 300)
-        if n >= MAX_MFA_ATTEMPTS:
-            await redis.delete(f"mfa:ticket:{body.ticket}")
-            await redis.delete(attempts_key)
-            raise HTTPException(
-                status_code=429,
-                detail={"code": 60008, "message": "Too many invalid codes; please sign in again"},
-            )
+    attempts = await redis.incr(attempts_key)
+    if attempts == 1:
+        await redis.expire(attempts_key, 300)
+    if attempts > MAX_MFA_ATTEMPTS:
+        await redis.delete(f"mfa:ticket:{body.ticket}")
         raise HTTPException(
+            status_code=429,
+            detail={"code": 60008, "message": "Too many invalid codes; please sign in again"},
+        )
+
+    def _invalid_code() -> HTTPException:
+        return HTTPException(
             status_code=400,
             detail={"code": 60008, "message": "Invalid two-factor code"},
         )
@@ -173,9 +173,9 @@ async def verify_mfa_login(body: MfaTotpRequest):
                     f"mfa:backup:{user_id_str}", json.dumps(backup_codes)
                 )
             else:
-                await _record_failed_attempt()
+                raise _invalid_code()
         else:
-            await _record_failed_attempt()
+            raise _invalid_code()
 
     # Success -- clear the attempt counter and consume the one-time ticket.
     await redis.delete(attempts_key)
