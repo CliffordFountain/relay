@@ -116,7 +116,8 @@ describe('useStartupLoader', () => {
 
   it('clears token and logs out when getMe returns 401', async () => {
     localStorage.setItem('token', 'invalid-token');
-    mockGetMe.mockRejectedValue(new Error('Unauthorized'));
+    // The rest client attaches the HTTP status to thrown errors.
+    mockGetMe.mockRejectedValue({ status: 401, message: 'Unauthorized' });
 
     const store = createTestStore();
 
@@ -130,6 +131,46 @@ describe('useStartupLoader', () => {
 
     expect(store.getState().auth.isAuthenticated).toBe(false);
     expect(localStorage.getItem('token')).toBeNull();
+    expect(store.getState().ui.startupError).toBeNull();
+  });
+
+  it('keeps the token and shows a retryable error on a transient failure (non-401)', async () => {
+    localStorage.setItem('token', 'good-token');
+    // A 5xx / network blip must NOT log the user out.
+    mockGetMe.mockRejectedValue({ status: 503, message: 'Service Unavailable' });
+
+    const store = createTestStore();
+
+    renderHook(() => useStartupLoader(), {
+      wrapper: createWrapper(store),
+    });
+
+    await waitFor(() => {
+      expect(store.getState().ui.appLoading).toBe(false);
+    });
+
+    // Token preserved, not logged out, error surfaced for retry.
+    expect(localStorage.getItem('token')).toBe('good-token');
+    expect(store.getState().ui.startupError).not.toBeNull();
+    expect(mockClearToken).not.toHaveBeenCalled();
+  });
+
+  it('keeps the token on a network error with no status', async () => {
+    localStorage.setItem('token', 'good-token');
+    mockGetMe.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    const store = createTestStore();
+
+    renderHook(() => useStartupLoader(), {
+      wrapper: createWrapper(store),
+    });
+
+    await waitFor(() => {
+      expect(store.getState().ui.appLoading).toBe(false);
+    });
+
+    expect(localStorage.getItem('token')).toBe('good-token');
+    expect(store.getState().ui.startupError).not.toBeNull();
   });
 
   it('restores last-selected guild and channel from localStorage', async () => {

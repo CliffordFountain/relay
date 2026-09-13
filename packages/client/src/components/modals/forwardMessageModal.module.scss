@@ -91,6 +91,17 @@
   user-select: none;
 }
 
+.sendError {
+  margin: 0 16px 8px;
+  padding: 8px 12px;
+  border-radius: $radius-md;
+  background: $button-danger-bg;
+  color: #fff;
+  font-family: $font-primary;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
 .channelItem {
   display: flex;
   align-items: center;
@@ -107,6 +118,11 @@
 
   &:hover {
     background: $bg-modifier-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
   }
 
   &:focus-visible {

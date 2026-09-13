@@ -722,6 +722,39 @@ export const MessageInput = ({ channelId, externalFiles, onExternalFilesConsumed
     setPendingFiles(prev => prev.filter((_, i) => i !== index));
   }, []);
 
+  // Object URLs for image thumbnails, cached per File so we create exactly one blob
+  // URL per file (not one per render/keystroke) and can revoke it when the file is
+  // removed or on unmount -- otherwise every render leaked a new blob URL.
+  const previewUrls = useRef<Map<File, string>>(new Map());
+  const getPreviewUrl = useCallback((file: File): string => {
+    let url = previewUrls.current.get(file);
+    if (!url) {
+      url = URL.createObjectURL(file);
+      previewUrls.current.set(file, url);
+    }
+    return url;
+  }, []);
+
+  // Revoke object URLs for files that are no longer pending (removed or sent).
+  useEffect(() => {
+    const active = new Set(pendingFiles);
+    for (const [file, url] of previewUrls.current) {
+      if (!active.has(file)) {
+        URL.revokeObjectURL(url);
+        previewUrls.current.delete(file);
+      }
+    }
+  }, [pendingFiles]);
+
+  // Revoke everything still outstanding on unmount.
+  useEffect(() => {
+    const urls = previewUrls.current;
+    return () => {
+      for (const url of urls.values()) URL.revokeObjectURL(url);
+      urls.clear();
+    };
+  }, []);
+
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -814,7 +847,7 @@ export const MessageInput = ({ channelId, externalFiles, onExternalFilesConsumed
               <div className={styles.pendingFilePreview}>
                 {file.type.startsWith('image/') ? (
                   <img
-                    src={URL.createObjectURL(file)}
+                    src={getPreviewUrl(file)}
                     alt={file.name}
                     className={styles.pendingFileThumb}
                   />

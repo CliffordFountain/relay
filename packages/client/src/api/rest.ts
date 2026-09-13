@@ -47,6 +47,34 @@ class ApiClient {
   setToken(token: string) { this.token = token; }
   clearToken() { this.token = null; }
 
+  /**
+   * Turn a non-2xx Response into a thrown error. The body is usually JSON
+   * ({ code, message, ... }), but a proxy/timeout/5xx can return HTML or an
+   * empty body — parsing that as JSON throws a SyntaxError that masks the real
+   * HTTP error. Parse defensively and fall back to a synthetic error built from
+   * the status. Always attaches `status` so callers (e.g. the startup loader)
+   * can distinguish an auth failure (401) from a transient/server error.
+   */
+  private async throwFromResponse(res: Response): Promise<never> {
+    let body: unknown;
+    try {
+      body = await res.json();
+    } catch {
+      body = { message: res.statusText || `Request failed with status ${res.status}` };
+    }
+    if (body && typeof body === 'object' && !Array.isArray(body)) {
+      const err = body as Record<string, unknown>;
+      if (err.status === undefined) err.status = res.status;
+      throw err;
+    }
+    throw {
+      status: res.status,
+      message: typeof body === 'string' && body
+        ? body
+        : (res.statusText || `Request failed with status ${res.status}`),
+    };
+  }
+
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
@@ -65,10 +93,7 @@ class ApiClient {
       clearTimeout(timeoutId);
     }
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw error;
-    }
+    if (!res.ok) await this.throwFromResponse(res);
     if (res.status === 204) return undefined as T;
     return res.json();
   }
@@ -92,10 +117,7 @@ class ApiClient {
       clearTimeout(timeoutId);
     }
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw error;
-    }
+    if (!res.ok) await this.throwFromResponse(res);
     if (res.status === 204) return undefined as T;
     return res.json();
   }
@@ -159,10 +181,7 @@ class ApiClient {
       clearTimeout(timeoutId);
     }
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw error;
-    }
+    if (!res.ok) await this.throwFromResponse(res);
     return res.json() as Promise<Record<string, unknown>>;
   }
   editMessage(channelId: string, messageId: string, data: { content: string }) {

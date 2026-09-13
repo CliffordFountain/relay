@@ -4,8 +4,17 @@ import { useAppDispatch, useAppSelector } from './useAppDispatch';
 import { setAuth, logout } from '../stores/authSlice';
 import { setGuilds, selectGuild } from '../stores/guildsSlice';
 import { setChannels, selectChannel } from '../stores/channelsSlice';
-import { setAppLoading } from '../stores/uiSlice';
+import { setAppLoading, setStartupError } from '../stores/uiSlice';
 import { api } from '../api/rest';
+
+/**
+ * True only for a genuine authentication failure (HTTP 401). Transient problems
+ * (network drop, timeout/abort, 5xx) carry no 401 status and must NOT log the
+ * user out — the rest client attaches `status` to thrown errors.
+ */
+function isAuthFailure(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && (err as { status?: number }).status === 401;
+}
 
 const LAST_GUILD_KEY = 'lastSelectedGuildId';
 const LAST_CHANNEL_KEY = 'lastSelectedChannelId';
@@ -57,13 +66,16 @@ function parseChannelPath(pathname: string): { guildId: string | null; channelId
  */
 export const useStartupLoader = (): void => {
   const dispatch = useAppDispatch();
-  const isAuthenticated = useAppSelector(s => s.auth.isAuthenticated);
-  const hasRun = useRef(false);
+  // Bumped by retryStartup() so a failed startup can be re-attempted in place.
+  const startupNonce = useAppSelector(s => s.ui.startupNonce);
+  const ranForNonce = useRef<number | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (hasRun.current) return;
+    // Run once per nonce value: on mount, and again after each retryStartup().
+    if (ranForNonce.current === startupNonce) return;
+    ranForNonce.current = startupNonce;
 
     const savedToken = localStorage.getItem('token');
     if (!savedToken) {
@@ -71,7 +83,6 @@ export const useStartupLoader = (): void => {
       return;
     }
 
-    hasRun.current = true;
     api.setToken(savedToken);
 
     const loadStartupData = async (): Promise<void> => {
@@ -186,11 +197,19 @@ export const useStartupLoader = (): void => {
           // No guilds at all - go to DM view
           navigate('/channels/@me', { replace: true });
         }
-      } catch {
-        // Token is invalid or API is down - clear auth
-        localStorage.removeItem('token');
-        api.clearToken();
-        dispatch(logout());
+      } catch (err) {
+        if (isAuthFailure(err)) {
+          // Genuine auth failure (401): the token is invalid, so clear it and log out.
+          localStorage.removeItem('token');
+          api.clearToken();
+          dispatch(logout());
+        } else {
+          // Transient failure (network/timeout/5xx): keep the token so a blip doesn't
+          // log the user out, and surface a retryable error state instead.
+          dispatch(setStartupError(
+            "We couldn't reach Relay. Check your connection and try again.",
+          ));
+        }
       } finally {
         dispatch(setAppLoading(false));
       }
@@ -198,5 +217,5 @@ export const useStartupLoader = (): void => {
 
     void loadStartupData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch, startupNonce]);
 };

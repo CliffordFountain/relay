@@ -104,7 +104,6 @@ class GatewayClient {
   private eventHandler: GatewayEventHandler | null = null;
   private stateChangeHandler: GatewayStateChangeHandler | null = null;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private intentionalClose = false;
   private connectionState: GatewayConnectionState = 'disconnected';
@@ -447,18 +446,12 @@ class GatewayClient {
       return;
     }
 
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      this.setConnectionState('disconnected');
-      this.eventHandler?.('GATEWAY_CLOSE', {
-        code: event.code,
-        reason: event.reason,
-        recoverable: false,
-      });
-      return;
-    }
-
+    // Keep retrying indefinitely with exponential backoff, capped at 30s (plus jitter).
+    // The connection-status indicator (driven by the state handler) keeps the user
+    // informed while 'reconnecting', and reconnect() lets them force an attempt.
     this.setConnectionState('reconnecting');
-    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+    const exponent = Math.min(this.reconnectAttempts, 5); // 1s,2s,4s,8s,16s,32s->cap 30s
+    const delay = Math.min(1000 * Math.pow(2, exponent), 30000);
     const jitter = Math.random() * 1000;
     this.reconnectAttempts++;
 
@@ -467,6 +460,28 @@ class GatewayClient {
         this.connect(this.token, this.eventHandler, this.stateChangeHandler ?? undefined);
       }
     }, delay + jitter);
+  }
+
+  /**
+   * Force an immediate reconnect, e.g. from a user-facing "reconnect" button in the
+   * connection-status indicator. Resets the backoff so the attempt happens right away.
+   */
+  reconnect(): void {
+    if (!this.token || !this.eventHandler) return;
+    this.clearTimers();
+    this.reconnectAttempts = 0;
+    if (this.ws) {
+      this.ws.onclose = null;
+      this.ws.onerror = null;
+      this.ws.onmessage = null;
+      try {
+        this.ws.close(4000, 'Manual reconnect');
+      } catch {
+        // Socket may already be closing/closed -- ignore.
+      }
+      this.ws = null;
+    }
+    this.connect(this.token, this.eventHandler, this.stateChangeHandler ?? undefined);
   }
 
   private attemptResume(): void {

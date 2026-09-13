@@ -15,7 +15,7 @@ import { addTypingUser, removeTypingUser } from './stores/typingSlice';
 import { addThread, updateThread as updateThreadAction } from './stores/threadsSlice';
 import { addRelationship, removeRelationship as removeRelAction, updateRelationship, RelationshipType, type Relationship } from './stores/relationshipsSlice';
 import { setPresence, bulkSetPresences, type UserPresence } from './stores/presenceSlice';
-import { openQuickSwitcher } from './stores/uiSlice';
+import { openQuickSwitcher, setGatewayConnection, retryStartup } from './stores/uiSlice';
 import { gateway } from './api/gateway';
 import { voiceManager } from './voice/voiceManager';
 import { cdnBase } from './utils/cdn';
@@ -25,6 +25,8 @@ import { useTitleUpdater } from './hooks/useTitleUpdater';
 import { AppLayout } from './components/layout/AppLayout';
 import { WindowControls } from './components/layout/WindowControls';
 import { LoadingScreen } from './components/layout/LoadingScreen';
+import { StartupErrorScreen } from './components/layout/StartupErrorScreen';
+import { ConnectionStatusBar } from './components/layout/ConnectionStatusBar';
 import { LoginPage } from './components/auth/LoginPage';
 import { RegisterPage } from './components/auth/RegisterPage';
 import { ForgotPasswordPage } from './components/auth/ForgotPasswordPage';
@@ -77,12 +79,17 @@ const AppInner = () => {
   const dispatch = useAppDispatch();
   const { isAuthenticated, token } = useAppSelector(s => s.auth);
   const appLoading = useAppSelector(s => s.ui.appLoading);
+  const startupError = useAppSelector(s => s.ui.startupError);
   const selectedGuildId = useAppSelector(s => s.guilds.selectedGuildId);
   const selectedChannelId = useAppSelector(s => s.channels.selectedChannelId);
   const navigate = useNavigate();
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
   const location = useLocation();
+  // Pending "stop typing" timers, keyed by `${channelId}:${userId}`. Tracked so each
+  // TYPING_START can cancel and reschedule the removal instead of leaving stale timers
+  // that hide the indicator while the user is still typing.
+  const typingTimeouts = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   // Apply persisted accessibility settings on startup
   const theme = useAppSelector(s => s.settings.theme);
@@ -358,10 +365,17 @@ const AppInner = () => {
                 userId,
                 username: member?.user?.username ?? userId,
               }));
-              // Auto-remove after 10 seconds
-              setTimeout(() => {
+              // Auto-remove after 10s. Cancel any pending removal for this user first
+              // and reschedule, so a fresh TYPING_START keeps the indicator visible
+              // instead of an earlier timer hiding it mid-typing.
+              const key = `${channelId}:${userId}`;
+              const existing = typingTimeouts.current.get(key);
+              if (existing) clearTimeout(existing);
+              const timer = setTimeout(() => {
                 dispatch(removeTypingUser({ channelId, userId }));
+                typingTimeouts.current.delete(key);
               }, 10000);
+              typingTimeouts.current.set(key, timer);
             }
             break;
           }
@@ -388,6 +402,14 @@ const AppInner = () => {
               dispatch(addMessage(msg));
             }
             if (msg.author?.id) {
+              // The author just sent a message, so they've stopped typing: cancel any
+              // pending removal timer for them and remove the indicator now.
+              const typingKey = `${msg.channel_id}:${msg.author.id}`;
+              const pending = typingTimeouts.current.get(typingKey);
+              if (pending) {
+                clearTimeout(pending);
+                typingTimeouts.current.delete(typingKey);
+              }
               dispatch(removeTypingUser({
                 channelId: msg.channel_id,
                 userId: msg.author.id,
@@ -588,8 +610,17 @@ const AppInner = () => {
             // Non-recoverable gateway close -- could trigger re-auth flow
             break;
         }
+      }, (state) => {
+        // Drive the visible connection-status indicator from the gateway state.
+        dispatch(setGatewayConnection(state));
       });
-      return () => gateway.disconnect();
+      const timers = typingTimeouts.current;
+      return () => {
+        gateway.disconnect();
+        // Clear any outstanding "stop typing" timers so they don't fire after unmount.
+        timers.forEach(t => clearTimeout(t));
+        timers.clear();
+      };
     }
   }, [isAuthenticated, token, dispatch]);
 
@@ -598,12 +629,24 @@ const AppInner = () => {
   // which draws its own; renders nothing in a browser.
   const inAppShell = isAuthenticated && location.pathname.startsWith('/channels');
 
+  // Startup failed for a non-auth reason (network/5xx): keep the session and let the
+  // user retry instead of dropping them at the login screen.
+  if (startupError) {
+    return (
+      <>
+        <WindowControls />
+        <StartupErrorScreen message={startupError} onRetry={() => dispatch(retryStartup())} />
+      </>
+    );
+  }
+
   // Show loading screen while restoring session
   if (appLoading) return (<><WindowControls /><LoadingScreen /></>);
 
   return (
     <>
       {!inAppShell && <WindowControls />}
+      <ConnectionStatusBar />
       <Routes>
       <Route path="/login" element={
         isAuthenticated ? <Navigate to="/channels/@me" replace /> : <LoginPage onNavigateToRegister={() => navigate('/register')} onNavigateToForgotPassword={() => navigate('/forgot-password')} />

@@ -91,7 +91,7 @@ function getAllSent(ws: MockWSInstance): unknown[] {
 }
 
 // We need to dynamically import the gateway module after setting up the WebSocket mock
-let gateway: { gateway: { connect: (token: string, handler: GatewayEventHandler, stateHandler?: GatewayStateChangeHandler) => void; disconnect: () => void; getSessionId: () => string | null; getConnectionState: () => GatewayConnectionState; sendPresenceUpdate: (status: string, customStatus?: string | null) => void; sendVoiceStateUpdate: (guildId: string, channelId: string | null, selfMute?: boolean, selfDeaf?: boolean, selfVideo?: boolean, selfStream?: boolean) => void } };
+let gateway: { gateway: { connect: (token: string, handler: GatewayEventHandler, stateHandler?: GatewayStateChangeHandler) => void; disconnect: () => void; reconnect: () => void; getSessionId: () => string | null; getConnectionState: () => GatewayConnectionState; sendPresenceUpdate: (status: string, customStatus?: string | null) => void; sendVoiceStateUpdate: (guildId: string, channelId: string | null, selfMute?: boolean, selfDeaf?: boolean, selfVideo?: boolean, selfStream?: boolean) => void } };
 
 describe('GatewayClient', () => {
   beforeEach(async () => {
@@ -341,27 +341,40 @@ describe('GatewayClient', () => {
       }));
     });
 
-    it('stops reconnecting after max attempts', () => {
+    it('keeps reconnecting with capped backoff after many failures', () => {
       vi.spyOn(Math, 'random').mockReturnValue(0);
 
       gateway.gateway.connect('test-token', vi.fn());
 
-      // Simulate 5 failed connections that close WITHOUT opening (so reconnectAttempts
-      // keeps incrementing and never resets). This simulates the server being unreachable.
-      for (let i = 0; i < 5; i++) {
+      // Simulate many failed connections that close WITHOUT opening. The client must
+      // never permanently give up on a recoverable close -- it keeps retrying so the
+      // app can recover on its own once the server is reachable again.
+      for (let i = 0; i < 8; i++) {
         const ws = mockWSInstances[mockWSInstances.length - 1]!;
-        // Close without opening (simulates connection failure)
         simulateClose(ws, 1006, 'Abnormal closure');
 
-        // Advance past reconnect delay
+        // Still reconnecting, not disconnected.
+        expect(gateway.gateway.getConnectionState()).toBe('reconnecting');
+
+        // Advance past the capped (30s) backoff to trigger the next attempt.
         vi.advanceTimersByTime(31000);
       }
 
-      // After 5 failed attempts, the next close should NOT schedule another reconnect
-      const ws = mockWSInstances[mockWSInstances.length - 1]!;
-      simulateClose(ws, 1006, 'Abnormal closure');
+      // A fresh socket was created for each retry.
+      expect(mockWSInstances.length).toBeGreaterThan(8);
+    });
 
-      expect(gateway.gateway.getConnectionState()).toBe('disconnected');
+    it('reconnect() forces a new connection immediately and resets backoff', () => {
+      gateway.gateway.connect('test-token', vi.fn());
+      const ws1 = mockWSInstances[0]!;
+      simulateOpen(ws1);
+
+      const before = mockWSInstances.length;
+      gateway.gateway.reconnect();
+
+      // Old socket closed, a new connection opened right away (no waiting on backoff).
+      expect(ws1.close).toHaveBeenCalledWith(4000, 'Manual reconnect');
+      expect(mockWSInstances.length).toBe(before + 1);
     });
 
     it('resets reconnect attempts on successful connection', () => {

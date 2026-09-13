@@ -1,0 +1,67 @@
+@use '../../styles/variables' as *;
+
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: $bg-tertiary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-modal-content;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 420px;
+  padding: 24px;
+  text-align: center;
+}
+
+.icon {
+  color: $status-dnd;
+}
+
+.title {
+  color: $header-primary;
+  font-family: $font-primary;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.message {
+  color: $text-muted;
+  font-family: $font-primary;
+  font-size: 15px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.retryButton {
+  margin-top: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: $radius-md;
+  background-color: $brand-color;
+  color: #fff;
+  font-family: $font-primary;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $brand-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus-primary;
+    outline-offset: 2px;
+  }
+}

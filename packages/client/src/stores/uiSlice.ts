@@ -1,5 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+/** Mirrors GatewayConnectionState in api/gateway.ts (duplicated to avoid a circular import). */
+export type GatewayConnection =
+  | 'disconnected'
+  | 'connecting'
+  | 'connected'
+  | 'resuming'
+  | 'reconnecting';
+
 interface UIState {
   activeModal: string | null;
   modalProps: Record<string, unknown>;
@@ -12,6 +20,12 @@ interface UIState {
   replyingToMessageId: string | null;
   editingMessageId: string | null;
   appLoading: boolean;
+  /** Non-null when startup failed for a non-auth reason (network/5xx); drives the retry screen. */
+  startupError: string | null;
+  /** Bumped by retryStartup() to re-trigger the startup loader without a full page reload. */
+  startupNonce: number;
+  /** Live gateway (realtime) connection state, driven by the gateway state handler. */
+  gatewayConnection: GatewayConnection;
   lightboxImage: string | null;
   quickSwitcherOpen: boolean;
   pinnedMessagesPanelOpen: boolean;
@@ -33,6 +47,9 @@ const initialState: UIState = {
   replyingToMessageId: null,
   editingMessageId: null,
   appLoading: true,
+  startupError: null,
+  startupNonce: 0,
+  gatewayConnection: 'disconnected',
   lightboxImage: null,
   quickSwitcherOpen: false,
   pinnedMessagesPanelOpen: false,
@@ -98,6 +115,17 @@ export const uiSlice = createSlice({
     setAppLoading: (state, action: PayloadAction<boolean>) => {
       state.appLoading = action.payload;
     },
+    setStartupError: (state, action: PayloadAction<string | null>) => {
+      state.startupError = action.payload;
+    },
+    retryStartup: (state) => {
+      state.startupError = null;
+      state.appLoading = true;
+      state.startupNonce += 1;
+    },
+    setGatewayConnection: (state, action: PayloadAction<GatewayConnection>) => {
+      state.gatewayConnection = action.payload;
+    },
     openLightbox: (state, action: PayloadAction<string>) => {
       state.lightboxImage = action.payload;
     },
@@ -149,6 +177,9 @@ export const {
   setReplyingToMessageId,
   setEditingMessageId,
   setAppLoading,
+  setStartupError,
+  retryStartup,
+  setGatewayConnection,
   openLightbox,
   closeLightbox,
   openQuickSwitcher,

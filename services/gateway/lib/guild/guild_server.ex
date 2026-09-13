@@ -26,11 +26,17 @@ defmodule Guild.GuildServer do
         GenServer.cast(pid, {:subscribe, session_pid, user_id})
 
       [] ->
-        {:ok, pid} =
-          DynamicSupervisor.start_child(
-            Gateway.GuildSupervisor,
-            {__MODULE__, guild_id}
-          )
+        # Two sessions for the same guild can race to start the server. The loser gets
+        # {:error, {:already_started, pid}} rather than {:ok, pid}; use that pid instead
+        # of crashing with a MatchError.
+        pid =
+          case DynamicSupervisor.start_child(
+                 Gateway.GuildSupervisor,
+                 {__MODULE__, guild_id}
+               ) do
+            {:ok, pid} -> pid
+            {:error, {:already_started, pid}} -> pid
+          end
 
         GenServer.cast(pid, {:subscribe, session_pid, user_id})
     end

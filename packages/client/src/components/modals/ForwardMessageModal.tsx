@@ -13,6 +13,29 @@ interface ForwardTarget {
   guildName?: string;
 }
 
+/**
+ * Build the content to forward. The send endpoint is text-only, so carry the original
+ * message's attachments and embeds along as their URLs (appended to the text) instead
+ * of silently dropping them -- otherwise forwarding an image or a link-embed message
+ * loses the very thing being forwarded. Attachment/embed media links re-embed on the
+ * receiving side.
+ */
+export function buildForwardContent(message: Message): string {
+  const parts: string[] = [];
+  if (message.content) parts.push(message.content);
+
+  for (const att of message.attachments ?? []) {
+    if (att.url) parts.push(att.url);
+  }
+
+  for (const embed of message.embeds ?? []) {
+    const url = embed.url ?? embed.image?.url ?? embed.thumbnail?.url;
+    if (url && !parts.includes(url)) parts.push(url);
+  }
+
+  return parts.join('\n');
+}
+
 export interface ForwardMessageModalProps {
   message: Message;
   onClose: () => void;
@@ -20,6 +43,8 @@ export interface ForwardMessageModalProps {
 
 export const ForwardMessageModal = ({ message, onClose }: ForwardMessageModalProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [forwarding, setForwarding] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const channels = useAppSelector(s => s.channels.channels);
@@ -95,12 +120,24 @@ export const ForwardMessageModal = ({ message, onClose }: ForwardMessageModalPro
     [filteredTargets]
   );
 
-  const handleForward = useCallback((targetChannelId: string) => {
-    void api.sendMessage(targetChannelId, {
-      content: message.content,
-    });
-    onClose();
-  }, [message.content, onClose]);
+  const handleForward = useCallback(async (targetChannelId: string) => {
+    if (forwarding) return;
+    const content = buildForwardContent(message);
+    if (!content.trim()) {
+      setSendError('This message has no content to forward.');
+      return;
+    }
+    setForwarding(true);
+    setSendError(null);
+    try {
+      await api.sendMessage(targetChannelId, { content });
+      onClose();
+    } catch {
+      // Keep the modal open so the user can retry a different target.
+      setSendError('Failed to forward message. Please try again.');
+      setForwarding(false);
+    }
+  }, [message, onClose, forwarding]);
 
   const previewContent = message.content.length > 100
     ? message.content.slice(0, 100) + '...'
@@ -133,6 +170,10 @@ export const ForwardMessageModal = ({ message, onClose }: ForwardMessageModalPro
           <div className={styles.previewContent}>{previewContent}</div>
         </div>
 
+        {sendError && (
+          <div className={styles.sendError} role="alert">{sendError}</div>
+        )}
+
         <div className={styles.channelList}>
           {guildChannels.length > 0 && (
             <>
@@ -141,7 +182,8 @@ export const ForwardMessageModal = ({ message, onClose }: ForwardMessageModalPro
                 <button
                   key={target.id}
                   className={styles.channelItem}
-                  onClick={() => handleForward(target.id)}
+                  onClick={() => void handleForward(target.id)}
+                  disabled={forwarding}
                   type="button"
                   aria-label={`Forward to #${target.name}`}
                 >
@@ -164,7 +206,8 @@ export const ForwardMessageModal = ({ message, onClose }: ForwardMessageModalPro
                 <button
                   key={target.id}
                   className={styles.channelItem}
-                  onClick={() => handleForward(target.id)}
+                  onClick={() => void handleForward(target.id)}
+                  disabled={forwarding}
                   type="button"
                   aria-label={`Forward to ${target.name}`}
                 >
