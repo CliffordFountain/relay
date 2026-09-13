@@ -381,7 +381,11 @@ export class SfuClient {
     if (existing) this.closeProducer(mediaType);
 
     const isVideo = track.kind === 'video';
-    let produceOptions: Parameters<types.Transport['produce']>[0] = { track, appData: { mediaType } };
+    // stopTracks:false — never stop the raw local capture track when this producer is closed
+    // (mediasoup-client defaults to stopTracks:true). Otherwise a transport/WS teardown closes
+    // the producers and STOPS the mic/camera/screen tracks, blacking out the sender's OWN local
+    // preview and killing capture. Decoupling here keeps the self-view (and re-produce) alive.
+    let produceOptions: Parameters<types.Transport['produce']>[0] = { track, appData: { mediaType }, stopTracks: false };
     if (isVideo) {
       // Give the encoder a real bitrate budget. Without explicit `encodings`, libwebrtc
       // caps VP8 at a low default (~1–2 Mbps) and ramps up slowly, which looks poor and
@@ -407,6 +411,7 @@ export class SfuClient {
       produceOptions = {
         track,
         appData: { mediaType },
+        stopTracks: false, // keep the raw camera/screen track alive when the producer closes
         encodings: [{ maxBitrate }],
         // Start bitrate in kbps; begin at roughly half the cap so it ramps fast on a LAN.
         codecOptions: { videoGoogleStartBitrate: Math.min(4000, Math.round(maxBitrate / 2000)) },

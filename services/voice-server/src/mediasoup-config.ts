@@ -102,11 +102,19 @@ export function detectAnnouncedIps(): mediasoup.types.TransportListenIp[] {
     entries.push({ ip: bind, announcedIp });
   };
 
-  // 1. Explicit override (LAN / public IP) first, when set.
+  // Explicit override: when ANNOUNCED_IP is set, announce ONLY it — a single clean, routable
+  // candidate. This is the behaviour that originally worked. Advertising the container's
+  // Docker-internal IP (172.x, which no real browser can reach) and loopback ALONGSIDE it hands
+  // a full-ICE client dead candidate pairs to keep probing; over a cross-machine link that churn
+  // drifts the selected pair / loses ICE consent and ALL media (audio, camera, screen) goes
+  // black after ~tens of seconds. Only auto-detect host addresses when no override is given.
   const override = process.env.ANNOUNCED_IP?.trim();
-  if (override) add(listenIp, override);
+  if (override) {
+    return [{ ip: listenIp, announcedIp: override }];
+  }
 
-  // 2. One entry per non-internal IPv4 host address (container IP, LAN, ...).
+  // No override: announce every non-internal IPv4 host address (container IP, LAN, ...) plus
+  // loopback, so same-host, LAN, and in-Docker clients each find a reachable candidate.
   const interfaces = os.networkInterfaces();
   for (const addrs of Object.values(interfaces)) {
     if (!addrs) continue;
