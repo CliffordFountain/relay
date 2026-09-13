@@ -104,7 +104,7 @@ function parsePermissions(permString: string): bigint {
 /**
  * Hook that computes the current user's permissions for a guild.
  *
- * Algorithm matches the behavior exactly:
+ * Algorithm:
  * 1. If user is guild owner -> all permissions
  * 2. Start with @everyone role permissions
  * 3. OR all permissions from the member's other roles
@@ -217,7 +217,7 @@ const THREAD_TYPES = new Set([10, 11, 12]);
 /**
  * Apply channel permission overwrites to base permissions.
  *
- * Algorithm matches the behavior exactly:
+ * Algorithm:
  * 1. Apply @everyone role overwrite
  * 2. Collect and apply all member role overwrites (OR them together)
  * 3. Apply member-specific overwrite
@@ -286,7 +286,7 @@ export interface ChannelPermissions {
  * Hook that computes the current user's permissions for a specific channel.
  *
  * For threads (types 10, 11, 12), permissions are inherited from the
- * parent channel's permission overwrites, matching the behavior.
+ * parent channel's permission overwrites.
  *
  * Algorithm:
  * 1. Compute base guild permissions (via usePermissions logic)

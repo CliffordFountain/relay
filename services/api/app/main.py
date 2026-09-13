@@ -34,7 +34,7 @@ app = FastAPI(
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
-    """Return HTTPException detail directly (the format), without FastAPI's default {'detail': ...} wrapper."""
+    """Return the HTTPException detail directly, without FastAPI's default {'detail': ...} wrapper."""
     detail = exc.detail
     if isinstance(detail, dict):
         content = detail
@@ -45,7 +45,7 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
-    """Convert FastAPI/Pydantic validation errors to the error format."""
+    """Convert FastAPI/Pydantic validation errors to our error format."""
     errors: dict[str, object] = {}
     for error in exc.errors():
         loc = error.get("loc", [])

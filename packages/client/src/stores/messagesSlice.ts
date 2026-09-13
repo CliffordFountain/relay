@@ -157,7 +157,7 @@ export const messagesSlice = createSlice({
       if (msgs) {
         const idx = msgs.findIndex(m => m.id === action.payload.id);
         if (idx !== -1) {
-          // Merge partial update with existing message (the gateway protocol sends partial MESSAGE_UPDATE)
+          // Merge partial update with existing message (the gateway sends partial MESSAGE_UPDATE)
           const existing = msgs[idx];
           if (existing) {
             Object.assign(existing, action.payload);

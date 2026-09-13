@@ -8,7 +8,7 @@ defmodule Gateway.SocketHandler do
 
   @heartbeat_interval 41250
 
-  # Gateway Intent bits from the gateway protocol (API v10)
+  # Gateway Intent bits
   @intent_guilds                    1
   @intent_guild_members             2
   @intent_guild_moderation          4
@@ -570,7 +570,7 @@ defmodule Gateway.SocketHandler do
 
       {:error, :invalid_token} ->
         Logger.warning("Invalid token during Identify")
-        # The gateway protocol sends op 9 (Invalid Session) with d=false for bad tokens
+        # Send op 9 (Invalid Session) with d=false for bad tokens
         invalid = %{"op" => Opcodes.invalid_session(), "d" => false}
         {[{:text, Jason.encode!(invalid)}], state}
     end

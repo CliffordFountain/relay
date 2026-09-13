@@ -25,7 +25,7 @@ import {
  * - Denying permissions via channel overwrites
  * - Removing roles and restoring access
  *
- * Uses the permission bitfield values:
+ * Uses these permission bitfield values:
  *   MANAGE_MESSAGES = 1 << 13 = 8192
  *   SEND_MESSAGES   = 1 << 11 = 2048
  *   VIEW_CHANNEL    = 1 << 10 = 1024
@@ -175,7 +175,7 @@ test.describe('Roles & Permissions', () => {
     expect(mutedRole.id).toBeTruthy();
 
     // Create a channel permission overwrite that denies SEND_MESSAGES for this role
-    // The the API: PUT /channels/{channel.id}/permissions/{overwrite.id}
+    // PUT /channels/{channel.id}/permissions/{overwrite.id}
     // type 0 = role overwrite
     const overwriteRes = await apiWithRetry(
       request,

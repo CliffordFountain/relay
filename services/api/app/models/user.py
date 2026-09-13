@@ -7,20 +7,20 @@ class UserRegisterRequest(BaseModel):
     email: str  # Use str not EmailStr to avoid extra dependency
     password: str = Field(min_length=8, max_length=72)
     global_name: Optional[str] = Field(default=None, max_length=32)
-    date_of_birth: str  # Format: YYYY-MM-DD, required by the gateway protocol
+    date_of_birth: str  # Format: YYYY-MM-DD
     consent: bool = True
 
 
 class UserLoginRequest(BaseModel):
-    login: Optional[str] = None  # The gateway protocol uses "login" which accepts email or phone
-    email: Optional[str] = None  # Backwards compat - we also accept "email"
+    login: Optional[str] = None  # "login" accepts either an email or a username
+    email: Optional[str] = None  # Backwards compat - also accept "email"
     password: str
 
 
 class UserResponse(BaseModel):
     id: str  # Snowflake as string
     username: str
-    discriminator: str = "0"  # Legacy field from the gateway protocol, always "0" for new users
+    discriminator: str = "0"  # Legacy field, always "0" for new users
     global_name: Optional[str] = None
     email: str
     avatar: Optional[str] = None

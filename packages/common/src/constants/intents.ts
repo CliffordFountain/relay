@@ -1,4 +1,4 @@
-/** Gateway intents matching the gateway intent bitfield (API v10). */
+/** Gateway intents. */
 export const GatewayIntent = {
   Guilds: 1 << 0,
   GuildMembers: 1 << 1,           // Privileged

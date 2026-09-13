@@ -16,7 +16,7 @@ export interface PermissionOverwrite {
 /**
  * Compute base guild permissions for a member.
  *
- * Algorithm (matching the behavior exactly):
+ * Algorithm:
  * 1. If user is guild owner -> return ALL_PERMISSIONS
  * 2. Start with @everyone role permissions
  * 3. OR all permissions from the member's other roles
@@ -45,7 +45,7 @@ export const computeBasePermissions = (
 /**
  * Compute permissions for a specific channel, applying overwrites.
  *
- * Algorithm (matching the behavior exactly):
+ * Algorithm:
  * 1. Start with base guild permissions
  * 2. If ADMINISTRATOR -> return ALL_PERMISSIONS (admin bypasses overwrites)
  * 3. Apply @everyone role overwrite for this channel (deny then allow)
@@ -103,7 +103,7 @@ export const computeChannelPermissions = (
 };
 
 /**
- * Apply implicit permission denials (matching the behavior):
+ * Apply implicit permission denials:
  * 1. If VIEW_CHANNEL is denied -> all other channel permissions are implicitly denied
  * 2. If SEND_MESSAGES is denied -> MENTION_EVERYONE, SEND_TTS_MESSAGES, ATTACH_FILES, EMBED_LINKS are denied
  * 3. If CONNECT is denied in voice -> SPEAK, MUTE_MEMBERS, DEAFEN_MEMBERS, MOVE_MEMBERS, USE_VAD, PRIORITY_SPEAKER, STREAM are denied
@@ -164,7 +164,7 @@ export const hasPermission = (permissions: bigint, permission: bigint): boolean 
 
 /**
  * Check if a role can be managed by another role (higher position = more power).
- * When positions are equal, the role with the lower ID takes priority (the tiebreaker).
+ * When positions are equal, the role with the lower ID takes priority (earlier-created role wins).
  */
 export const canManageRole = (
   actorHighestPosition: number,

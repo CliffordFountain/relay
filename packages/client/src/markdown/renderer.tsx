@@ -595,7 +595,7 @@ function renderTokens(tokens: Token[], keyPrefix = ''): ReactNode[] {
 }
 
 /**
- * React component that renders the markdown subset.
+ * React component that renders the Relay markdown subset.
  * Uses a token-based parser with DOM elements (no dangerouslySetInnerHTML).
  */
 export function MarkdownContent({ content }: { content: string }) {

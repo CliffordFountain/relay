@@ -656,7 +656,7 @@ export const MessageInput = ({ channelId, externalFiles, onExternalFilesConsumed
   const handleGifSelect = useCallback(async (gifUrl: string) => {
     setShowGifPicker(false);
 
-    // Send GIF as a message with the URL as content (the behavior)
+    // Send GIF as a message with the URL as content
     const nonce = `pending_${Date.now()}_${nonceCounterRef.current++}`;
 
     const payload: {

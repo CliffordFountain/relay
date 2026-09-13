@@ -76,10 +76,12 @@ esdata/
 Thumbs.db
 desktop.ini
 
-# ─── Secrets, certificates and local artifacts ───
-# Backup archives
+# Backups and archives
 *.zip
-# TLS certificates and private keys — never publish
+/backups/*
+!/backups/.gitkeep
+
+# TLS certificates and private keys — never commit
 *.pem
 *.key
 *.crt
@@ -87,30 +89,16 @@ desktop.ini
 *.pfx
 certs/
 packages/client/certs/
-# Local tooling artifacts
-tmp-out/
-*.plugin
-# Local artifacts
-_relay_*.bat
-_relay_*.txt
+
+# Local editor, tooling and scratch files
 _to_delete/
-local-notes.ps1
-notes.ps1
-LOCAL-NOTES.md
+_relay_*
+*.plugin
+*.ps1
 
-# Local per-user editor settings
-.local/settings.json
-
-# Browser test artifacts
-.browser-tests/
-
-# Playwright test artifacts
+# Test artifacts
 test-results/
 playwright-report/
 
-# Database backup snapshots (created at runtime by the backup sidecar)
-/backups/*
-!/backups/.gitkeep
-
-# Local security audit notes (do not publish)
+# Local notes (not part of the project)
 SECURITY-AUDIT.md

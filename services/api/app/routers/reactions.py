@@ -73,7 +73,7 @@ async def add_reaction(
     # Publish MESSAGE_REACTION_ADD event
     r = await get_redis()
 
-    # Fetch message author ID and member data for the full reference-compliant payload
+    # Fetch message author ID and member data for the full event payload
     message_author_id = None
     member_data = None
     try:

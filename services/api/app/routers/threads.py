@@ -223,11 +223,11 @@ async def create_thread(
 
     response = _thread_response_from_proto(thread)
 
-    # Attach the starter message for forum posts (the gateway protocol includes this in the response)
+    # Attach the starter message for forum posts (clients expect it in the response)
     if starter_message_dict is not None:
         response.message = starter_message_dict
 
-    # Set newly_created=True on the response (the gateway protocol includes this in both REST and gateway event)
+    # Set newly_created=True on the response (included in both the REST response and the gateway event)
     response.newly_created = True
 
     # Publish THREAD_CREATE event

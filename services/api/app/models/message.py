@@ -3,7 +3,7 @@ from typing import Optional, Any
 
 
 class AllowedMentions(BaseModel):
-    """Controls who gets mentioned in a message (matching the API)."""
+    """Controls who gets mentioned in a message."""
     parse: list[str] = []  # "roles", "users", "everyone"
     roles: list[str] = []  # Specific role IDs to mention
     users: list[str] = []  # Specific user IDs to mention

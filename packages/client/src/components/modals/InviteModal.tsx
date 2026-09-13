@@ -104,7 +104,7 @@ export const InviteModal = ({ channelId, serverName, onClose }: InviteModalProps
   }, [createInvite]);
 
   // Build invite URL — Relay uses relay.gg/{code} (no /invite/ path).
-  // Otherwise, use VITE_INVITE_BASE or fall back to {origin} directly.
+  // Otherwise use VITE_INVITE_BASE or fall back to {origin} directly.
   const inviteBase = import.meta.env.VITE_INVITE_BASE || window.location.origin;
   const inviteUrl = invite ? `${inviteBase}/${invite.code}` : '';
 

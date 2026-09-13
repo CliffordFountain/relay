@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# S3 client (MinIO) -- stays as direct access per spec
+# S3 client (MinIO) -- direct access for attachment uploads
 # ---------------------------------------------------------------------------
 
 _s3_client = None
@@ -526,7 +526,7 @@ async def create_message(
         )
 
     # Automod: block messages matching an enabled keyword rule (owner/admins are gated the
-    # same as anyone — the implementation applies automod to all non-exempt members).
+    # same as anyone — automod applies to all non-exempt members).
     if guild_id and body.content:
         from app.routers.automod import enforce_automod
         await enforce_automod(guild_id, channel_id, body.content)
@@ -639,7 +639,7 @@ async def create_message(
             member = await member_stub.GetMember(
                 pb2.GetMemberRequest(guild_id=guild_id, user_id=int(user_id))
             )
-            # The gateway protocol's partial member object in MESSAGE_CREATE includes user sub-object
+            # The partial member object in MESSAGE_CREATE includes a user sub-object
             author = event_data.get("author", {})
             event_data["member"] = {
                 "user": {

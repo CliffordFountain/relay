@@ -70,7 +70,7 @@ export const UserProfile = ({ userId, guildId, onClose }: UserProfileProps) => {
   const bannerColor = profileAccentColor as number | null;
 
   // The account's creation date isn't stored separately -- it's encoded in the
-  // Snowflake ID itself, same as the gateway protocol. Derive it directly
+  // Snowflake ID itself. Derive it directly
   // rather than showing a placeholder.
   const accountCreatedAt = isValidSnowflake(userId) ? snowflakeToDate(userId) : null;
 
@@ -126,7 +126,7 @@ export const UserProfile = ({ userId, guildId, onClose }: UserProfileProps) => {
   }, [onClose]);
 
   // `!= null` (not truthy), so a stored accent_color of 0 (#000000, black) renders as black
-  // instead of falling through to the default accent.
+  // instead of falling through to the default accent colour.
   const bannerStyle: React.CSSProperties = bannerColor != null
     ? { backgroundColor: typeof bannerColor === 'number' ? `#${bannerColor.toString(16).padStart(6, '0')}` : bannerColor }
     : { backgroundColor: '#3b82f6' };

@@ -503,7 +503,7 @@ async def execute_webhook(
     if wh.token != token:
         raise HTTPException(status_code=404, detail={"code": 10015, "message": "Unknown Webhook"})
 
-    # The gateway protocol requires at least one of: content, embeds, components, files
+    # A webhook message requires at least one of: content, embeds, components, files
     has_content = body.content and body.content.strip()
     has_embeds = body.embeds and len(body.embeds) > 0
     has_components = body.components and len(body.components) > 0

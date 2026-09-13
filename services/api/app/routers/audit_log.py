@@ -113,7 +113,7 @@ async def get_audit_logs(
         if entry.user_id:
             user_ids_seen.add(entry.user_id)
 
-    # Fetch user objects for all users referenced in the log (the gateway protocol includes these)
+    # Fetch user objects for all users referenced in the log (clients render them inline)
     users = []
     if user_ids_seen:
         from app.grpc_client import get_user_stub

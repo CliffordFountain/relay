@@ -1,5 +1,5 @@
 defmodule Gateway.Opcodes do
-  @moduledoc "Gateway opcode constants matching the gateway protocol."
+  @moduledoc "Gateway opcode constants."
 
   @dispatch 0
   @heartbeat 1

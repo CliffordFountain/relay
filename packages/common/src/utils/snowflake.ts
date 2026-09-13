@@ -1,5 +1,5 @@
 /**
- * Snowflake ID generator and utilities, matching the gateway protocol.
+ * Snowflake ID generator and utilities.
  *
  * Snowflake format (64 bits):
  *   bits 63-22: milliseconds since the Snowflake epoch (2015-01-01T00:00:00.000Z) = 42 bits

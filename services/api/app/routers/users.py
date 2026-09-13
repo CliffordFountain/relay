@@ -337,7 +337,7 @@ async def get_user_profile(
 
 
 class GuildSummary(BaseModel):
-    """The the API /users/@me/guilds partial guild object."""
+    """Partial guild object returned by /users/@me/guilds."""
     id: str
     name: str
     icon: str | None
@@ -397,7 +397,7 @@ async def leave_guild(
     if not is_member:
         raise HTTPException(status_code=404, detail={"code": 10004, "message": "Unknown Guild"})
 
-    # The owner cannot leave their own guild (they must delete or transfer it) — matches the implementation.
+    # The owner cannot leave their own guild (they must delete or transfer it).
     try:
         guild_stub = await get_guild_stub()
         g = await guild_stub.GetGuild(pb2.GetGuildRequest(guild_id=gid))

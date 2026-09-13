@@ -9,7 +9,7 @@ use crate::proto::{
     GetGuildOwnerResponse, PermissionsResponse,
 };
 
-/// Permission bit constants matching the gateway protocol.
+/// Permission bit constants.
 const ADMINISTRATOR: i64 = 0x0000_0000_0000_0008;
 
 /// gRPC service implementation for permission computation.

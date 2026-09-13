@@ -99,7 +99,7 @@ export const StatusSelector = ({ anchorRef, onClose }: StatusSelectorProps) => {
     gateway.sendPresenceUpdate(status, savedCustomStatus);
 
     // Update the presences map so the member list reflects the change immediately.
-    // 'invisible' appears as 'offline' to others (the behavior).
+    // 'invisible' appears as 'offline' to others.
     if (currentUser?.id) {
       const mappedStatus = status === 'invisible' ? 'offline' : status;
       dispatch(setPresence({

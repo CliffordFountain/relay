@@ -82,7 +82,7 @@ def handle_grpc_error(
 
 
 # ---------------------------------------------------------------------------
-# Specific "Unknown X" error code mapping
+# "Unknown X" error code mapping
 # ---------------------------------------------------------------------------
 
 _RESOURCE_NOT_FOUND_CODES: dict[str, int] = {
@@ -96,7 +96,7 @@ _RESOURCE_NOT_FOUND_CODES: dict[str, int] = {
     "emoji": 10014,
     "webhook": 10015,
     "member": 10007,
-    "thread": 10003,  # The gateway protocol uses same code as channel for threads
+    "thread": 10003,  # threads reuse the channel error code
     "relationship": 10006,
     "automod_rule": 10069,
     "notification_settings": 10070,

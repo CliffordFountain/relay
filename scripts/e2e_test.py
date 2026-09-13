@@ -43,7 +43,6 @@ def main():
     print("  RELAY - FULL E2E VERIFICATION")
     print("=" * 60)
 
-    #
     print("\n--- Foundation ---")
     r1 = api("POST", "/auth/register", {"username": "e2e_alice", "email": "e2e_alice@test.com", "password": "AlicePass123!"})
     if isinstance(r1, dict) and "error" in r1:
@@ -80,7 +79,6 @@ def main():
             check("Gateway HeartbeatACK", ack, ack["op"] == 11)
     asyncio.run(test_gw())
 
-    #
     print("\n--- Core Messaging ---")
     guild = api("POST", "/guilds", {"name": "E2E Final Server"}, t1)
     check("Create guild", guild, guild and "id" in guild)
@@ -103,7 +101,6 @@ def main():
     del_r = api("DELETE", f"/channels/{ch_id}/messages/{msg_id}", token=t1)
     check("Delete message", del_r, del_r == "OK_204")
 
-    #
     print("\n--- Rich Messaging & DMs ---")
     m1 = api("POST", f"/channels/{ch_id}/messages", {"content": "Original"}, t1)
     reply = api("POST", f"/channels/{ch_id}/messages", {"content": "Reply!", "message_reference": {"message_id": m1["id"]}}, t1)
@@ -136,7 +133,6 @@ def main():
     states = api("GET", "/users/@me/read-states", token=t1)
     check("Get read states", states, isinstance(states, list))
 
-    #
     print("\n--- Permissions & Moderation ---")
     role = api("POST", f"/guilds/{g_id}/roles", {"name": "Mod", "permissions": "8", "color": 3447003}, t1)
     check("Create role", role, role and "id" in role)
@@ -167,12 +163,10 @@ def main():
     logs = api("GET", f"/guilds/{g_id}/audit-logs?limit=10", token=t1)
     check("Get audit log", logs, isinstance(logs, dict) and "audit_log_entries" in logs)
 
-    #
     print("\n--- Threads ---")
     thread = api("POST", f"/channels/{ch_id}/threads", {"name": "Test Thread"}, t1)
     check("Create thread", thread, thread and "id" in thread)
 
-    #
     print("\n--- Settings & Search ---")
     settings_r = api("PATCH", "/users/@me/settings", {"theme": "dark", "locale": "en-US"}, t1)
     check("Update user settings", settings_r, settings_r and "theme" in settings_r)
@@ -180,7 +174,6 @@ def main():
     get_s = api("GET", "/users/@me/settings", token=t1)
     check("Get user settings", get_s, get_s and get_s.get("theme") == "dark")
 
-    #
     print("\n--- Rate Limiting ---")
     # Verify rate limit headers exist
     req = urllib.request.Request(f"{API}/users/@me", headers={"Authorization": f"Bearer {t1}"})

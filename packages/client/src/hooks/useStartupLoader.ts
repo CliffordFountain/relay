@@ -79,7 +79,7 @@ export const useStartupLoader = (): void => {
         // Step 1+2: Validate token and fetch guilds in parallel
         const [user, guildsRaw] = await Promise.all([api.getMe(), api.getMyGuilds()]);
         dispatch(setAuth({ token: savedToken, user }));
-        // /users/@me/guilds returns `owner: bool` (as expected).
+        // /users/@me/guilds returns `owner: bool`.
         // Derive `owner_id` so permission checks work for the current user.
         const guilds = (guildsRaw as Array<Record<string, unknown>>).map(g => ({
           id: String(g.id ?? ''),

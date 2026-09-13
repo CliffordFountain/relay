@@ -31,7 +31,7 @@ async def get_settings(user_id: str = Depends(get_current_user_id)):
 
     # Convert proto to dict, filtering out None/default values
     result: dict = {
-        # Fields not yet in proto: return the API defaults
+        # Fields not yet in proto: return sensible defaults
         "developer_mode": False,
         "convert_emoticons": True,
         "friend_source_flags": {"all": True},
@@ -77,7 +77,7 @@ async def update_settings(
     except grpc.RpcError as exc:
         handle_grpc_error(exc, resource="user")
 
-    # Build response with the API defaults for fields not in proto
+    # Build response with default values for fields not in proto
     result: dict = {
         "developer_mode": False,
         "convert_emoticons": True,

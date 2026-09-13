@@ -1,5 +1,5 @@
 /**
- * Permission bitfield flags, matching the gateway protocol.
+ * Permission bitfield flags.
  * Stored as BIGINT (64-bit) in the database.
  * Using bigint in TypeScript to match.
  */
@@ -65,7 +65,7 @@ export const ALL_PERMISSIONS = Object.values(Permission).reduce((acc, v) => acc 
 
 /**
  * Default permissions for @everyone role on new guilds.
- * Matches the default: ~1071698529857n
+ * Default bitfield value: ~1071698529857n
  * Includes: CREATE_INSTANT_INVITE, ADD_REACTIONS, STREAM, VIEW_CHANNEL, SEND_MESSAGES,
  * SEND_TTS_MESSAGES, EMBED_LINKS, ATTACH_FILES, READ_MESSAGE_HISTORY, MENTION_EVERYONE,
  * USE_EXTERNAL_EMOJIS, CONNECT, SPEAK, USE_VAD, CHANGE_NICKNAME, USE_APPLICATION_COMMANDS,

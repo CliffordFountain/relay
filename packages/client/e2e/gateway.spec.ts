@@ -202,7 +202,7 @@ test.describe('Gateway Real-time Messaging', () => {
     });
 
     // Send a message via the REST API (simulating another client or server-side event)
-    // Avoid underscores in message text — the markdown renders _word_ as italic,
+    // Avoid underscores in message text — Relay's markdown renders _word_ as italic,
     // splitting the DOM text and breaking getByText.
     const msgContent = `realtimetest${uniqueId()}`;
     await sendMessageViaAPI(request, ownerFixture.token, ownerFixture.channelId, msgContent);
@@ -246,7 +246,7 @@ test.describe('Gateway Real-time Messaging', () => {
       });
 
       // User A sends a message via the UI
-      // Avoid underscores — the markdown renders _word_ as italic, splitting DOM text.
+      // Avoid underscores — Relay's markdown renders _word_ as italic, splitting DOM text.
       const msgText = `crossuser${uniqueId()}`;
       const inputA = pageA.locator('textarea[aria-label*="Message"]');
       await inputA.fill(msgText);

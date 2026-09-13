@@ -1,4 +1,4 @@
-/** Gateway opcodes matching the gateway protocol exactly. */
+/** Gateway opcodes. */
 export const GatewayOpcode = {
   /** Server -> Client: An event was dispatched */
   Dispatch: 0,
@@ -10,7 +10,7 @@ export const GatewayOpcode = {
   PresenceUpdate: 3,
   /** Client -> Server: Join/leave/move voice channels */
   VoiceStateUpdate: 4,
-  // Opcode 5 is intentionally skipped (the gateway protocol skips it)
+  // Opcode 5 is intentionally skipped (reserved)
   /** Client -> Server: Resume a previous session */
   Resume: 6,
   /** Server -> Client: Server is telling client to reconnect */
@@ -45,5 +45,5 @@ export const GatewayCloseCode = {
   DisallowedIntents: 4014,
 } as const;
 
-/** Heartbeat interval in milliseconds (the gateway protocol uses 41250ms). */
+/** Heartbeat interval in milliseconds. */
 export const HEARTBEAT_INTERVAL = 41250;

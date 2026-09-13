@@ -24,11 +24,11 @@ describe('AboutModal', () => {
     expect(screen.getByText('Relay v0.1.0')).toBeInTheDocument();
   });
 
-  it('does not mention Relay branding and version details', () => {
+  it('shows the Relay name and version', () => {
     renderModal();
     const dialog = screen.getByRole('dialog', { name: /about & help/i });
-    expect(dialog.textContent).toMatch(/Relay/i);
-    expect(dialog.textContent).toBeTruthy();
+    expect(dialog.textContent).toMatch(/Relay/);
+    expect(dialog.textContent).toMatch(/v0\.1\.0/);
   });
 
   it('navigates in-app to /terms and /privacy and closes the modal', () => {

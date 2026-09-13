@@ -155,7 +155,7 @@ test.describe('Invite Flow', () => {
       headers: { Authorization: `Bearer ${ownerFixture.token}` },
     });
 
-    // The the API returns 200 with the deleted invite object on successful revocation
+    // The API returns 200 with the deleted invite object on successful revocation
     expect(res.ok).toBe(true);
 
     // Verify the invite is no longer valid by trying to fetch it

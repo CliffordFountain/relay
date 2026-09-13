@@ -46,10 +46,10 @@ test('a user avatar renders next to their channel message', async ({ browser, re
   }
 });
 
-test('profile banner honours a black accent colour (0), not default accent', async ({ browser, request }) => {
+test('profile banner honours a black accent colour (0), not the default accent colour', async ({ browser, request }) => {
   test.setTimeout(150000);
   // Bugs: saving #000000 sent null (lost), and the display used a truthy check so a stored 0
-  // rendered as default accent. Set accent_color=0 via API and confirm the profile banner
+  // rendered as the default accent colour. Set accent_color=0 via API and confirm the profile banner
   // is actually black.
   const owner = await registerUserWithGuild(request, 'clr');
   const patch = await apiWithRetry(request, 'patch', `${API_BASE}/users/@me`, {
@@ -72,7 +72,7 @@ test('profile banner honours a black accent colour (0), not default accent', asy
     const banner = page.getByTestId('profile-banner');
     await expect(banner).toBeVisible({ timeout: 10000 });
     const bg = await banner.evaluate((el) => getComputedStyle(el).backgroundColor);
-    // black, NOT accent rgb(59, 130, 246)
+    // black, NOT the default accent rgb(59, 130, 246)
     expect(bg).toBe('rgb(0, 0, 0)');
   } finally {
     await ctx.close();

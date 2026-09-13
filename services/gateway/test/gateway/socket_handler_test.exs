@@ -3,7 +3,7 @@ defmodule Gateway.SocketHandlerTest do
 
   alias Gateway.Opcodes
 
-  test "opcodes match the values" do
+  test "opcodes have the expected values" do
     assert Opcodes.dispatch() == 0
     assert Opcodes.heartbeat() == 1
     assert Opcodes.identify() == 2

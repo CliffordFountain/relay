@@ -1,4 +1,4 @@
-/** Channel types matching the channel type enum. */
+/** Channel types used across the Relay gateway. */
 export const ChannelType = {
   GuildText: 0,
   DM: 1,

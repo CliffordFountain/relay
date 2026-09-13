@@ -3,7 +3,7 @@ import { useAppSelector } from './useAppDispatch';
 
 /**
  * Subscribes to notification state and updates document.title with the unread
- * mention count, mirroring the behavior: "(5) Relay" when there are
+ * mention count: "(5) Relay" when there are
  * unread mentions, or just "Relay" when there are none.
  */
 export const useTitleUpdater = (): void => {

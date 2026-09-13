@@ -201,7 +201,7 @@ async def create_relationship(
 
 
 # ---------- PUT /users/@me/relationships/{target_user_id} ----------
-# Implements the gateway protocol's relationship state machine:
+# Relationship state machine:
 #   type=1 (friend request):
 #     If target already has OUTGOING_REQUEST to us -> both become FRIEND
 #     Otherwise -> sender gets OUTGOING_REQUEST (4), target gets INCOMING_REQUEST (3)

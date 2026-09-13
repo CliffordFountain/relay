@@ -129,7 +129,7 @@ async def test_login_with_email(client: AsyncClient, fake_redis: FakeRedis):
 
 @pytest.mark.asyncio
 async def test_login_via_login_field_username(client: AsyncClient, fake_redis: FakeRedis):
-    """The protocol "login" field also accepts a plain username."""
+    """The "login" field also accepts a plain username."""
     stub = _stub_returning(_make_user())
 
     with (

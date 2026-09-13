@@ -32,7 +32,7 @@ from app.routers.audit_log import create_audit_log
 
 router = APIRouter(prefix="/api/v10/guilds", tags=["guilds"])
 
-# Default @everyone permissions (matching the reference):
+# Default @everyone permissions:
 DEFAULT_EVERYONE_PERMISSIONS = (
     (1 << 0)   # CREATE_INSTANT_INVITE
     | (1 << 6)   # ADD_REACTIONS

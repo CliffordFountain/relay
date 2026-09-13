@@ -321,7 +321,7 @@ const AppInner = () => {
             if (Array.isArray(data.channels)) {
               dispatch(setChannels(data.channels as Parameters<typeof setChannels>[0]));
             }
-            // Process online presences bundled with the guild (the gateway protocol sends these so
+            // Process online presences bundled with the guild (the gateway sends these so
             // members appear online immediately without waiting for PRESENCE_UPDATE events)
             if (Array.isArray(data.presences) && (data.presences as unknown[]).length > 0) {
               const guildPresences = (data.presences as Array<{

@@ -203,7 +203,7 @@ async def search_guild_messages(
                 pb2.GetMessageRequest(channel_id=ch_id, message_id=msg_id)
             )
             msg_resp = _build_message_response_from_proto(msg, guild_id=guild_id)
-            # The gateway protocol wraps each result in an array (message + context)
+            # Each result is wrapped in an array (message + context)
             messages.append([msg_resp.model_dump()])
         except grpc.RpcError:
             pass

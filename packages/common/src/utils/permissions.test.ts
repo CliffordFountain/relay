@@ -15,7 +15,7 @@ import {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const GUILD_ID = '100'; // also the @everyone role ID (convention)
+const GUILD_ID = '100'; // also the @everyone role ID (by convention)
 const OWNER_ID = '200';
 const USER_ID = '300';
 
