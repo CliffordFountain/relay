@@ -28,6 +28,14 @@ export async function createWorkers(): Promise<mediasoup.types.Worker[]> {
 
 // ── Router media codecs ──────────────────────────────────────────────
 
+// preferredPayloadType is required by mediasoup's RtpCodecCapability type, but the values
+// must be chosen carefully: when mediasoup builds the router's RTP capabilities it also
+// generates an RTX (retransmission) codec for every VIDEO codec, drawing its payload type
+// from the same 96–127 dynamic pool immediately after that codec. Pinning the media codecs
+// to consecutive 100/101/102 made VP8's auto-generated RTX claim 102 — colliding with H264
+// and throwing "duplicated codec.preferredPayloadType" on EVERY router creation (so every
+// voice join failed). We therefore leave a gap after each video codec (…102, …104) so its
+// RTX slots into the number below it (101, 103) with no collision. Audio (opus) has no RTX.
 export const mediaCodecs: mediasoup.types.RtpCodecCapability[] = [
   {
     kind: 'audio',
@@ -43,14 +51,14 @@ export const mediaCodecs: mediasoup.types.RtpCodecCapability[] = [
   {
     kind: 'video',
     mimeType: 'video/VP8',
-    preferredPayloadType: 101,
+    preferredPayloadType: 102,
     clockRate: 90000,
     parameters: {},
   },
   {
     kind: 'video',
     mimeType: 'video/H264',
-    preferredPayloadType: 102,
+    preferredPayloadType: 104,
     clockRate: 90000,
     parameters: {
       'packetization-mode': 1,

@@ -117,6 +117,10 @@ async def ban_user(
     }
     await redis.publish(f"guild:{gid}", json.dumps(remove_event))
 
+    # Drop the banned user's guild-membership marker so their live gateway/voice sessions
+    # stop being treated as a member of this guild (mirrors the self-leave path).
+    await redis.srem(f"auth:user:{tid}:guilds", str(gid))
+
     return Response(status_code=204)
 
 
@@ -298,6 +302,10 @@ async def kick_member(
         },
     }
     await redis.publish(f"guild:{gid}", json.dumps(event))
+
+    # Drop the kicked user's guild-membership marker so their live gateway/voice sessions
+    # stop being treated as a member of this guild (mirrors the self-leave path).
+    await redis.srem(f"auth:user:{tid}:guilds", str(gid))
 
     return Response(status_code=204)
 

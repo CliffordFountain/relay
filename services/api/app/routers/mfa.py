@@ -17,7 +17,7 @@ from app.db.connection import get_redis
 from app.grpc_client import get_user_stub
 from app.grpc_errors import handle_grpc_error
 from app.grpc_stubs import relay_pb2 as pb2
-from app.routers.auth import generate_token
+from app.routers.auth import generate_token, _refresh_user_guilds
 from app.config import settings
 
 router = APIRouter(prefix="/api/v10/users", tags=["mfa"])
@@ -168,5 +168,9 @@ async def verify_mfa_login(body: MfaTotpRequest):
     await redis.setex(
         f"auth:token:{token}", settings.token_ttl_seconds, user_id_str
     )
+
+    # Resync the guild-membership set from the DB (see _refresh_user_guilds), so the
+    # gateway and voice-server see this session as a member of the right guilds.
+    await _refresh_user_guilds(redis, await get_user_stub(), int(user_id_str))
 
     return TokenResponse(token=token)

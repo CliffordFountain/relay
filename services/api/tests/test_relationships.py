@@ -225,7 +225,8 @@ async def test_add_unknown_username_is_rejected(client: AsyncClient):
         )
 
     assert resp.status_code == 400
-    assert resp.json()["detail"]["code"] == 80004
+    # Custom HTTPException handler (app/main.py) returns the detail body unwrapped.
+    assert resp.json()["code"] == 80004
     rel_stub.UpsertRelationship.assert_not_called()
 
 

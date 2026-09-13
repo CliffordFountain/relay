@@ -177,6 +177,30 @@ async function handleIdentify(
     );
   }
 
+  // Authorization: joining a *guild* voice channel requires membership of that guild.
+  // Authenticating who you are (above) is not enough — without this check any logged-in
+  // user could join any server's voice room just by putting its ids in the payload. The
+  // API maintains the authoritative membership set at auth:user:<id>:guilds (the same set
+  // the gateway trusts to scope a user's guild events), kept in sync on join/leave/invite.
+  // DM / group calls carry no guild id (server_id is empty) and are not gated here.
+  const requiredGuildId = guildToAuthorize(server_id);
+  if (requiredGuildId !== null) {
+    const isMember = await redis
+      .sIsMember(`auth:user:${authenticatedUserId}:guilds`, requiredGuildId)
+      .catch(() => false);
+    if (!isMember) {
+      console.warn(
+        `Voice identify: user ${authenticatedUserId} is not a member of guild ${requiredGuildId} — refusing join`,
+      );
+      send(ws, S2C.ERROR, {
+        code: 4004,
+        message: 'Authorization failed: not a member of this server',
+      });
+      ws.close(4004, 'Authorization failed');
+      return;
+    }
+  }
+
   state.userId = authenticatedUserId;
   state.guildId = server_id;
   state.sessionId = session_id;
@@ -502,6 +526,15 @@ async function cleanup(
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────
+
+// Normalizes the IDENTIFY payload's server_id into the guild id that must be
+// authorized before joining, or null when no guild check applies (DM/group calls,
+// which send an empty/absent server_id). Kept pure so it can be unit-tested.
+export function guildToAuthorize(serverId: unknown): string | null {
+  if (serverId === null || serverId === undefined) return null;
+  const s = String(serverId).trim();
+  return s === '' ? null : s;
+}
 
 function send(ws: WebSocket, op: number, d: unknown): void {
   if (ws.readyState === ws.OPEN) {

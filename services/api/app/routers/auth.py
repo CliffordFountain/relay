@@ -195,6 +195,29 @@ async def _notify_login(email: str, when: str, ip: str | None) -> None:
         logger.exception("send_login_notification_email raised for %s", email)
 
 
+async def _refresh_user_guilds(r, stub, user_id: int) -> None:
+    """Rebuild auth:user:{id}:guilds from the authoritative DB list.
+
+    This set is consumed by the gateway (guild event subscriptions) and the voice-server
+    (voice-join authorization). The per-action writes on join/leave/invite can leave it
+    empty for members provisioned directly in the DB (e.g. the demo seed), so we resync it
+    from source on every login. Best-effort: a failure here must not break sign-in.
+    """
+    key = f"auth:user:{user_id}:guilds"
+    try:
+        resp = await stub.GetUserGuilds(pb2.GetUserGuildsRequest(user_id=user_id))
+        guild_ids = [str(g.id) for g in resp.guilds]
+        async with r.pipeline(transaction=True) as pipe:
+            pipe.delete(key)
+            if guild_ids:
+                pipe.sadd(key, *guild_ids)
+            await pipe.execute()
+    except grpc.RpcError:
+        logger.warning("GetUserGuilds failed while refreshing guild set for user %s", user_id)
+    except Exception:
+        logger.exception("Failed to refresh guild set for user %s", user_id)
+
+
 @router.post("/login", response_model=TokenResponse)
 async def login(body: UserLoginRequest, request: Request):
     # The "login"/"email" field accepts EITHER an email address OR a username:
@@ -243,6 +266,12 @@ async def login(body: UserLoginRequest, request: Request):
     # Generate token (no MFA)
     token = generate_token()
     await r.setex(f"auth:token:{token}", settings.token_ttl_seconds, user_id_str)
+
+    # Rebuild the user's guild-membership set from the authoritative DB list. The gateway
+    # scopes guild event subscriptions by this set, and the voice-server authorizes
+    # voice-channel joins against it — but the incremental writes (on join/leave/invite)
+    # leave it empty for seed / DB-provisioned members, so refresh it from source at login.
+    await _refresh_user_guilds(r, stub, int(user.id))
 
     # Cache user data in Redis for gateway READY event
     await r.setex(

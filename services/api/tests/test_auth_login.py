@@ -161,7 +161,9 @@ async def test_login_invalid_credentials_returns_401(client: AsyncClient, fake_r
         )
 
     assert resp.status_code == 401
-    assert resp.json()["detail"]["code"] == 50014
+    # The API's custom HTTPException handler (app/main.py) returns the detail body
+    # directly, without FastAPI's default {"detail": ...} wrapper.
+    assert resp.json()["code"] == 50014
 
 
 @pytest.mark.asyncio
