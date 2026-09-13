@@ -424,6 +424,7 @@ message UpdateUserRequest {
   optional string pronouns     = 8;
   optional string display_name = 9;
   optional string locale       = 10;
+  optional bool   verified     = 11;
 }
 
 message UpdateUserSettingsRequest {

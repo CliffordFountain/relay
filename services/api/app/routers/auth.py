@@ -334,11 +334,15 @@ async def verify_email(body: VerifyEmailRequest):
     stub = await get_user_stub()
     try:
         await stub.UpdateUser(
-            pb2.UpdateUserRequest(user_id=user_id)
+            pb2.UpdateUserRequest(user_id=user_id, verified=True)
         )
-    except grpc.RpcError:
-        pass  # Non-critical if the update has limited fields
+    except grpc.RpcError as exc:
+        # If we can't actually mark the account verified, don't consume the
+        # one-time token or report success -- surface the error so the user
+        # can retry with the still-valid link.
+        handle_grpc_error(exc, resource="user")
 
+    # Only burn the one-time token once verified=true has been persisted.
     await r.delete(f"verify:{body.token}")
     return {"message": "Email verified successfully"}
 

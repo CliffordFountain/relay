@@ -200,7 +200,8 @@ impl UserService for UserServiceImpl {
                 accent_color = COALESCE($7, accent_color),
                 pronouns = COALESCE($8, pronouns),
                 display_name = COALESCE($9, display_name),
-                locale = COALESCE($10, locale)
+                locale = COALESCE($10, locale),
+                verified = COALESCE($11, verified)
                WHERE id = $1 AND deleted_at IS NULL
                RETURNING id, username, display_name, email, avatar, banner, bio,
                          accent_color, pronouns, verified, mfa_enabled, locale,
@@ -214,7 +215,8 @@ impl UserService for UserServiceImpl {
             req.accent_color.map(|c| c.parse::<i32>().unwrap_or(0)),
             req.pronouns,
             req.display_name,
-            req.locale
+            req.locale,
+            req.verified
         )
         .fetch_optional(&self.db)
         .await
