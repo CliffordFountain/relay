@@ -11,6 +11,10 @@ GLOBAL_WINDOW = 1  # seconds
 ROUTE_LIMITS = {
     "POST:/api/v10/auth/register": (5, 3600),      # 5 per hour
     "POST:/api/v10/auth/login": (5, 300),           # 5 per 5 min
+    "POST:/api/v10/auth/mfa/totp": (5, 300),        # 5 per 5 min (MFA code brute-force guard)
+    "POST:/api/v10/auth/forgot-password": (3, 3600),  # 3 per hour
+    "POST:/api/v10/auth/reset-password": (5, 3600),   # 5 per hour
+    "POST:/api/v10/auth/verify": (10, 3600),          # 10 per hour
     "POST:/api/v10/channels/*/messages": (5, 5),    # 5 per 5 sec
     "PUT:/api/v10/channels/*/messages/*/reactions/*": (1, 0.25),  # 1 per 250ms
     "PATCH:/api/v10/users/@me": (2, 600),           # 2 per 10 min

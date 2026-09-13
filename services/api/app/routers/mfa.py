@@ -134,6 +134,29 @@ async def verify_mfa_login(body: MfaTotpRequest):
             detail={"code": 60002, "message": "MFA is not enabled for this user"},
         )
 
+    # Per-ticket brute-force guard: a 6-digit TOTP has only 1e6 possibilities, so cap the
+    # number of guesses allowed against a single ticket and burn the ticket once exceeded
+    # (forcing the attacker back through username/password). Independent of IP, so it holds
+    # even against a distributed attack that would slip past the per-IP rate limit.
+    MAX_MFA_ATTEMPTS = 5
+    attempts_key = f"mfa:attempts:{body.ticket}"
+
+    async def _record_failed_attempt():
+        n = await redis.incr(attempts_key)
+        if n == 1:
+            await redis.expire(attempts_key, 300)
+        if n >= MAX_MFA_ATTEMPTS:
+            await redis.delete(f"mfa:ticket:{body.ticket}")
+            await redis.delete(attempts_key)
+            raise HTTPException(
+                status_code=429,
+                detail={"code": 60008, "message": "Too many invalid codes; please sign in again"},
+            )
+        raise HTTPException(
+            status_code=400,
+            detail={"code": 60008, "message": "Invalid two-factor code"},
+        )
+
     # Verify the TOTP code
     totp = pyotp.TOTP(mfa_resp.secret)
     if not totp.verify(body.code):
@@ -150,17 +173,12 @@ async def verify_mfa_login(body: MfaTotpRequest):
                     f"mfa:backup:{user_id_str}", json.dumps(backup_codes)
                 )
             else:
-                raise HTTPException(
-                    status_code=400,
-                    detail={"code": 60008, "message": "Invalid two-factor code"},
-                )
+                await _record_failed_attempt()
         else:
-            raise HTTPException(
-                status_code=400,
-                detail={"code": 60008, "message": "Invalid two-factor code"},
-            )
+            await _record_failed_attempt()
 
-    # Delete the ticket (one-time use)
+    # Success -- clear the attempt counter and consume the one-time ticket.
+    await redis.delete(attempts_key)
     await redis.delete(f"mfa:ticket:{body.ticket}")
 
     # Generate auth token
