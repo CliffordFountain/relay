@@ -13,7 +13,10 @@ defmodule Gateway.MixProject do
 
   def application do
     [
-      extra_applications: [:logger],
+      # :inets provides the built-in :httpc client used for the service-to-service
+      # voice-authorization call to the API (see SocketHandler.authorize_voice_join/3);
+      # :ssl lets it reach an https API_URL if one is ever configured.
+      extra_applications: [:logger, :inets, :ssl],
       mod: {Gateway.Application, []}
     ]
   end

@@ -27,6 +27,7 @@ unedited copy reproduces the local defaults. (Ports and internal service URLs ar
 |---|---|
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | Database credentials. Change the password for any real deployment — the API, backup sidecar and data layer all read these same values. |
 | `S3_ACCESS_KEY` / `S3_SECRET_KEY` | MinIO root credentials (also the API's S3 key). Change both for a real deployment; the shipped `minioadmin`/`minioadmin` is a dev default. |
+| `INTERNAL_SERVICE_SECRET` | Shared secret for internal service-to-service calls (the gateway's per-channel voice-join authorization request to the API). The API and gateway must agree on it. Change it from the dev default for any real deployment (`openssl rand -hex 32`). |
 | `CORS_ORIGINS` | Comma-separated origins the API accepts. Add your real client origin when serving from a domain other than localhost. |
 | `PUBLIC_BASE_URL` | The URL that goes into verification / password-reset emails. Set it to your real address (e.g. `https://relay.example.com`). |
 | `RELAY_SEED_DEMO` | `true` seeds the demo accounts (owner/player1/player2) on a fresh database. **Set to `false` for a real deployment** so no shared-password accounts exist. |
@@ -74,7 +75,9 @@ The defaults are tuned for a quick local run, not a hostile network. Do these fi
 1. **Change the default credentials.** In `.env`, set a real `POSTGRES_PASSWORD` and change
    the MinIO `S3_ACCESS_KEY` / `S3_SECRET_KEY`. The shipped `relay`/`relay` and
    `minioadmin`/`minioadmin` are dev defaults; the API, backup sidecar, data layer and MinIO
-   all read these same values, so you only set them once.
+   all read these same values, so you only set them once. Also set a strong
+   `INTERNAL_SERVICE_SECRET` (`openssl rand -hex 32`) — the API and gateway share it to
+   authenticate the internal voice-join authorization call.
 2. **Turn off the demo accounts** — `RELAY_SEED_DEMO=false`.
 3. **Keep the internal services internal.** Postgres, Redis, Elasticsearch, the data layer,
    MinIO (both the S3 API on 9000 and the console on 9001) are already bound to `127.0.0.1`

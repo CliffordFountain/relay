@@ -198,10 +198,11 @@ async def _notify_login(email: str, when: str, ip: str | None) -> None:
 async def _refresh_user_guilds(r, stub, user_id: int) -> None:
     """Rebuild auth:user:{id}:guilds from the authoritative DB list.
 
-    This set is consumed by the gateway (guild event subscriptions) and the voice-server
-    (voice-join authorization). The per-action writes on join/leave/invite can leave it
-    empty for members provisioned directly in the DB (e.g. the demo seed), so we resync it
-    from source on every login. Best-effort: a failure here must not break sign-in.
+    This set is consumed by the gateway — for guild event subscriptions and as the first gate
+    on a voice-join (opcode 4 requires membership before it asks the API to authorize the
+    specific channel and mints the voice grant). The per-action writes on join/leave/invite
+    can leave it empty for members provisioned directly in the DB (e.g. the demo seed), so we
+    resync it from source on every login. Best-effort: a failure here must not break sign-in.
     """
     key = f"auth:user:{user_id}:guilds"
     try:

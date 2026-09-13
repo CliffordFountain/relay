@@ -169,6 +169,10 @@ services:
       S3_SECRET_KEY: "${S3_SECRET_KEY:-minioadmin}"
       GATEWAY_URL: http://gateway:4000
       DATA_SERVICES_URL: data-services:50051
+      # Shared secret for internal service-to-service calls (gateway -> API voice-join
+      # authorization). Must match the gateway's INTERNAL_SERVICE_SECRET. Change it in .env
+      # for any real deployment.
+      INTERNAL_SERVICE_SECRET: "${INTERNAL_SERVICE_SECRET:-relay-internal-dev-secret}"
       CORS_ORIGINS: "${CORS_ORIGINS:-http://localhost:5173,https://localhost:5173,http://localhost:3000}"
       PORT: "8000"
       LOG_LEVEL: debug
@@ -214,6 +218,9 @@ services:
     environment:
       REDIS_URL: redis://redis:6379/0
       API_URL: http://api:8000
+      # Shared secret for the gateway's voice-join authorization call to the API. Must match
+      # the API's INTERNAL_SERVICE_SECRET. Change it in .env for any real deployment.
+      INTERNAL_SERVICE_SECRET: "${INTERNAL_SERVICE_SECRET:-relay-internal-dev-secret}"
       PORT: "4000"
       # LAN-reachable voice-server endpoint advertised to clients (host LAN IP:signaling port). Override in .env.
       VOICE_PUBLIC_ENDPOINT: "${VOICE_PUBLIC_ENDPOINT:-127.0.0.1:4001}"

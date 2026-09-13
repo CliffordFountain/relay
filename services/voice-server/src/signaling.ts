@@ -151,7 +151,10 @@ async function handleIdentify(
   roomManager: RoomManager,
   redis: RedisClientType,
 ): Promise<void> {
-  const { server_id, user_id, session_id, token, channel_id } = d;
+  // NOTE: server_id (the client-supplied guild id) is intentionally NOT read here. It is no
+  // longer trusted for authorization — see the grant check below, which derives the guild from
+  // the gateway-issued grant instead.
+  const { user_id, session_id, token, channel_id } = d;
 
   // Guard against a second IDENTIFY on an already-identified connection: it would leave the
   // previous room's transports and heartbeat timer dangling forever. Reject the duplicate.
@@ -184,38 +187,41 @@ async function handleIdentify(
     );
   }
 
-  // Authorization: a voice join must carry the guild id (server_id) of the channel, and the
-  // caller must be a member of that guild — authenticating identity alone is not enough. An
-  // empty/missing server_id is only ever seen from a client trying to skip this check, so
-  // reject it (every legitimate guild voice join sends it; DM/group voice is not offered
-  // here yet). NOTE: this verifies guild membership, not that channel_id actually belongs to
-  // server_id — full per-channel authorization requires a gateway-issued channel-scoped
-  // grant, tracked as a follow-up. It still stops non-members and the empty-server_id bypass.
-  const requiredGuildId = guildToAuthorize(server_id);
-  if (requiredGuildId === null) {
-    send(ws, S2C.ERROR, { code: 4004, message: 'Authorization failed: missing server id' });
+  // Authorization is channel-scoped and grant-based. Being a guild member is NOT sufficient
+  // and the client-supplied server_id is NOT trusted: a member of guild G could otherwise
+  // join channel C in another guild H (or a private channel they lack CONNECT on) simply by
+  // sending server_id=G + channel_id=C. Instead we require a short-lived grant that the
+  // gateway writes at voice:grant:<user_id>:<channel_id> ONLY after the API confirmed this
+  // user may CONNECT to this exact channel. The grant is keyed by the AUTHENTICATED user id
+  // (from the token) so a stolen/forged payload user_id can't redirect it, and its value is
+  // the authoritative guild id (used for room bookkeeping in place of server_id).
+  const channelId = normalizeChannelId(channel_id);
+  if (channelId === null) {
+    send(ws, S2C.ERROR, { code: 4004, message: 'Authorization failed: missing channel id' });
     ws.close(4004, 'Authorization failed');
     return;
   }
-  const isMember = await redis
-    .sIsMember(`auth:user:${authenticatedUserId}:guilds`, requiredGuildId)
-    .catch(() => false);
-  if (!isMember) {
+
+  const grantGuildId = await redis
+    .get(voiceGrantKey(authenticatedUserId, channelId))
+    .catch(() => null);
+  if (!grantGuildId) {
     console.warn(
-      `Voice identify: user ${authenticatedUserId} is not a member of guild ${requiredGuildId} — refusing join`,
+      `Voice identify: no voice grant for user ${authenticatedUserId} on channel ${channelId} — refusing join`,
     );
     send(ws, S2C.ERROR, {
       code: 4004,
-      message: 'Authorization failed: not a member of this server',
+      message: 'Authorization failed: not permitted to join this channel',
     });
     ws.close(4004, 'Authorization failed');
     return;
   }
 
   state.userId = authenticatedUserId;
-  state.guildId = server_id;
+  // Guild is taken from the grant (authoritative), never from the client-supplied server_id.
+  state.guildId = grantGuildId;
   state.sessionId = session_id;
-  state.channelId = channel_id ?? server_id;
+  state.channelId = channelId;
 
   // Join room — creates Router if first peer
   const { room, peer, sendOpts, recvOpts } = await roomManager.joinRoom(
@@ -538,13 +544,20 @@ async function cleanup(
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-// Normalizes the IDENTIFY payload's server_id into the guild id that must be
-// authorized before joining, or null when no guild check applies (DM/group calls,
-// which send an empty/absent server_id). Kept pure so it can be unit-tested.
-export function guildToAuthorize(serverId: unknown): string | null {
-  if (serverId === null || serverId === undefined) return null;
-  const s = String(serverId).trim();
+// Normalizes the IDENTIFY payload's channel_id into the non-empty string used to key the
+// mediasoup room and look up the voice grant, or null when it is absent/blank (which is
+// rejected — every legitimate join targets a specific channel). Kept pure for unit testing.
+export function normalizeChannelId(channelId: unknown): string | null {
+  if (channelId === null || channelId === undefined) return null;
+  const s = String(channelId).trim();
   return s === '' ? null : s;
+}
+
+// Redis key for the gateway-issued voice grant required before a user may join a channel's
+// SFU room. Must match the gateway's key byte-for-byte (see
+// Gateway.SocketHandler.voice_grant_key/2): "voice:grant:<user_id>:<channel_id>".
+export function voiceGrantKey(userId: string, channelId: string): string {
+  return `voice:grant:${userId}:${channelId}`;
 }
 
 function send(ws: WebSocket, op: number, d: unknown): void {

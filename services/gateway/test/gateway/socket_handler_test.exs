@@ -92,4 +92,31 @@ defmodule Gateway.SocketHandlerTest do
     assert entry["self_stream"] == false
     assert entry["member"] == %{"user" => %{"id" => "42"}}
   end
+
+  # --- Voice join grant helpers ---
+  #
+  # These back the channel-scoped voice authorization fix: the grant key must match on both
+  # sides (gateway writes it, voice-server reads it), and the API's authorize response must
+  # be decoded fail-closed. The Redix write and the :httpc call are thin glue exercised by
+  # the live end-to-end check.
+
+  test "voice_grant_key/2 builds the per-user, per-channel grant key" do
+    assert SocketHandler.voice_grant_key(42, "chan-5") == "voice:grant:42:chan-5"
+    assert SocketHandler.voice_grant_key("42", "5") == "voice:grant:42:5"
+  end
+
+  test "authorized?/1 is true only for an explicit authorized:true body" do
+    assert SocketHandler.authorized?(~s({"authorized":true,"reason":"ok"})) == true
+    # charlist bodies (what :httpc returns without body_format: :binary) also work
+    assert SocketHandler.authorized?(~c({"authorized":true})) == true
+  end
+
+  test "authorized?/1 is false for denial, malformed, or empty bodies (fail closed)" do
+    assert SocketHandler.authorized?(~s({"authorized":false,"reason":"missing_connect"})) == false
+    assert SocketHandler.authorized?(~s({"reason":"not_a_member"})) == false
+    assert SocketHandler.authorized?("not json") == false
+    assert SocketHandler.authorized?("") == false
+    assert SocketHandler.authorized?(nil) == false
+    assert SocketHandler.authorized?(%{"authorized" => true}) == false
+  end
 end

@@ -26,6 +26,15 @@ defmodule Gateway.SocketHandler do
   @resume_ttl 180
   @resume_max_events 500
 
+  # Voice join grant: a short-lived Redis ticket the voice-server requires before letting a
+  # user into a channel's SFU room. Minted here once the API confirms the user may CONNECT to
+  # that specific channel. Kept short — it only has to survive VOICE_SERVER_UPDATE -> the
+  # client's IDENTIFY to the SFU (a few seconds); the client has no silent voice reconnect, so
+  # a re-join re-issues it.
+  @voice_grant_ttl 30
+  @api_default_url "http://api:8000"
+  @internal_secret_default "relay-internal-dev-secret"
+
   @impl true
   def init(req, _state) do
     Logger.debug("New WebSocket connection from #{inspect(req.peer)}")
@@ -272,61 +281,35 @@ defmodule Gateway.SocketHandler do
     guild_id = data["guild_id"]
     gid = safe_to_integer(guild_id)
 
-    if gid == nil or gid not in state.guild_ids do
-      {:ok, state}
-    else
-      channel_id = data["channel_id"]
-      self_mute = data["self_mute"] || false
-      self_deaf = data["self_deaf"] || false
-      self_video = data["self_video"] || false
-      self_stream = data["self_stream"] || false
+    channel_id = data["channel_id"]
 
-      voice_state = %{
-        "guild_id" => guild_id,
-        "channel_id" => channel_id,
-        "user_id" => to_string(state.user_id),
-        "session_id" => state.session_id,
-        "deaf" => false,
-        "mute" => false,
-        "self_deaf" => self_deaf,
-        "self_mute" => self_mute,
-        "self_video" => self_video,
-        "self_stream" => self_stream,
-        "suppress" => false,
-        # Include the member's public identity so other clients can render this user in
-        # the voice channel roster without a separate member lookup.
-        "member" => %{"user" => load_user_map(state.user_id)}
-      }
-
-      # Persist the voice state so members who connect LATER learn who is already in each
-      # voice channel (the READY payload reads this back as `voice_states`).
-      persist_voice_state(guild_id, state.user_id, channel_id, self_mute, self_deaf, self_video, self_stream)
-
-      # Fan the voice state out to every connected member of the guild via its GuildServer.
-      case Registry.lookup(Gateway.GuildRegistry, gid) do
-        [{pid, _}] -> GenServer.cast(pid, {:dispatch, "VOICE_STATE_UPDATE", voice_state})
-        [] -> :ok
-      end
-
-      if channel_id do
-        # User is joining/moving to a voice channel - send VOICE_SERVER_UPDATE
-        voice_server = %{
-          "op" => Opcodes.dispatch(),
-          "d" => %{
-            "token" => UUID.uuid4(),
-            "guild_id" => guild_id,
-            # LAN-reachable voice-server host:port advertised to clients (defaults to the host LAN IP)
-            "endpoint" => System.get_env("VOICE_PUBLIC_ENDPOINT") || "localhost:4001"
-          },
-          "s" => state.sequence + 1,
-          "t" => "VOICE_SERVER_UPDATE"
-        }
-
-        {[{:text, Jason.encode!(voice_server)}], %{state | sequence: state.sequence + 1}}
-      else
-        # User is leaving voice
+    cond do
+      gid == nil or gid not in state.guild_ids ->
         {:ok, state}
-      end
+
+      # Joining a voice channel (channel_id present) requires CONNECT on THAT specific
+      # channel — guild membership alone is not enough. The gateway can't map channel->guild
+      # or compute channel permissions itself, so it asks the API, which verifies the channel
+      # really belongs to this guild and that the user may VIEW_CHANNEL + CONNECT. Only then
+      # do we mint the short-lived Redis grant the voice-server requires. Without this a guild
+      # member could join a private voice channel, or a channel in another guild, by sending a
+      # channel_id from that other guild. A leave (channel_id == nil) needs no authorization.
+      channel_id != nil and not authorize_voice_join(state.user_id, guild_id, channel_id) ->
+        Logger.warning(
+          "Voice join denied: user #{state.user_id} lacks CONNECT on channel #{channel_id} " <>
+            "(guild #{guild_id})"
+        )
+
+        {:ok, state}
+
+      true ->
+        if channel_id != nil do
+          # Authorized above — mint the grant BEFORE the client is told where the voice
+          # server is, so it exists by the time the client's IDENTIFY reaches the SFU.
+          write_voice_grant(state.user_id, channel_id, gid)
+        end
+
+        handle_voice_state(data, channel_id, gid, guild_id, state)
     end
   end
 
@@ -447,6 +430,64 @@ defmodule Gateway.SocketHandler do
   defp handle_opcode(op, _payload, state) do
     Logger.warning("Unhandled opcode: #{op}")
     {:ok, state}
+  end
+
+  # Applies a VOICE_STATE_UPDATE once the caller has been authorized for the channel (or is
+  # leaving): persists the voice roster entry, fans the update out to the guild, and — on a
+  # join — replies with VOICE_SERVER_UPDATE so the client can reach the SFU. Extracted from
+  # handle_opcode(4) so the authorization/grant logic there stays readable.
+  defp handle_voice_state(data, channel_id, gid, guild_id, state) do
+    self_mute = data["self_mute"] || false
+    self_deaf = data["self_deaf"] || false
+    self_video = data["self_video"] || false
+    self_stream = data["self_stream"] || false
+
+    voice_state = %{
+      "guild_id" => guild_id,
+      "channel_id" => channel_id,
+      "user_id" => to_string(state.user_id),
+      "session_id" => state.session_id,
+      "deaf" => false,
+      "mute" => false,
+      "self_deaf" => self_deaf,
+      "self_mute" => self_mute,
+      "self_video" => self_video,
+      "self_stream" => self_stream,
+      "suppress" => false,
+      # Include the member's public identity so other clients can render this user in
+      # the voice channel roster without a separate member lookup.
+      "member" => %{"user" => load_user_map(state.user_id)}
+    }
+
+    # Persist the voice state so members who connect LATER learn who is already in each
+    # voice channel (the READY payload reads this back as `voice_states`).
+    persist_voice_state(guild_id, state.user_id, channel_id, self_mute, self_deaf, self_video, self_stream)
+
+    # Fan the voice state out to every connected member of the guild via its GuildServer.
+    case Registry.lookup(Gateway.GuildRegistry, gid) do
+      [{pid, _}] -> GenServer.cast(pid, {:dispatch, "VOICE_STATE_UPDATE", voice_state})
+      [] -> :ok
+    end
+
+    if channel_id do
+      # User is joining/moving to a voice channel - send VOICE_SERVER_UPDATE
+      voice_server = %{
+        "op" => Opcodes.dispatch(),
+        "d" => %{
+          "token" => UUID.uuid4(),
+          "guild_id" => guild_id,
+          # LAN-reachable voice-server host:port advertised to clients (defaults to the host LAN IP)
+          "endpoint" => System.get_env("VOICE_PUBLIC_ENDPOINT") || "localhost:4001"
+        },
+        "s" => state.sequence + 1,
+        "t" => "VOICE_SERVER_UPDATE"
+      }
+
+      {[{:text, Jason.encode!(voice_server)}], %{state | sequence: state.sequence + 1}}
+    else
+      # User is leaving voice
+      {:ok, state}
+    end
   end
 
   # --- Identify Handler ---
@@ -721,6 +762,81 @@ defmodule Gateway.SocketHandler do
       {:error, _} -> []
     end
   end
+
+  # --- Voice Join Authorization ---
+
+  # Redis key for the per-(user, channel) voice grant the voice-server checks on IDENTIFY.
+  # user_id/channel_id are used verbatim (as strings) so the key matches on both sides: the
+  # gateway writes with the authenticated user id + the channel_id the client sent here, and
+  # the voice-server reads with the token's user id + the channel_id the client sends it.
+  @doc false
+  @spec voice_grant_key(String.t() | integer(), String.t() | integer()) :: String.t()
+  def voice_grant_key(user_id, channel_id), do: "voice:grant:#{user_id}:#{channel_id}"
+
+  # Decodes the API's /internal/voice/authorize response body into a boolean. Anything that
+  # is not an explicit {"authorized": true} is treated as "not authorized" (fail closed).
+  @doc false
+  @spec authorized?(binary() | charlist() | term()) :: boolean()
+  def authorized?(body) when is_list(body), do: authorized?(List.to_string(body))
+
+  def authorized?(body) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, %{"authorized" => true}} -> true
+      _ -> false
+    end
+  end
+
+  def authorized?(_), do: false
+
+  # Ask the API whether `user_id` may CONNECT to `channel_id` (which must belong to the guild
+  # the client claimed). Returns false on any error, timeout, or non-200 — the join is denied
+  # rather than allowed if the check can't be completed (fail closed). guild_id/channel_id are
+  # the raw client-supplied values; the API resolves the channel's real guild and rejects a
+  # mismatch, so a spoofed guild_id here cannot widen access.
+  @spec authorize_voice_join(integer(), String.t() | integer() | nil, String.t() | integer() | nil) ::
+          boolean()
+  defp authorize_voice_join(user_id, guild_id, channel_id) do
+    with cid when is_integer(cid) <- safe_to_integer(channel_id),
+         gid when is_integer(gid) <- safe_to_integer(guild_id) do
+      url = String.to_charlist(api_url() <> "/internal/voice/authorize")
+      body = Jason.encode!(%{"user_id" => user_id, "guild_id" => gid, "channel_id" => cid})
+      headers = [{~c"x-internal-secret", String.to_charlist(internal_secret())}]
+      request = {url, headers, ~c"application/json", body}
+      http_opts = [timeout: 3000, connect_timeout: 2000]
+
+      case :httpc.request(:post, request, http_opts, body_format: :binary) do
+        {:ok, {{_http, 200, _reason}, _resp_headers, resp_body}} ->
+          authorized?(resp_body)
+
+        other ->
+          Logger.warning("Voice authorize request failed: #{inspect(other)}")
+          false
+      end
+    else
+      _ -> false
+    end
+  end
+
+  # Writes the short-lived voice grant so the voice-server can confirm this join was authorized.
+  # Value is the authoritative guild id (the voice-server uses it instead of trusting the
+  # client-supplied server_id). Best-effort: a Redis failure here just means the SFU will
+  # refuse the join, which is the safe direction.
+  @spec write_voice_grant(integer(), String.t() | integer(), integer()) :: :ok
+  defp write_voice_grant(user_id, channel_id, guild_id) do
+    Redix.command(:redix, [
+      "SET",
+      voice_grant_key(user_id, channel_id),
+      to_string(guild_id),
+      "EX",
+      to_string(@voice_grant_ttl)
+    ])
+
+    :ok
+  end
+
+  defp api_url, do: System.get_env("API_URL") || @api_default_url
+
+  defp internal_secret, do: System.get_env("INTERNAL_SERVICE_SECRET") || @internal_secret_default
 
   # Loads a minimal public user map (id/username/avatar/...) from the Redis cache the
   # API populates at login (auth:user:{id}:data). Used to enrich VOICE_STATE_UPDATE so

@@ -28,6 +28,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if request.url.path == "/api/v10/health":
             return await call_next(request)
 
+        # Skip internal, service-to-service endpoints (authenticated by a shared
+        # secret, not a user token) — they must not be throttled per client host.
+        if request.url.path.startswith("/internal/"):
+            return await call_next(request)
+
         # Get user ID from auth header (if present)
         auth = request.headers.get("Authorization", "")
         token = auth.replace("Bearer ", "") if auth.startswith("Bearer ") else None

@@ -8,6 +8,7 @@ from app.config import settings as app_settings
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.routers import auth, users, messages, guilds, channels, reactions, dms, relationships, roles, invites, moderation, audit_log, threads, notification_settings, search, emojis, mfa, webhooks, automod, scheduled_events
 from app.routers import settings as settings_router
+from app.routers import internal as internal_router
 from app.db.connection import get_db, get_redis
 from app.grpc_client import get_channel, close_channel
 
@@ -111,6 +112,7 @@ app.include_router(webhooks.router)
 app.include_router(automod.router)
 app.include_router(scheduled_events.router)
 app.include_router(guilds.discovery_router)
+app.include_router(internal_router.router)
 
 
 @app.get("/api/v10/health")

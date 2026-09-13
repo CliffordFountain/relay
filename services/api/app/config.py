@@ -19,6 +19,13 @@ class Settings(BaseSettings):
     token_ttl_seconds: int = 604800  # 7 days
     cors_origins: str = "http://localhost:5173"
 
+    # Shared secret authenticating service-to-service calls to the /internal/* API
+    # (currently the gateway's voice-join authorization check). The default is a
+    # dev-only value; set INTERNAL_SERVICE_SECRET to a strong random string for any
+    # real deployment (see .env.example / docs/DEPLOYMENT.md). Must match the value
+    # the gateway is given.
+    internal_service_secret: str = "relay-internal-dev-secret"
+
     # S3 / MinIO settings for file uploads
     s3_endpoint: str = "http://minio:9000"
     s3_bucket: str = "relay-attachments"
