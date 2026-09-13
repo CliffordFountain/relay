@@ -284,7 +284,13 @@ services:
       ANNOUNCED_IP: "${ANNOUNCED_IP:-}"
     ports:
       - "4001:4001"
+      # WebRTC media. mediasoup advertises both UDP and TCP ICE candidates on this range;
+      # publish BOTH so ICE can fall back to TCP when UDP can't traverse (common with Docker
+      # Desktop's UDP port-forwarding on Windows/macOS, or a firewall that drops UDP). Without
+      # the TCP mapping, a client that can't get UDP through gets no media at all (blank video,
+      # no audio) even though signaling/presence work over the separate WebSocket path.
       - "40000-40100:40000-40100/udp"
+      - "40000-40100:40000-40100/tcp"
     volumes:
       - ./services/voice-server:/app
       - voice_server_node_modules:/app/node_modules
