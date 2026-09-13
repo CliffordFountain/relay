@@ -86,8 +86,9 @@ docker compose up
 
 Then open **`https://localhost:5173`**. Local HTTPS uses a self-signed certificate, so your
 browser shows a one-time "your connection is not private" warning — click *Advanced → proceed*
-and you're through. Want to change a default (ports, keys, the GIPHY integration)? Copy
-`.env.example` to `.env` first, then edit it; `docker-compose.yml` lists every service and port.
+and you're through. Want to change a default (credentials, the GIPHY key, HTTPS, SMTP, backups)?
+Copy `.env.example` to `.env` first, then edit it — every knob it lists is read by
+`docker-compose.yml`. (Ports and internal service URLs are fixed in `docker-compose.yml` itself.)
 
 ### Build the desktop app
 
@@ -118,6 +119,10 @@ comes with a small demo community ("Relay HQ") so there's something to poke at r
 |---|---|
 | ![Create a server](docs/screenshots/create-server.png) | ![Settings](docs/screenshots/settings.png) |
 
+**Guides:** [Using Relay](docs/USER-GUIDE.md) — a tour of servers, channels, voice, roles, and
+moderation · [Deploying & configuring](docs/DEPLOYMENT.md) — env settings, backups, and what to
+lock down before you put it on the internet.
+
 ## Default accounts
 
 A fresh database is seeded (via `infrastructure/seed.sql`) with three ready-to-go development
@@ -131,10 +136,12 @@ accounts, all sharing the password **`RelayDev123!`**:
 
 Log in with the username (or its `@relay.local` email) and the password above.
 
-The seed only runs the first time the Postgres volume is created. If you already have a volume,
-reset it with `docker compose down -v` before starting again (this wipes all local data). These
-are **local development credentials** — change or remove them in `infrastructure/seed.sql`
-before you put Relay in front of anyone else.
+The seed only runs the first time the Postgres volume is created. To fully reset, run
+`docker compose down -v && rm -rf backups/*` before starting again (this wipes all local
+data — the `rm` matters because the hourly backup sidecar keeps snapshots in `./backups`
+on the host, and a fresh start restores the newest one automatically). These are **local
+development credentials** — change or remove them in `infrastructure/seed.sql` before you
+put Relay in front of anyone else.
 
 ## How it's put together
 

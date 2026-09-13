@@ -2,7 +2,7 @@ name: relay
 
 x-common-env: &common-env
   REDIS_URL: redis://redis:6379/0
-  DATABASE_URL: postgresql+asyncpg://relay:relay@postgres:5432/relay
+  DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-relay}:${POSTGRES_PASSWORD:-relay}@postgres:5432/${POSTGRES_DB:-relay}
 
 services:
   # ─────── Infrastructure ───────
@@ -12,9 +12,11 @@ services:
     container_name: relay-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: relay
-      POSTGRES_PASSWORD: relay
-      POSTGRES_DB: relay
+      # Default dev credentials. Override POSTGRES_USER/PASSWORD/DB in .env for a real
+      # deployment — DATABASE_URL (above) and the backup sidecar read the same values.
+      POSTGRES_USER: "${POSTGRES_USER:-relay}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-relay}"
+      POSTGRES_DB: "${POSTGRES_DB:-relay}"
       # Seed the demo accounts (owner/player1/player2) on a fresh, backup-less database.
       # Set to false for a real deployment so no shared-password accounts are created.
       RELAY_SEED_DEMO: "${RELAY_SEED_DEMO:-true}"
@@ -48,11 +50,11 @@ services:
     environment:
       PGHOST: postgres
       PGPORT: "5432"
-      PGUSER: relay
-      PGPASSWORD: relay
-      PGDATABASE: relay
-      BACKUP_INTERVAL: "3600"   # seconds between snapshots (hourly)
-      BACKUP_KEEP: "48"         # snapshots to retain (~2 days of hourly backups)
+      PGUSER: "${POSTGRES_USER:-relay}"
+      PGPASSWORD: "${POSTGRES_PASSWORD:-relay}"
+      PGDATABASE: "${POSTGRES_DB:-relay}"
+      BACKUP_INTERVAL: "${BACKUP_INTERVAL:-3600}"   # seconds between snapshots (hourly)
+      BACKUP_KEEP: "${BACKUP_KEEP:-48}"             # snapshots to retain (~2 days of hourly backups)
     volumes:
       - ./infrastructure/backup.sh:/backup.sh:ro
       - ./backups:/backups
@@ -109,10 +111,17 @@ services:
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      # MinIO root credentials. Also used by the API (S3_ACCESS_KEY/S3_SECRET_KEY) and the
+      # minio-init bucket bootstrap below, so they must all read the same values. Override
+      # S3_ACCESS_KEY/S3_SECRET_KEY in .env for a real deployment.
+      MINIO_ROOT_USER: "${S3_ACCESS_KEY:-minioadmin}"
+      MINIO_ROOT_PASSWORD: "${S3_SECRET_KEY:-minioadmin}"
     ports:
-      - "9000:9000"
+      # Loopback-only: the browser never talks to MinIO directly — uploads go through the
+      # API and reads are proxied same-origin via the client's /cdn route over the internal
+      # Docker network. Keeping this off 0.0.0.0 avoids exposing the S3 API (and its root
+      # credentials) to the network. Matches every other backing service.
+      - "127.0.0.1:9000:9000"
       - "127.0.0.1:9001:9001"
     volumes:
       - minio_data:/data
@@ -130,7 +139,7 @@ services:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      mc alias set myminio http://minio:9000 ${S3_ACCESS_KEY:-minioadmin} ${S3_SECRET_KEY:-minioadmin};
       mc mb myminio/relay-attachments --ignore-existing;
       mc mb myminio/relay-avatars --ignore-existing;
       mc mb myminio/relay-icons --ignore-existing;
@@ -156,12 +165,11 @@ services:
       ELASTICSEARCH_URL: http://elasticsearch:9200
       S3_ENDPOINT: http://minio:9000
       S3_BUCKET: relay-attachments
-      S3_ACCESS_KEY: minioadmin
-      S3_SECRET_KEY: minioadmin
-      JWT_SECRET: dev-jwt-secret-change-in-production
+      S3_ACCESS_KEY: "${S3_ACCESS_KEY:-minioadmin}"
+      S3_SECRET_KEY: "${S3_SECRET_KEY:-minioadmin}"
       GATEWAY_URL: http://gateway:4000
       DATA_SERVICES_URL: data-services:50051
-      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      CORS_ORIGINS: "${CORS_ORIGINS:-http://localhost:5173,https://localhost:5173,http://localhost:3000}"
       PORT: "8000"
       LOG_LEVEL: debug
       # Public origin used to build links in emails (verification, password reset).
@@ -209,10 +217,7 @@ services:
       PORT: "4000"
       # LAN-reachable voice-server endpoint advertised to clients (host LAN IP:signaling port). Override in .env.
       VOICE_PUBLIC_ENDPOINT: "${VOICE_PUBLIC_ENDPOINT:-127.0.0.1:4001}"
-      COOKIE: dev-erlang-cookie-change-in-production
-      NODE_NAME: gateway@gateway
       MIX_ENV: dev
-      SECRET_KEY_BASE: dev-secret-key-base-at-least-64-chars-long-change-in-production-asdf
     ports:
       - "4000:4000"
     volumes:
@@ -233,7 +238,7 @@ services:
     container_name: relay-data-services
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://relay:relay@postgres:5432/relay
+      DATABASE_URL: postgresql://${POSTGRES_USER:-relay}:${POSTGRES_PASSWORD:-relay}@postgres:5432/${POSTGRES_DB:-relay}
       REDIS_URL: redis://redis:6379/0
       GRPC_PORT: "50051"
       RUST_LOG: info
@@ -312,12 +317,13 @@ services:
       CHOKIDAR_USEPOLLING: "true"
       # GIPHY API key for the GIF picker. Free key at developers.giphy.com; set VITE_GIPHY_API_KEY.
       VITE_GIPHY_API_KEY: ${VITE_GIPHY_API_KEY:-}
-      # Optional HTTPS for the Vite dev server. Default is empty (plain HTTP, so
-      # http://localhost and E2E keep working unchanged). Set VITE_HTTPS=true in
-      # .env to serve https://<LAN-IP>:5173 so phones get a secure context and
-      # can be prompted for microphone/camera access (self-signed cert -> a
-      # one-time "proceed anyway" is required on the device).
-      VITE_HTTPS: "${VITE_HTTPS:-}"
+      # HTTPS for the Vite dev server. Defaults to true so the zero-config quickstart
+      # matches what the README, Relay.bat and the desktop app all expect: the client
+      # is reachable at https://localhost:5173 (self-signed cert -> a one-time "proceed
+      # anyway"), which also gives phones on the LAN a secure context so they can be
+      # prompted for microphone/camera access. Set VITE_HTTPS=false in .env for plain
+      # HTTP (e.g. for E2E runs or when a reverse proxy terminates TLS upstream).
+      VITE_HTTPS: "${VITE_HTTPS:-true}"
     ports:
       - "5173:5173"
     volumes:
