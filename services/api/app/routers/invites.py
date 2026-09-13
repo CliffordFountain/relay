@@ -126,6 +126,10 @@ async def get_channel_invites(
     except grpc.RpcError:
         raise HTTPException(status_code=403, detail={"code": 50001, "message": "Missing Access"})
 
+    # Viewing a channel's invites (codes + inviter identity) requires MANAGE_CHANNELS.
+    from app.services.permissions import require_permission, MANAGE_CHANNELS
+    await require_permission(int(guild_id), uid, MANAGE_CHANNELS, channel_id=cid)
+
     # Fetch invites for this channel
     invite_stub = await get_invite_stub()
     try:
@@ -183,6 +187,10 @@ async def create_invite(
             raise HTTPException(status_code=403, detail={"code": 50001, "message": "Missing Access"})
     except grpc.RpcError:
         raise HTTPException(status_code=403, detail={"code": 50001, "message": "Missing Access"})
+
+    # Creating an invite requires CREATE_INSTANT_INVITE.
+    from app.services.permissions import require_permission, CREATE_INSTANT_INVITE
+    await require_permission(int(guild_id), uid, CREATE_INSTANT_INVITE, channel_id=cid)
 
     invite_stub = await get_invite_stub()
     try:

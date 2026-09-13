@@ -75,6 +75,17 @@ async def _get_channel_and_check_access(channel_id: int, user_id: int):
                 status_code=403,
                 detail={"code": 50001, "message": "Missing Access"},
             )
+        # Enforce VIEW_CHANNEL so a private channel (VIEW_CHANNEL denied via overwrite)
+        # is inaccessible even to guild members, matching messages.get_channel_with_access.
+        from app.services.permissions import (
+            compute_channel_permissions, has_permission, VIEW_CHANNEL,
+        )
+        perms = await compute_channel_permissions(guild_id, channel_id, user_id)
+        if not has_permission(perms, VIEW_CHANNEL):
+            raise HTTPException(
+                status_code=403,
+                detail={"code": 50001, "message": "Missing Access"},
+            )
     elif channel.type in (1, 3):
         # DM or Group DM -- check dm_channels membership via gRPC
         try:

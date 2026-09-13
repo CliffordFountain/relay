@@ -153,6 +153,13 @@ async function handleIdentify(
 ): Promise<void> {
   const { server_id, user_id, session_id, token, channel_id } = d;
 
+  // Guard against a second IDENTIFY on an already-identified connection: it would leave the
+  // previous room's transports and heartbeat timer dangling forever. Reject the duplicate.
+  if (state.userId) {
+    send(ws, S2C.ERROR, { code: 4005, message: 'Already identified' });
+    return;
+  }
+
   // Validate token against Redis auth store
   if (!token || typeof token !== 'string') {
     send(ws, S2C.ERROR, { code: 4004, message: 'Authentication failed: no token provided' });
@@ -177,28 +184,32 @@ async function handleIdentify(
     );
   }
 
-  // Authorization: joining a *guild* voice channel requires membership of that guild.
-  // Authenticating who you are (above) is not enough — without this check any logged-in
-  // user could join any server's voice room just by putting its ids in the payload. The
-  // API maintains the authoritative membership set at auth:user:<id>:guilds (the same set
-  // the gateway trusts to scope a user's guild events), kept in sync on join/leave/invite.
-  // DM / group calls carry no guild id (server_id is empty) and are not gated here.
+  // Authorization: a voice join must carry the guild id (server_id) of the channel, and the
+  // caller must be a member of that guild — authenticating identity alone is not enough. An
+  // empty/missing server_id is only ever seen from a client trying to skip this check, so
+  // reject it (every legitimate guild voice join sends it; DM/group voice is not offered
+  // here yet). NOTE: this verifies guild membership, not that channel_id actually belongs to
+  // server_id — full per-channel authorization requires a gateway-issued channel-scoped
+  // grant, tracked as a follow-up. It still stops non-members and the empty-server_id bypass.
   const requiredGuildId = guildToAuthorize(server_id);
-  if (requiredGuildId !== null) {
-    const isMember = await redis
-      .sIsMember(`auth:user:${authenticatedUserId}:guilds`, requiredGuildId)
-      .catch(() => false);
-    if (!isMember) {
-      console.warn(
-        `Voice identify: user ${authenticatedUserId} is not a member of guild ${requiredGuildId} — refusing join`,
-      );
-      send(ws, S2C.ERROR, {
-        code: 4004,
-        message: 'Authorization failed: not a member of this server',
-      });
-      ws.close(4004, 'Authorization failed');
-      return;
-    }
+  if (requiredGuildId === null) {
+    send(ws, S2C.ERROR, { code: 4004, message: 'Authorization failed: missing server id' });
+    ws.close(4004, 'Authorization failed');
+    return;
+  }
+  const isMember = await redis
+    .sIsMember(`auth:user:${authenticatedUserId}:guilds`, requiredGuildId)
+    .catch(() => false);
+  if (!isMember) {
+    console.warn(
+      `Voice identify: user ${authenticatedUserId} is not a member of guild ${requiredGuildId} — refusing join`,
+    );
+    send(ws, S2C.ERROR, {
+      code: 4004,
+      message: 'Authorization failed: not a member of this server',
+    });
+    ws.close(4004, 'Authorization failed');
+    return;
   }
 
   state.userId = authenticatedUserId;

@@ -192,11 +192,31 @@ async def search_guild_messages(
     msg_stub = await get_message_stub()
     user_stub = await get_user_stub()
 
+    # Never return messages from a channel the searcher cannot VIEW_CHANNEL. The ES query
+    # only filters by guild, so a member could otherwise read messages from private channels
+    # they have no access to. Cache the per-channel decision within this request.
+    from app.services.permissions import (
+        compute_channel_permissions, has_permission, VIEW_CHANNEL,
+    )
+    _view_cache: dict[int, bool] = {}
+
+    async def _can_view(cid: int) -> bool:
+        if cid not in _view_cache:
+            try:
+                perms = await compute_channel_permissions(guild_id, cid, int(user_id))
+                _view_cache[cid] = has_permission(perms, VIEW_CHANNEL)
+            except Exception:
+                _view_cache[cid] = False
+        return _view_cache[cid]
+
     messages: list[list] = []
     for hit in result["hits"]["hits"]:
         doc = hit["_source"]
         msg_id = doc["id"]
         ch_id = doc["channel_id"]
+
+        if not await _can_view(int(ch_id)):
+            continue
 
         try:
             msg = await msg_stub.GetMessage(

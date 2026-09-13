@@ -264,72 +264,69 @@ defmodule Gateway.SocketHandler do
     {:ok, state}
   end
 
-  defp handle_opcode(4, %{"d" => data}, state) do
-    # Voice State Update
+  defp handle_opcode(4, %{"d" => data}, %{identified: true} = state) do
+    # Voice State Update. Requires an identified session (head guard), and the caller must be
+    # a member of the target guild: otherwise an authenticated client could spoof voice
+    # presence in — or probe — any guild by sending an arbitrary guild_id. Parse defensively
+    # (a bad guild_id must not crash the socket) and ignore non-member / malformed guilds.
     guild_id = data["guild_id"]
-    channel_id = data["channel_id"]
-    self_mute = data["self_mute"] || false
-    self_deaf = data["self_deaf"] || false
-    self_video = data["self_video"] || false
-    self_stream = data["self_stream"] || false
+    gid = safe_to_integer(guild_id)
 
-    voice_state = %{
-      "guild_id" => guild_id,
-      "channel_id" => channel_id,
-      "user_id" => to_string(state.user_id),
-      "session_id" => state.session_id,
-      "deaf" => false,
-      "mute" => false,
-      "self_deaf" => self_deaf,
-      "self_mute" => self_mute,
-      "self_video" => self_video,
-      "self_stream" => self_stream,
-      "suppress" => false,
-      # Include the member's public identity so other clients can render this user in
-      # the voice channel roster without a separate member lookup.
-      "member" => %{"user" => load_user_map(state.user_id)}
-    }
+    if gid == nil or gid not in state.guild_ids do
+      {:ok, state}
+    else
+      channel_id = data["channel_id"]
+      self_mute = data["self_mute"] || false
+      self_deaf = data["self_deaf"] || false
+      self_video = data["self_video"] || false
+      self_stream = data["self_stream"] || false
 
-    # Persist the voice state so members who connect LATER learn who is already in each
-    # voice channel (the READY payload reads this back as `voice_states`). Without this,
-    # a live-only broadcast is invisible to anyone not connected at the moment it fires.
-    persist_voice_state(guild_id, state.user_id, channel_id, self_mute, self_deaf, self_video, self_stream)
-
-    # Fan the voice state out to every connected member of the guild. The cast targets
-    # the per-guild GuildServer (registered under guild_id in GuildRegistry), which
-    # forwards {:dispatch, ...} to every subscribed session; each session then applies
-    # its own intent filter (VOICE_STATE_UPDATE requires @intent_guild_voice_states).
-    # A malformed or missing guild_id from the client must not crash the socket process,
-    # so parse it defensively instead of String.to_integer/1 (which raises).
-    case safe_to_integer(guild_id) do
-      nil ->
-        :ok
-
-      gid ->
-        case Registry.lookup(Gateway.GuildRegistry, gid) do
-          [{pid, _}] -> GenServer.cast(pid, {:dispatch, "VOICE_STATE_UPDATE", voice_state})
-          [] -> :ok
-        end
-    end
-
-    if channel_id do
-      # User is joining/moving to a voice channel - send VOICE_SERVER_UPDATE
-      voice_server = %{
-        "op" => Opcodes.dispatch(),
-        "d" => %{
-          "token" => UUID.uuid4(),
-          "guild_id" => guild_id,
-          # LAN-reachable voice-server host:port advertised to clients (defaults to the host LAN IP)
-          "endpoint" => System.get_env("VOICE_PUBLIC_ENDPOINT") || "localhost:4001"
-        },
-        "s" => state.sequence + 1,
-        "t" => "VOICE_SERVER_UPDATE"
+      voice_state = %{
+        "guild_id" => guild_id,
+        "channel_id" => channel_id,
+        "user_id" => to_string(state.user_id),
+        "session_id" => state.session_id,
+        "deaf" => false,
+        "mute" => false,
+        "self_deaf" => self_deaf,
+        "self_mute" => self_mute,
+        "self_video" => self_video,
+        "self_stream" => self_stream,
+        "suppress" => false,
+        # Include the member's public identity so other clients can render this user in
+        # the voice channel roster without a separate member lookup.
+        "member" => %{"user" => load_user_map(state.user_id)}
       }
 
-      {[{:text, Jason.encode!(voice_server)}], %{state | sequence: state.sequence + 1}}
-    else
-      # User is leaving voice
-      {:ok, state}
+      # Persist the voice state so members who connect LATER learn who is already in each
+      # voice channel (the READY payload reads this back as `voice_states`).
+      persist_voice_state(guild_id, state.user_id, channel_id, self_mute, self_deaf, self_video, self_stream)
+
+      # Fan the voice state out to every connected member of the guild via its GuildServer.
+      case Registry.lookup(Gateway.GuildRegistry, gid) do
+        [{pid, _}] -> GenServer.cast(pid, {:dispatch, "VOICE_STATE_UPDATE", voice_state})
+        [] -> :ok
+      end
+
+      if channel_id do
+        # User is joining/moving to a voice channel - send VOICE_SERVER_UPDATE
+        voice_server = %{
+          "op" => Opcodes.dispatch(),
+          "d" => %{
+            "token" => UUID.uuid4(),
+            "guild_id" => guild_id,
+            # LAN-reachable voice-server host:port advertised to clients (defaults to the host LAN IP)
+            "endpoint" => System.get_env("VOICE_PUBLIC_ENDPOINT") || "localhost:4001"
+          },
+          "s" => state.sequence + 1,
+          "t" => "VOICE_SERVER_UPDATE"
+        }
+
+        {[{:text, Jason.encode!(voice_server)}], %{state | sequence: state.sequence + 1}}
+      else
+        # User is leaving voice
+        {:ok, state}
+      end
     end
   end
 
@@ -337,7 +334,13 @@ defmodule Gateway.SocketHandler do
     # Resume - validate session and replay missed events
     token = data["token"]
     session_id = data["session_id"]
-    req_seq = data["seq"] || 0
+    # A non-integer "seq" from the client must not crash the socket (it is later used in
+    # integer arithmetic when building the replay range).
+    req_seq =
+      case data["seq"] do
+        n when is_integer(n) and n >= 0 -> n
+        _ -> 0
+      end
 
     Logger.info("Resume requested for session #{session_id} from seq #{req_seq}")
 
@@ -450,7 +453,13 @@ defmodule Gateway.SocketHandler do
 
   defp handle_identify(data, state) do
     token = data["token"]
-    intents = data["intents"] || 0
+    # A non-integer "intents" from the client must not crash the socket (it is later used
+    # in bitwise AND for intent filtering).
+    intents =
+      case data["intents"] do
+        n when is_integer(n) and n >= 0 -> n
+        _ -> 0
+      end
 
     case validate_token(token) do
       {:ok, user_id} ->

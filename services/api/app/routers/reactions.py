@@ -55,6 +55,11 @@ async def add_reaction(
     channel = await get_channel_with_access(channel_id, int(user_id))
     guild_id = channel.guild_id
 
+    # Adding a reaction in a guild channel requires ADD_REACTIONS (DMs have no permissions).
+    if guild_id:
+        from app.services.permissions import require_permission, ADD_REACTIONS
+        await require_permission(int(guild_id), int(user_id), ADD_REACTIONS, channel_id=channel_id)
+
     emoji_name, emoji_id = parse_emoji(emoji)
 
     reaction_stub = await get_reaction_stub()
