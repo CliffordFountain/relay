@@ -9,7 +9,7 @@ export interface AboutModalProps {
 
 // No shared version constant exists yet in the client - UserSettings hardcodes
 // the same string for its build info footer, so this mirrors that value.
-const RELAY_VERSION = 'Relay v0.1.0';
+const RELAY_VERSION = 'Relay v0.2.0';
 
 export const AboutModal = ({ onClose }: AboutModalProps) => {
   const navigate = useNavigate();

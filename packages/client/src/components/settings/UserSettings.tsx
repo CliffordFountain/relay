@@ -227,7 +227,7 @@ export const UserSettings = ({ onClose }: UserSettingsProps) => {
               Log Out
             </button>
             <div className={styles.buildInfo}>
-              Relay v0.1.0
+              Relay v0.2.0
             </div>
           </div>
         </nav>
