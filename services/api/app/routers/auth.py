@@ -76,6 +76,30 @@ def validate_date_of_birth(dob_str: str) -> date:
     return dob
 
 
+# A tiny set of the most trivially-guessed passwords. Not a full breach list, but it blocks
+# the worst offenders cheaply; the identifier checks below stop the other common weak choice.
+_COMMON_PASSWORDS = {
+    "password", "password1", "12345678", "123456789", "1234567890", "qwerty123",
+    "11111111", "00000000", "iloveyou", "letmein1", "football", "baseball",
+    "abcdefgh", "relay123", "changeme", "welcome1",
+}
+
+
+def _validate_password(password: str, username: str, email: str) -> str | None:
+    """Return an error message for a weak password, or None if acceptable."""
+    if not password or len(password) < 8:
+        return "Password must be at least 8 characters"
+    lowered = password.lower()
+    if lowered in _COMMON_PASSWORDS:
+        return "Password is too common — choose something harder to guess"
+    if username and len(username) >= 3 and username.lower() in lowered:
+        return "Password must not contain your username"
+    local = (email.split("@")[0] if email else "").lower()
+    if local and len(local) >= 3 and local in lowered:
+        return "Password must not contain your email address"
+    return None
+
+
 @router.post("/register", status_code=201, response_model=TokenResponse)
 async def register(body: UserRegisterRequest):
     if not body.consent:
@@ -97,6 +121,14 @@ async def register(body: UserRegisterRequest):
             "code": 50035,
             "message": "Invalid Form Body",
             "errors": {"email": {"_errors": [{"code": "EMAIL_INVALID", "message": "Not a valid email address"}]}}
+        })
+
+    pw_error = _validate_password(body.password, body.username, body.email)
+    if pw_error:
+        raise HTTPException(status_code=400, detail={
+            "code": 50035,
+            "message": "Invalid Form Body",
+            "errors": {"password": {"_errors": [{"code": "PASSWORD_INVALID", "message": pw_error}]}}
         })
 
     dob = validate_date_of_birth(body.date_of_birth)

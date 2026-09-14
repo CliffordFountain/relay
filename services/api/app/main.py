@@ -24,13 +24,35 @@ async def lifespan(app: FastAPI):  # type: ignore[type-arg]
     await close_channel()
 
 
+# Serve the interactive API docs / OpenAPI schema only in development — in production they
+# hand an attacker the full authenticated attack surface (and the /internal route) for free.
+_docs_url = "/api/v10/docs" if app_settings.is_development else None
+_openapi_url = "/api/v10/openapi.json" if app_settings.is_development else None
+
 app = FastAPI(
     lifespan=lifespan,
     title="Relay API",
     version="0.0.1",
-    docs_url="/api/v10/docs",
-    openapi_url="/api/v10/openapi.json",
+    docs_url=_docs_url,
+    redoc_url=None,
+    openapi_url=_openapi_url,
 )
+
+
+# Security response headers on every API response. The API only ever returns JSON, so a
+# strict CSP and nosniff are safe here and add defense-in-depth (clickjacking, MIME sniffing
+# of any error/text body). Also override uvicorn's Server banner so we don't advertise the
+# framework/version.
+@app.middleware("http")
+async def security_headers(request: Request, call_next):  # type: ignore[no-untyped-def]
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+    response.headers["Cross-Origin-Resource-Policy"] = "same-site"
+    response.headers["Server"] = "relay"
+    return response
 
 
 @app.exception_handler(HTTPException)

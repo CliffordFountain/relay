@@ -27,10 +27,25 @@ from app.services.permissions import (
     require_permission,
     MANAGE_GUILD,
     MANAGE_CHANNELS,
+    compute_channel_permissions,
+    has_permission,
+    VIEW_CHANNEL,
 )
 from app.routers.audit_log import create_audit_log
 
 router = APIRouter(prefix="/api/v10/guilds", tags=["guilds"])
+
+
+async def _viewable_channels(gid: int, uid: int, channels):
+    """Return only the channels the caller can VIEW_CHANNEL, so the names/topics of private
+    (VIEW_CHANNEL-denied) channels are not leaked to members through guild/channel listings.
+    Owner/ADMINISTRATOR see everything (handled by compute_channel_permissions)."""
+    out = []
+    for ch in channels:
+        perms = await compute_channel_permissions(gid, ch.id, uid)
+        if has_permission(perms, VIEW_CHANNEL):
+            out.append(ch)
+    return out
 
 # Default @everyone permissions:
 DEFAULT_EVERYONE_PERMISSIONS = (
@@ -265,7 +280,8 @@ async def get_guild(
     guild_resp = _guild_response_from_proto(guild, member_count=member_count)
 
     roles = [_role_response_from_proto(r) for r in (guild.roles or [])]
-    channels = [_channel_response_from_proto(ch) for ch in (guild.channels or [])]
+    viewable = await _viewable_channels(gid, uid, guild.channels or [])
+    channels = [_channel_response_from_proto(ch) for ch in viewable]
 
     return {
         **guild_resp.model_dump(),
@@ -531,7 +547,8 @@ async def get_guild_channels(
     except grpc.RpcError as exc:
         handle_grpc_error(exc, resource="channel")
 
-    return [_channel_response_from_proto(ch).model_dump() for ch in resp.channels]
+    visible = await _viewable_channels(gid, uid, resp.channels)
+    return [_channel_response_from_proto(ch).model_dump() for ch in visible]
 
 
 # ---------- POST /guilds/{guild_id}/channels ----------

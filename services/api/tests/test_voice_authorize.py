@@ -185,3 +185,16 @@ async def test_rejected_with_wrong_secret(client: AsyncClient):
     with p1, p2, p3:
         resp = await _post(client, secret="nope")
     assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_fails_closed_in_production_with_default_secret(client: AsyncClient, monkeypatch):
+    """H4: outside development, the shipped dev-default secret must be refused even when it is
+    presented correctly — so a prod deploy that forgot to set a strong secret exposes nothing."""
+    from app.config import DEV_DEFAULT_INTERNAL_SECRET
+    monkeypatch.setattr(settings, "environment", "production")
+    monkeypatch.setattr(settings, "internal_service_secret", DEV_DEFAULT_INTERNAL_SECRET)
+    p1, p2, p3 = _patches(_channel_stub(), _member_stub(), VIEW_CHANNEL | CONNECT)
+    with p1, p2, p3:
+        resp = await _post(client, secret=DEV_DEFAULT_INTERNAL_SECRET)
+    assert resp.status_code == 403

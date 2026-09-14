@@ -1,3 +1,4 @@
+import hmac
 import json
 import secrets
 from typing import Any, Optional
@@ -500,7 +501,9 @@ async def execute_webhook(
     except grpc.RpcError:
         raise HTTPException(status_code=404, detail={"code": 10015, "message": "Unknown Webhook"})
 
-    if wh.token != token:
+    # Constant-time compare — the token is the only credential for posting as this webhook,
+    # so a byte-by-byte timing side-channel must not leak it.
+    if not hmac.compare_digest(str(wh.token), str(token)):
         raise HTTPException(status_code=404, detail={"code": 10015, "message": "Unknown Webhook"})
 
     # A webhook message requires at least one of: content, embeds, components, files

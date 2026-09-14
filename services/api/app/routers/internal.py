@@ -14,7 +14,7 @@ import grpc
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
-from app.config import settings
+from app.config import DEV_DEFAULT_INTERNAL_SECRET, settings
 from app.grpc_client import get_channel_stub, get_member_stub
 from app.grpc_stubs import relay_pb2 as pb2
 from app.services.permissions import (
@@ -42,8 +42,20 @@ class VoiceAuthorizeResponse(BaseModel):
 
 
 def _require_internal_secret(provided: str | None) -> None:
-    """Reject the request unless the shared internal secret matches (constant-time)."""
+    """Reject the request unless the shared internal secret matches (constant-time).
+
+    Fails CLOSED outside development if the secret is missing or still the shipped
+    dev-default: the default is published in the source tree, and this router is mounted
+    on the same app served on the public API port, so accepting it would make /internal an
+    oracle for anyone on the network. A production deploy MUST set a strong
+    INTERNAL_SERVICE_SECRET; until it does, every /internal call is refused.
+    """
     expected = settings.internal_service_secret
+    if not settings.is_development and (not expected or expected == DEV_DEFAULT_INTERNAL_SECRET):
+        raise HTTPException(
+            status_code=403,
+            detail={"code": 40001, "message": "Internal endpoint disabled: set a strong INTERNAL_SERVICE_SECRET"},
+        )
     if not provided or not hmac.compare_digest(provided, expected):
         raise HTTPException(
             status_code=403,

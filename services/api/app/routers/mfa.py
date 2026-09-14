@@ -1,9 +1,11 @@
+import hashlib
 import json
 import secrets
 
 import grpc
 import pyotp
 from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
 
 from app.models.user import (
     MfaEnableResponse,
@@ -22,6 +24,31 @@ from app.config import settings
 
 router = APIRouter(prefix="/api/v10/users", tags=["mfa"])
 mfa_router = APIRouter(prefix="/api/v10/auth/mfa", tags=["mfa"])
+
+
+class MfaDisableRequest(BaseModel):
+    # A current TOTP code OR an unused backup code — proves possession of the second
+    # factor so a stolen session token alone can't turn MFA off.
+    code: str
+
+
+def _hash_backup_code(code: str) -> str:
+    """Backup codes are stored hashed so a Redis dump doesn't reveal usable codes."""
+    return hashlib.sha256(code.strip().encode()).hexdigest()
+
+
+async def _consume_backup_code(redis, user_id: str, code: str) -> bool:
+    """Return True and burn the code if it matches an unused (hashed) backup code."""
+    raw = await redis.get(f"mfa:backup:{user_id}")
+    if not raw:
+        return False
+    stored = json.loads(raw.decode() if isinstance(raw, bytes) else raw)
+    h = _hash_backup_code(code)
+    if h in stored:
+        stored.remove(h)
+        await redis.set(f"mfa:backup:{user_id}", json.dumps(stored))
+        return True
+    return False
 
 
 @router.post("/@me/mfa/totp/enable", response_model=MfaEnableResponse)
@@ -82,26 +109,38 @@ async def verify_totp(
     except grpc.RpcError as exc:
         handle_grpc_error(exc, resource="user")
 
-    # Generate 10 backup codes (8-char hex each)
+    # Generate 10 backup codes (8-char hex each). Show them once (plaintext) but store only
+    # their hashes, so a Redis/DB compromise doesn't hand an attacker working backup codes.
     backup_codes = [secrets.token_hex(4) for _ in range(10)]
-
-    # Store backup codes in Redis (hashed in production, simplified here)
     redis = await get_redis()
-    await redis.set(f"mfa:backup:{user_id}", json.dumps(backup_codes))
+    await redis.set(f"mfa:backup:{user_id}", json.dumps([_hash_backup_code(c) for c in backup_codes]))
 
     return MfaVerifyResponse(backup_codes=backup_codes)
 
 
 @router.post("/@me/mfa/totp/disable", status_code=204)
-async def disable_totp(user_id: str = Depends(get_current_user_id)):
-    """Disable MFA for the user."""
+async def disable_totp(body: MfaDisableRequest, user_id: str = Depends(get_current_user_id)):
+    """Disable MFA — requires a current TOTP or backup code (re-auth of the second factor),
+    so a stolen session token alone cannot defeat MFA."""
     user_stub = await get_user_stub()
+    try:
+        mfa_resp = await user_stub.GetMfaSecret(pb2.GetMfaSecretRequest(user_id=int(user_id)))
+    except grpc.RpcError as exc:
+        handle_grpc_error(exc, resource="user")
+
+    if not mfa_resp.enabled or not mfa_resp.secret:
+        raise HTTPException(status_code=400, detail={"code": 60002, "message": "MFA is not enabled"})
+
+    redis = await get_redis()
+    verified = pyotp.TOTP(mfa_resp.secret).verify(body.code) or await _consume_backup_code(redis, user_id, body.code)
+    if not verified:
+        raise HTTPException(status_code=400, detail={"code": 60008, "message": "Invalid two-factor code"})
+
     try:
         await user_stub.DisableMfa(pb2.DisableMfaRequest(user_id=int(user_id)))
     except grpc.RpcError as exc:
         handle_grpc_error(exc, resource="user")
 
-    redis = await get_redis()
     await redis.delete(f"mfa:backup:{user_id}")
 
 
@@ -157,24 +196,10 @@ async def verify_mfa_login(body: MfaTotpRequest):
             detail={"code": 60008, "message": "Invalid two-factor code"},
         )
 
-    # Verify the TOTP code
+    # Verify the TOTP code, or fall back to a one-time (hashed) backup code.
     totp = pyotp.TOTP(mfa_resp.secret)
     if not totp.verify(body.code):
-        # Also check backup codes
-        backup_raw = await redis.get(f"mfa:backup:{user_id_str}")
-        if backup_raw:
-            backup_codes = json.loads(
-                backup_raw.decode() if isinstance(backup_raw, bytes) else backup_raw
-            )
-            if body.code in backup_codes:
-                # Consume the backup code
-                backup_codes.remove(body.code)
-                await redis.set(
-                    f"mfa:backup:{user_id_str}", json.dumps(backup_codes)
-                )
-            else:
-                raise _invalid_code()
-        else:
+        if not await _consume_backup_code(redis, user_id_str, body.code):
             raise _invalid_code()
 
     # Success -- clear the attempt counter and consume the one-time ticket.

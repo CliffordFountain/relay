@@ -284,27 +284,90 @@ async def _enrich_message_authors(messages: list[MessageResponse]) -> None:
                 m.referenced_message.author.avatar = u.avatar
 
 
+# Max size for a single uploaded attachment.
+MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024  # 25 MiB
+
+# Content types a browser may render INLINE without executing script. Anything else
+# (notably text/html and image/svg+xml, which can run JS on our origin) is stored and
+# served as an opaque download, never as the attacker-declared type.
+_INLINE_SAFE_TYPES = {
+    "image/png", "image/jpeg", "image/gif", "image/webp", "image/avif",
+    "video/mp4", "video/webm", "audio/mpeg", "audio/ogg", "audio/wav", "application/pdf",
+}
+
+
+def _sniff_content_type(b: bytes) -> str | None:
+    """Best-effort MIME detection from the leading bytes (magic numbers)."""
+    if b[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if b[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    if b[:6] in (b"GIF87a", b"GIF89a"):
+        return "image/gif"
+    if b[:4] == b"RIFF" and b[8:12] == b"WEBP":
+        return "image/webp"
+    if b[:4] == b"RIFF" and b[8:12] == b"WAVE":
+        return "audio/wav"
+    if b[:5] == b"%PDF-":
+        return "application/pdf"
+    if b[:4] == b"OggS":
+        return "audio/ogg"
+    if b[:3] == b"ID3" or b[:2] in (b"\xff\xfb", b"\xff\xf3", b"\xff\xf2"):
+        return "audio/mpeg"
+    if b[:4] == b"\x1aE\xdf\xa3":
+        return "video/webm"
+    if b[4:8] == b"ftyp":
+        return "image/avif" if b[8:10] == b"av" else "video/mp4"
+    return None
+
+
+def _sanitize_filename(name: str) -> str:
+    """Strip path separators and header-unsafe characters from a client filename."""
+    name = name.replace("\\", "/").split("/")[-1]  # basename only (no traversal)
+    name = "".join(c for c in name if c.isprintable() and c not in '"\r\n')
+    name = name.strip().lstrip(".") or "file"
+    return name[:255]
+
+
 async def _upload_file_to_s3(
     file: UploadFile,
     channel_id: int,
     message_id: int,
 ) -> dict:
     """Upload a file to S3/MinIO and return metadata dict."""
+    if file.size is not None and file.size > MAX_ATTACHMENT_BYTES:
+        raise HTTPException(status_code=413, detail={"code": 40005, "message": f"File too large (max {MAX_ATTACHMENT_BYTES // (1024 * 1024)} MiB)"})
     file_bytes = await file.read()
     file_size = len(file_bytes)
-    original_filename = file.filename or "unknown"
-    content_type = file.content_type or "application/octet-stream"
+    if file_size > MAX_ATTACHMENT_BYTES:
+        raise HTTPException(status_code=413, detail={"code": 40005, "message": f"File too large (max {MAX_ATTACHMENT_BYTES // (1024 * 1024)} MiB)"})
+    original_filename = _sanitize_filename(file.filename or "unknown")
+
+    # NEVER trust the client-declared content type — it is served back from our own origin,
+    # so a declared text/html or image/svg+xml would run script and steal the session token.
+    # Sniff the real type; render inline only for a known-safe allowlist, else force an
+    # opaque, attachment-disposition download.
+    sniffed = _sniff_content_type(file_bytes)
+    if sniffed in _INLINE_SAFE_TYPES:
+        content_type = sniffed
+        content_disposition = None
+    else:
+        content_type = "application/octet-stream"
+        content_disposition = f'attachment; filename="{original_filename}"'
 
     unique_id = uuid.uuid4().hex[:12]
     s3_key = f"{channel_id}/{message_id}/{unique_id}/{original_filename}"
 
     s3 = _get_s3()
-    s3.put_object(
+    put_kwargs = dict(
         Bucket=settings.s3_bucket,
         Key=s3_key,
         Body=file_bytes,
         ContentType=content_type,
     )
+    if content_disposition:
+        put_kwargs["ContentDisposition"] = content_disposition
+    s3.put_object(**put_kwargs)
 
     url = f"{settings.s3_public_url}/{settings.s3_bucket}/{s3_key}"
 

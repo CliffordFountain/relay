@@ -1,8 +1,18 @@
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
+# The shipped dev-only value for INTERNAL_SERVICE_SECRET. It is published in the source
+# tree, so it must never be accepted outside development — see _require_internal_secret.
+DEV_DEFAULT_INTERNAL_SECRET = "relay-internal-dev-secret"
+
 
 class Settings(BaseSettings):
+    # "development" relaxes production-only guards (accepts the dev internal secret,
+    # serves the OpenAPI docs). ANY other value is treated as production: the docs are
+    # hidden and the /internal endpoint fails closed unless a strong secret is set. The
+    # dev docker-compose sets ENVIRONMENT=development explicitly.
+    environment: str = "production"
+
     database_url: str = "postgresql+asyncpg://relay:relay@postgres:5432/relay"
     redis_url: str = "redis://redis:6379/0"
     data_services_url: str = "data-services:50051"
@@ -55,6 +65,10 @@ class Settings(BaseSettings):
     smtp_login_notifications: bool = False
 
     model_config = {"env_file": ".env", "extra": "ignore"}
+
+    @property
+    def is_development(self) -> bool:
+        return self.environment.strip().lower() in ("development", "dev", "local", "test")
 
     @property
     def cors_origin_list(self) -> list[str]:

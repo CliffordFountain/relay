@@ -65,15 +65,28 @@ def _upload_emoji_image(emoji_id: int, data_url: str) -> None:
     from app.config import settings
     try:
         header, b64 = data_url.split(",", 1)
-        mime = header[5:].split(";")[0] or "image/png"
         raw = base64.b64decode(b64)
+        # Ignore the client-declared MIME (in `header`): the object is served inline from our
+        # own origin, so a data:text/html or data:image/svg+xml emoji would run script and
+        # steal the session token. A custom emoji must be a real raster image — sniff the
+        # bytes and refuse to store anything else.
+        if raw[:8] == b"\x89PNG\r\n\x1a\n":
+            safe_mime = "image/png"
+        elif raw[:3] == b"\xff\xd8\xff":
+            safe_mime = "image/jpeg"
+        elif raw[:6] in (b"GIF87a", b"GIF89a"):
+            safe_mime = "image/gif"
+        elif raw[:4] == b"RIFF" and raw[8:12] == b"WEBP":
+            safe_mime = "image/webp"
+        else:
+            return  # not a recognized image -> do not store
         s3 = boto3.client(
             "s3", endpoint_url=settings.s3_endpoint,
             aws_access_key_id=settings.s3_access_key,
             aws_secret_access_key=settings.s3_secret_key,
             config=BotoConfig(signature_version="s3v4"), region_name="us-east-1",
         )
-        s3.put_object(Bucket="relay-emojis", Key=f"{emoji_id}.png", Body=raw, ContentType=mime)
+        s3.put_object(Bucket="relay-emojis", Key=f"{emoji_id}.png", Body=raw, ContentType=safe_mime)
     except Exception:
         pass
 
