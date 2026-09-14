@@ -32,6 +32,17 @@ import styles from './voiceChannelView.module.scss';
 
 export type ViewMode = 'grid' | 'focus';
 
+/** One selectable screen-share on the stage — our own or a remote peer's. */
+interface ScreenSource {
+  userId: string;
+  /** Display name for the switcher / footer. 'You' for the local share. */
+  name: string;
+  isLocal: boolean;
+  screen: MediaStream;
+  /** The presenter's camera, shown as a PiP over their share (null when off). */
+  camera: MediaStream | null;
+}
+
 export interface VoiceChannelViewProps {
   channelId: string;
   channelName: string;
@@ -63,10 +74,13 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
   const [streamMinimized, setStreamMinimized] = useState(false);
   // Remote media consumed from the SFU (other users' camera/screen/audio).
   const remotePeers = useRemoteMedia();
-  // Which remote user's stream is on the stage. null = auto-pick the first available.
-  const [watchUserId, setWatchUserId] = useState<string | null>(null);
-  // Locally mute the audio of the stream currently on the stage (independent of deafen).
-  const [streamAudioMuted, setStreamAudioMuted] = useState(false);
+  // Which screen-share is on the big stage. Holds a userId (yours OR a remote peer's);
+  // null means "auto-pick the first available share". A viewer can switch freely, so
+  // starting your own share never traps you on it.
+  const [stageUserId, setStageUserId] = useState<string | null>(null);
+  // Locally mute a stream's audio (independent of deafen), remembered PER presenter so
+  // muting one share never carries over to another when you switch the stage.
+  const [mutedStreamUserIds, setMutedStreamUserIds] = useState<Set<string>>(() => new Set());
 
   const {
     startAudio,
@@ -76,12 +90,10 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
     stopAllStreams,
   } = useMediaStreams();
 
-  // Video element refs for local streams
-  const selfVideoRef = useRef<HTMLVideoElement | null>(null);
-  const screenPreviewRef = useRef<HTMLVideoElement | null>(null);
-  // Focused screen-share container (for the Fullscreen API) + presenter camera PiP overlay
+  // Focused screen-share container, used only for the Fullscreen API (a plain <div>).
+  // All <video> elements attach their stream through <RemoteVideo>, which re-attaches
+  // on mount — so a stage switch between shares never leaves a black element.
   const focusedStreamRef = useRef<HTMLDivElement | null>(null);
-  const cameraPipRef = useRef<HTMLVideoElement | null>(null);
 
   // Force re-render when streams change
   const [, setStreamTick] = useState(0);
@@ -92,65 +104,62 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
 
   const media = getMediaState();
 
-  // ── Stage: the large screen-share view can show either our OWN screen-share or a
-  // remote streamer we're watching. Remote media comes from the SFU (remotePeers). ──
-  const showLocalScreen = isConnectedHere && voiceState.selfScreenShare && Boolean(media.screenStream);
-  const remoteScreenPeer = !showLocalScreen
-    ? (remotePeers.find(p => p.screen && (!watchUserId || p.userId === watchUserId))
-        ?? remotePeers.find(p => p.screen))
-    : undefined;
-  const stageStream: MediaStream | null = showLocalScreen
-    ? media.screenStream
-    : (remoteScreenPeer?.screen ?? null);
-  const stagePresenterId = showLocalScreen ? currentUserId : remoteScreenPeer?.userId;
+  // ── Stage: every available screen-share — our OWN plus each remote streamer's — is
+  // collected into one switchable list. The viewer picks which is on the big stage via
+  // `stageUserId`, so sharing your own screen no longer hijacks the stage and you can
+  // switch to watch anyone who is streaming. Remote media comes from the SFU. ──
+  const localScreenStream =
+    isConnectedHere && voiceState.selfScreenShare ? media.screenStream : null;
+
+  const screenSources: ScreenSource[] = [];
+  if (localScreenStream && currentUserId) {
+    screenSources.push({
+      userId: currentUserId,
+      name: 'You',
+      isLocal: true,
+      screen: localScreenStream,
+      camera: voiceState.selfVideo && media.videoStream ? media.videoStream : null,
+    });
+  }
+  for (const p of remotePeers) {
+    if (!p.screen) continue;
+    const u = voiceUsers.find(v => v.userId === p.userId);
+    screenSources.push({
+      userId: p.userId,
+      name: u?.username ?? 'Streamer',
+      isLocal: false,
+      screen: p.screen,
+      camera: p.camera ?? null,
+    });
+  }
+
+  // Active source = the viewer's explicit pick while it is still live, otherwise the
+  // first available share (so an already-running stream appears on join with no click,
+  // and the stage falls back automatically when the watched share ends).
+  const activeSource =
+    screenSources.find(s => s.userId === stageUserId) ?? screenSources[0] ?? null;
+  const showLocalScreen = activeSource?.isLocal ?? false;
+  const stageStream: MediaStream | null = activeSource?.screen ?? null;
+  const stagePresenterId = activeSource?.userId;
   const stagePresenter = voiceUsers.find(u => u.userId === stagePresenterId);
-  const stagePresenterName = stagePresenter?.username ?? (showLocalScreen ? 'You' : 'Streamer');
-  const stageCameraStream: MediaStream | null = showLocalScreen
-    ? (voiceState.selfVideo && media.videoStream ? media.videoStream : null)
-    : (remoteScreenPeer?.camera ?? null);
+  const stagePresenterName = activeSource?.name ?? 'Streamer';
+  const stageCameraStream: MediaStream | null = activeSource?.camera ?? null;
+  const stageCameraOn = Boolean(stageCameraStream);
+  // Whether the share currently on the stage is muted for this viewer.
+  const stageStreamMuted = stagePresenterId ? mutedStreamUserIds.has(stagePresenterId) : false;
 
-  // Auto-show a remote stream as soon as one is available (so joining a channel where
-  // someone is already sharing shows it without a click), and fall back / clear when
-  // the watched stream ends.
+  // Keep exactly one valid share pinned on the stage. A live explicit pick is KEPT when
+  // the set of shares changes — so starting your own share never yanks the stage off
+  // someone you were already watching (you switch deliberately via the switcher). When
+  // the pick goes away (that streamer stopped/left), fall back to the first available.
+  // Keyed on the source-id SET (a string), so this runs only when shares appear/disappear,
+  // not on every render and not when the user clicks to switch.
+  const sourceIds = screenSources.map(s => s.userId);
+  const sourceIdsKey = sourceIds.join(',');
   useEffect(() => {
-    const anyScreen = remotePeers.find(p => p.screen);
-    if (!watchUserId) {
-      if (anyScreen) setWatchUserId(anyScreen.userId);
-      return;
-    }
-    const stillLive = remotePeers.some(p => p.userId === watchUserId && p.screen);
-    if (!stillLive) setWatchUserId(anyScreen ? anyScreen.userId : null);
-  }, [remotePeers, watchUserId]);
-
-  // Attach video stream to self video element
-  useEffect(() => {
-    if (selfVideoRef.current) {
-      if (media.videoStream) {
-        selfVideoRef.current.srcObject = media.videoStream;
-      } else {
-        selfVideoRef.current.srcObject = null;
-      }
-    }
-  }, [media.videoStream]);
-
-  // Attach screen share stream to preview element
-  useEffect(() => {
-    if (screenPreviewRef.current) {
-      if (media.screenStream) {
-        screenPreviewRef.current.srcObject = media.screenStream;
-      } else {
-        screenPreviewRef.current.srcObject = null;
-      }
-    }
-  }, [media.screenStream]);
-
-  // Attach the presenter's camera stream to the PiP overlay on the screen-share (issue #2)
-  useEffect(() => {
-    if (cameraPipRef.current) {
-      cameraPipRef.current.srcObject =
-        voiceState.selfVideo && media.videoStream ? media.videoStream : null;
-    }
-  }, [voiceState.selfVideo, media.videoStream]);
+    setStageUserId(prev => (prev && sourceIds.includes(prev) ? prev : (sourceIds[0] ?? null)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceIdsKey]);
 
   // Keep the local fullscreen flag in sync with the browser's fullscreen state (issue #1)
   useEffect(() => {
@@ -343,9 +352,14 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
     // consumer stored in remotePeers. A tile shows live video only while a stream
     // is actually present, so turning the camera off unmounts the <video> cleanly.
     const remotePeer = isSelf ? undefined : remotePeers.find(p => p.userId === user.userId);
-    const cameraOn = isSelf
+    // De-dup: while this user's camera is already shown as the PiP over their share on
+    // the stage, don't render a second live copy of it down in the tile grid — show
+    // their avatar there instead (issue: camera appeared both over the feed AND below).
+    const cameraInStagePip = stageCameraOn && user.userId === stagePresenterId;
+    const cameraStream = isSelf ? media.videoStream : remotePeer?.camera;
+    const cameraOn = !cameraInStagePip && (isSelf
       ? Boolean(voiceState.selfVideo && media.videoStream)
-      : Boolean(remotePeer?.camera);
+      : Boolean(remotePeer?.camera));
     const isUserStreaming = isSelf
       ? voiceState.selfScreenShare
       : (user.streaming || Boolean(remotePeer?.screen));
@@ -365,17 +379,7 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
       >
         <div className={styles.tileMedia}>
           {cameraOn ? (
-            isSelf ? (
-              <video
-                ref={selfVideoRef}
-                className={styles.tileVideo}
-                autoPlay
-                muted
-                playsInline
-              />
-            ) : (
-              <RemoteVideo stream={remotePeer?.camera} className={styles.tileVideo} />
-            )
+            <RemoteVideo stream={cameraStream} className={styles.tileVideo} />
           ) : user.avatar ? (
             <img src={user.avatar} alt={user.username} className={styles.tileImg} />
           ) : (
@@ -430,9 +434,9 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
           </span>
         </div>
 
-        {/* Watch Stream overlay — only when they're streaming AND we're not already
-            watching them on the stage (otherwise it's redundant on your own view). */}
-        {!isSelf && isUserStreaming && watchUserId !== user.userId && (
+        {/* Watch Stream overlay — only when they're streaming AND they're not already
+            the share on the stage (otherwise it's redundant). */}
+        {!isSelf && isUserStreaming && stagePresenterId !== user.userId && (
           <button
             className={styles.watchStreamBtn}
             type="button"
@@ -440,7 +444,7 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
             onClick={(e) => {
               e.stopPropagation();
               // Put this user's stream on the stage and un-collapse it.
-              setWatchUserId(user.userId);
+              setStageUserId(user.userId);
               setStreamMinimized(false);
             }}
           >
@@ -520,29 +524,51 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
             data-testid="stream-stage"
           >
             <div className={styles.focusedStreamMedia}>
-              {showLocalScreen ? (
-                <video
-                  ref={screenPreviewRef}
-                  className={styles.focusedStreamVideo}
-                  autoPlay
-                  muted
-                  playsInline
-                  title="Click to toggle fullscreen"
-                  onClick={handleToggleFullscreen}
-                />
-              ) : (
-                <RemoteVideo
-                  stream={stageStream}
-                  className={styles.focusedStreamVideo}
-                  onClick={handleToggleFullscreen}
-                />
-              )}
+              <RemoteVideo
+                stream={stageStream}
+                className={styles.focusedStreamVideo}
+                onClick={handleToggleFullscreen}
+                title="Click to toggle fullscreen"
+              />
               <span className={styles.focusedLiveBadge}>
                 <span className={styles.liveBadge}>
                   <span className={styles.liveDot} />
                   LIVE
                 </span>
               </span>
+
+              {/* Source switcher — when more than one person is sharing, pick whose
+                  screen is on the stage (including your own). This is what lets you
+                  switch between two simultaneous streams. */}
+              {screenSources.length > 1 && (
+                <div
+                  className={styles.stageSwitcher}
+                  role="tablist"
+                  aria-label="Choose which screen share to watch"
+                  data-testid="stage-switcher"
+                >
+                  {screenSources.map(src => {
+                    const active = src.userId === stagePresenterId;
+                    return (
+                      <button
+                        key={src.userId}
+                        type="button"
+                        role="tab"
+                        aria-selected={active}
+                        className={`${styles.stageSwitcherChip} ${active ? styles.stageSwitcherChipActive : ''}`}
+                        onClick={() => {
+                          setStageUserId(src.userId);
+                          setStreamMinimized(false);
+                        }}
+                      >
+                        <span className={styles.liveDot} />
+                        {src.isLocal ? 'Your screen' : src.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               <span className={styles.watchingChip}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
                   <circle cx="12" cy="12" r="3" />
@@ -551,20 +577,12 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
                 {watching} watching
               </span>
 
-              {/* Presenter camera overlay (PiP) — shown when the presenter is also on camera (issue #2) */}
+              {/* Presenter camera overlay (PiP) — shown when the presenter is also on
+                  camera. This is the only place their camera renders while on stage; the
+                  duplicate in the tile grid is suppressed (see cameraInStagePip). */}
               {presenterCameraOn && (
                 <div className={styles.cameraPip} data-testid="presenter-camera-pip">
-                  {showLocalScreen ? (
-                    <video
-                      ref={cameraPipRef}
-                      className={styles.cameraPipVideo}
-                      autoPlay
-                      muted
-                      playsInline
-                    />
-                  ) : (
-                    <RemoteVideo stream={stageCameraStream} className={styles.cameraPipVideo} />
-                  )}
+                  <RemoteVideo stream={stageCameraStream} className={styles.cameraPipVideo} />
                   <span className={styles.cameraPipLabel}>{presenterName}</span>
                 </div>
               )}
@@ -575,12 +593,21 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
                 {!showLocalScreen && (
                   <button
                     type="button"
-                    className={`${styles.focusedStreamCtrlBtn} ${streamAudioMuted ? styles.focusedStreamCtrlBtnActive : ''}`}
-                    onClick={() => setStreamAudioMuted(m => !m)}
-                    title={streamAudioMuted ? 'Unmute stream' : 'Mute stream'}
-                    aria-label={streamAudioMuted ? 'Unmute stream' : 'Mute stream'}
+                    className={`${styles.focusedStreamCtrlBtn} ${stageStreamMuted ? styles.focusedStreamCtrlBtnActive : ''}`}
+                    onClick={() => {
+                      const id = stagePresenterId;
+                      if (!id) return;
+                      setMutedStreamUserIds(prev => {
+                        const next = new Set(prev);
+                        if (next.has(id)) next.delete(id);
+                        else next.add(id);
+                        return next;
+                      });
+                    }}
+                    title={stageStreamMuted ? 'Unmute stream' : 'Mute stream'}
+                    aria-label={stageStreamMuted ? 'Unmute stream' : 'Mute stream'}
                   >
-                    {streamAudioMuted ? (
+                    {stageStreamMuted ? (
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M3.63 3.63a.996.996 0 0 0 0 1.41L7.29 8.7 7 9H4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h3l3.29 3.29c.63.63 1.71.18 1.71-.71v-4.17l4.18 4.18c-.49.37-1.02.68-1.6.91v2.06a8.9 8.9 0 0 0 3.02-1.31l1.66 1.66a.996.996 0 1 0 1.41-1.41L5.05 3.63a.996.996 0 0 0-1.42 0ZM19 12c0 .82-.15 1.61-.41 2.34l1.53 1.53A8.9 8.9 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71Zm-7-8-1.88 1.88L12 7.76V4Zm4.5 8c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.48c.01-.08.02-.16.02-.24Z" />
                       </svg>
@@ -653,8 +680,9 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
           <RemoteAudio
             key={audioStream.id}
             stream={audioStream}
-            // Silenced when deafened, or when the viewer muted the stream on the stage.
-            muted={voiceState.selfDeaf || (streamAudioMuted && peer.userId === stagePresenterId)}
+            // Silenced when deafened, or when the viewer muted this presenter's share while
+            // it is the one on the stage.
+            muted={voiceState.selfDeaf || (peer.userId === stagePresenterId && mutedStreamUserIds.has(peer.userId))}
           />
         )),
       )}

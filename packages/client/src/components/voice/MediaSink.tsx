@@ -2,9 +2,15 @@ import { useEffect, useRef } from 'react';
 import { registerAudioElement } from '../../hooks/useMediaStreams';
 
 /**
- * Small presentational sinks for REMOTE media consumed from the SFU. Attaching a
- * MediaStream to a media element must happen via srcObject (not a prop), so these
- * wrap the imperative assignment in an effect keyed on the stream.
+ * Small presentational sinks for media rendered into a <video>/<audio> element.
+ * Attaching a MediaStream must happen via srcObject (not a prop), so these wrap the
+ * imperative assignment in an effect keyed on the stream. The effect also runs on
+ * MOUNT, so the same stream re-attaches correctly when the element is unmounted and
+ * remounted (e.g. when the stage switches between two screen-shares) — a parent-owned
+ * ref keyed only on the stream value would NOT re-attach in that case.
+ *
+ * RemoteVideo works for LOCAL streams too (own camera / screen preview): it is always
+ * muted, so a local preview never echoes, and local audio is never played through it.
  */
 
 interface RemoteVideoProps {
@@ -12,9 +18,11 @@ interface RemoteVideoProps {
   className?: string;
   /** Object-fit hint via className is preferred; kept minimal here. */
   onClick?: () => void;
+  /** Native tooltip (e.g. "Click to toggle fullscreen"). */
+  title?: string;
 }
 
-export function RemoteVideo({ stream, className, onClick }: RemoteVideoProps) {
+export function RemoteVideo({ stream, className, onClick, title }: RemoteVideoProps) {
   const ref = useRef<HTMLVideoElement | null>(null);
   useEffect(() => {
     const el = ref.current;
@@ -30,10 +38,12 @@ export function RemoteVideo({ stream, className, onClick }: RemoteVideoProps) {
       autoPlay
       // Muted: remote AUDIO is played through <RemoteAudio> sinks so it can be
       // routed to the selected output device and gated by deafen. A muted <video>
-      // is also required for autoplay to start without a user gesture.
+      // is also required for autoplay to start without a user gesture. Local previews
+      // must also stay muted to avoid echoing the user's own mic/screen audio.
       muted
       playsInline
       onClick={onClick}
+      title={title}
     />
   );
 }

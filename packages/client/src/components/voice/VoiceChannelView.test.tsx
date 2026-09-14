@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { VoiceChannelView } from './VoiceChannelView';
@@ -14,12 +14,15 @@ import type { VoiceUser } from '../../stores/voiceSlice';
 
 // Mutable media-state singleton so individual tests can simulate live
 // camera / screen streams. Hoisted so it is available inside the vi.mock factory.
-const { mediaStateMock } = vi.hoisted(() => ({
+const { mediaStateMock, remoteMediaMock } = vi.hoisted(() => ({
   mediaStateMock: {
     audioStream: null as unknown,
     videoStream: null as unknown,
     screenStream: null as unknown,
   },
+  // Mutable list of remote peers (other users' consumed camera/screen/audio) so tests
+  // can simulate a second person streaming.
+  remoteMediaMock: { peers: [] as Array<{ userId: string; camera: unknown; screen: unknown; audios: unknown[] }> },
 }));
 
 vi.mock('../../hooks/useMediaStreams', () => ({
@@ -42,6 +45,13 @@ vi.mock('../../hooks/useMediaStreams', () => ({
   }),
   useStreamChangeListener: vi.fn(),
   getMediaState: () => mediaStateMock,
+  // RemoteAudio registers its <audio> element for output-device routing; return a no-op
+  // cleanup so rendering remote audio sinks doesn't blow up under the mocked module.
+  registerAudioElement: () => () => {},
+}));
+
+vi.mock('../../voice/remoteMedia', () => ({
+  useRemoteMedia: () => remoteMediaMock.peers,
 }));
 
 vi.mock('../../api/gateway', () => ({
@@ -192,6 +202,7 @@ describe('VoiceChannelView', () => {
     mediaStateMock.audioStream = null;
     mediaStateMock.videoStream = null;
     mediaStateMock.screenStream = null;
+    remoteMediaMock.peers = [];
   });
 
   it('renders without crashing', () => {
@@ -488,5 +499,144 @@ describe('VoiceChannelView', () => {
       </Provider>,
     );
     expect(screen.queryByTestId('presenter-camera-pip')).not.toBeInTheDocument();
+  });
+
+  // --- Camera de-dup: no double render (issue: camera over AND below the feed) ---
+
+  it('does not duplicate the presenter camera as a tile <video> while it is the stage PiP', () => {
+    // Self is sharing screen AND on camera → camera should appear ONLY as the PiP.
+    mediaStateMock.screenStream = { id: 'screen' };
+    mediaStateMock.videoStream = { id: 'video' };
+    const store = createTestStore({ selfScreenShare: true, selfVideo: true });
+    const { container } = render(
+      <Provider store={store}>
+        <VoiceChannelView channelId="100" channelName="General Voice" />
+      </Provider>,
+    );
+    // Shown once, over the feed…
+    expect(screen.getByTestId('presenter-camera-pip')).toBeInTheDocument();
+    // …and NOT a second time as a live camera down in the tile grid.
+    expect(container.querySelector('video.tileVideo')).not.toBeInTheDocument();
+  });
+
+  it('still shows the self camera as a tile <video> when NOT screen-sharing', () => {
+    // No share → no stage → the camera belongs in the tile as usual.
+    mediaStateMock.videoStream = { id: 'video' };
+    const store = createTestStore({ selfScreenShare: false, selfVideo: true });
+    const { container } = render(
+      <Provider store={store}>
+        <VoiceChannelView channelId="100" channelName="General Voice" />
+      </Provider>,
+    );
+    expect(container.querySelector('video.tileVideo')).toBeInTheDocument();
+  });
+
+  // --- Multi-share stage switching (issue: can't switch between two streams) ---
+
+  it('shows a source switcher and puts a second streamer on the stage when clicked', () => {
+    // Both self and a remote peer are sharing their screens.
+    mediaStateMock.screenStream = { id: 'myscreen' };
+    remoteMediaMock.peers = [
+      { userId: '51', camera: null, screen: { id: 'otherscreen' }, audios: [] },
+    ];
+    const store = createTestStore({ selfScreenShare: true });
+    render(
+      <Provider store={store}>
+        <VoiceChannelView channelId="100" channelName="General Voice" />
+      </Provider>,
+    );
+    // Switcher appears with a chip for each share.
+    expect(screen.getByTestId('stage-switcher')).toBeInTheDocument();
+    const yourTab = screen.getByRole('tab', { name: 'Your screen' });
+    const otherTab = screen.getByRole('tab', { name: 'OtherUser' });
+    // Default stage is your own share (local pushed first).
+    expect(yourTab).toHaveAttribute('aria-selected', 'true');
+    expect(otherTab).toHaveAttribute('aria-selected', 'false');
+    // Switch to the other streamer — the stage follows the selection.
+    fireEvent.click(otherTab);
+    expect(screen.getByRole('tab', { name: 'OtherUser' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Your screen' })).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('does not show the switcher when only one person is sharing', () => {
+    mediaStateMock.screenStream = { id: 'myscreen' };
+    const store = createTestStore({ selfScreenShare: true });
+    render(
+      <Provider store={store}>
+        <VoiceChannelView channelId="100" channelName="General Voice" />
+      </Provider>,
+    );
+    expect(screen.queryByTestId('stage-switcher')).not.toBeInTheDocument();
+    // The stage still renders your own share.
+    expect(screen.getByTestId('stream-stage')).toBeInTheDocument();
+  });
+
+  it('auto-shows a remote share on join even when you are not sharing', () => {
+    remoteMediaMock.peers = [
+      { userId: '51', camera: null, screen: { id: 'otherscreen' }, audios: [] },
+    ];
+    const store = createTestStore({ selfScreenShare: false });
+    render(
+      <Provider store={store}>
+        <VoiceChannelView channelId="100" channelName="General Voice" />
+      </Provider>,
+    );
+    // The remote share is on the stage with no click, and there's no switcher (one source).
+    expect(screen.getByTestId('stream-stage')).toBeInTheDocument();
+    expect(screen.queryByTestId('stage-switcher')).not.toBeInTheDocument();
+  });
+
+  it('starting your own share does NOT yank the stage off the remote you were watching', () => {
+    // You join while a remote is already sharing → you're watching them (no click).
+    remoteMediaMock.peers = [
+      { userId: '51', camera: null, screen: { id: 'otherscreen' }, audios: [] },
+    ];
+    const store = createTestStore({ selfScreenShare: false });
+    render(
+      <Provider store={store}>
+        <VoiceChannelView channelId="100" channelName="General Voice" />
+      </Provider>,
+    );
+    expect(screen.queryByTestId('stage-switcher')).not.toBeInTheDocument();
+
+    // Now YOU start sharing. A second source appears; the stage must stay on the remote.
+    mediaStateMock.screenStream = { id: 'myscreen' };
+    act(() => {
+      store.dispatch(voiceSlice.actions.toggleScreenShare());
+    });
+    expect(screen.getByTestId('stage-switcher')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'OtherUser' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Your screen' })).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('remembers stream mute per presenter — muting one does not mute the next', () => {
+    // Two remotes are sharing; you are watching (not sharing yourself).
+    remoteMediaMock.peers = [
+      { userId: '51', camera: null, screen: { id: 's51' }, audios: [{ id: 'a51' }] },
+      { userId: '60', camera: null, screen: { id: 's60' }, audios: [{ id: 'a60' }] },
+    ];
+    const store = createTestStore({
+      selfScreenShare: false,
+      voiceUsers: [
+        { userId: '50', username: 'TestUser', avatar: null, selfMute: false, selfDeaf: false, streaming: false },
+        { userId: '51', username: 'OtherUser', avatar: null, selfMute: false, selfDeaf: false, streaming: true },
+        { userId: '60', username: 'ThirdUser', avatar: null, selfMute: false, selfDeaf: false, streaming: true },
+      ],
+    });
+    render(
+      <Provider store={store}>
+        <VoiceChannelView channelId="100" channelName="General Voice" />
+      </Provider>,
+    );
+    // Default stage is the first remote (OtherUser). Mute it.
+    fireEvent.click(screen.getByRole('button', { name: 'Mute stream' }));
+    expect(screen.getByRole('button', { name: 'Unmute stream' })).toBeInTheDocument();
+    // Switch the stage to the other streamer — the mute must NOT carry over.
+    fireEvent.click(screen.getByRole('tab', { name: 'ThirdUser' }));
+    expect(screen.getByRole('button', { name: 'Mute stream' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Unmute stream' })).not.toBeInTheDocument();
+    // Switch back — the original mute is remembered.
+    fireEvent.click(screen.getByRole('tab', { name: 'OtherUser' }));
+    expect(screen.getByRole('button', { name: 'Unmute stream' })).toBeInTheDocument();
   });
 });

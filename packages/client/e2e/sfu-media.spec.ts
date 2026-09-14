@@ -231,4 +231,76 @@ test.describe('SFU media flow (2 browsers)', () => {
       await bobCtx?.close();
     }
   });
+
+  test('with two people sharing, a viewer can switch the stage between both streams', async ({ browser, request }) => {
+    test.setTimeout(180000);
+    // Regression guard for the reported bug: when you were ALSO sharing, your own share
+    // hijacked the stage and you could never watch the other person's — no way to switch.
+    // Both Alice and Bob screen-share; Bob must be able to flip the stage between his own
+    // share and Alice's, with REAL frames rendering for whichever is selected.
+    const alice = await registerUserWithVoice(request, 'swa');
+    const bob = await addMemberToGuild(request, alice.token, alice.guildId, 'swb');
+
+    let aliceCtx: BrowserContext | undefined;
+    let bobCtx: BrowserContext | undefined;
+    try {
+      aliceCtx = await browser.newContext({ ignoreHTTPSErrors: true, baseURL: BASE });
+      bobCtx = await browser.newContext({ ignoreHTTPSErrors: true, baseURL: BASE });
+      const alicePage = await aliceCtx.newPage();
+      const bobPage = await bobCtx.newPage();
+
+      // Alice goes live (screen share).
+      await loginViaToken(alicePage, alice.token, { email: alice.email, password: 'TestPass123A' });
+      const aliceControls = await joinVoiceChannel(alicePage);
+      await aliceControls.getByLabel('Share Your Screen').click();
+      await alicePage.getByRole('button', { name: 'Go Live' }).click();
+      await expect(alicePage.getByTestId('stream-stage')).toBeVisible({ timeout: 40000 });
+
+      // Bob joins, sees Alice's share on the stage (single source → no switcher yet).
+      await loginViaToken(bobPage, bob.token, { email: bob.email, password: 'TestPass123A' });
+      const bobControls = await joinVoiceChannel(bobPage);
+      await expect(bobPage.getByTestId('stream-stage')).toBeVisible({ timeout: 30000 });
+      await expect(bobPage.getByTestId('stage-switcher')).toHaveCount(0);
+
+      // Bob ALSO goes live. Now there are two shares → the switcher appears.
+      await bobControls.getByLabel('Share Your Screen').click();
+      await bobPage.getByRole('button', { name: 'Go Live' }).click();
+      const switcher = bobPage.getByTestId('stage-switcher');
+      await expect(switcher).toBeVisible({ timeout: 40000 });
+
+      const yourTab = switcher.getByRole('tab', { name: 'Your screen' });
+      const aliceTab = switcher.getByRole('tab', { name: alice.username });
+      await expect(yourTab).toBeVisible();
+      await expect(aliceTab).toBeVisible();
+
+      const stage = bobPage.getByTestId('stream-stage');
+      const stageHasFrames = () =>
+        stage.evaluate((el) => {
+          const v = el.querySelector('video');
+          return Boolean(v && (v as HTMLVideoElement).videoWidth > 0 && (v as HTMLVideoElement).readyState >= 2);
+        });
+
+      // Switch the stage to Alice's real remote share — her frames must render.
+      await aliceTab.click();
+      await expect(aliceTab).toHaveAttribute('aria-selected', 'true');
+      await expect(yourTab).toHaveAttribute('aria-selected', 'false');
+      await expect.poll(stageHasFrames, {
+        timeout: 30000,
+        message: "Switching to Alice's stream did not render her frames on the stage",
+      }).toBe(true);
+
+      // Switch back to Bob's own share — his frames must render. This is the flip that
+      // was impossible before (own share used to hijack the stage permanently).
+      await yourTab.click();
+      await expect(yourTab).toHaveAttribute('aria-selected', 'true');
+      await expect(aliceTab).toHaveAttribute('aria-selected', 'false');
+      await expect.poll(stageHasFrames, {
+        timeout: 30000,
+        message: "Switching back to your own share did not render frames on the stage",
+      }).toBe(true);
+    } finally {
+      await aliceCtx?.close();
+      await bobCtx?.close();
+    }
+  });
 });
