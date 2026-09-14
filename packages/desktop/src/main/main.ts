@@ -34,7 +34,12 @@ const isDev = process.env.NODE_ENV !== 'production';
 // (e.g. RELAY_URL=https://your-host:5173 when running on a different PC).
 const RELAY_URL = process.env.RELAY_URL || 'https://localhost:5173';
 let trustedHost = '';
-try { trustedHost = new URL(RELAY_URL).host; } catch { /* invalid URL — nothing trusted */ }
+let trustedHostname = '';
+try {
+  const u = new URL(RELAY_URL);
+  trustedHost = u.host;         // host + port, e.g. "localhost:5173" — for URL matching
+  trustedHostname = u.hostname; // host only, e.g. "localhost" — for cert verification
+} catch { /* invalid URL — nothing trusted */ }
 
 // The self-hosted server uses a self-signed cert; trust it ONLY for the configured
 // server host, and reject every other certificate error.
@@ -67,6 +72,22 @@ app.on('certificate-error', (event, _webContents, url, _error, _cert, callback) 
  */
 function setupMediaAccess() {
   const ses = session.defaultSession;
+
+  // Trust our self-hosted server's self-signed cert for the configured host. The
+  // `certificate-error` handler below already lets these connections through, but it
+  // fires only AFTER the network stack has failed verification — so Chromium logs a
+  // "handshake failed … net_error -202 (ERR_CERT_AUTHORITY_INVALID)" for EVERY request to
+  // the (self-signed) server, spamming the console on connect. Overriding verification
+  // here, before it fails, makes the cert verify cleanly and silences that noise, while
+  // every other host still goes through Chromium's normal verification (callback(-3)).
+  // Host-scoped exactly like the certificate-error handler, so this is no weaker.
+  ses.setCertificateVerifyProc((request, callback) => {
+    if (trustedHostname && request.hostname === trustedHostname) {
+      callback(0); // 0 = trusted / verification succeeded
+    } else {
+      callback(-3); // -3 = use Chromium's default verification result
+    }
+  });
 
   // The desktop app only ever loads our own server (trustedHost); everything it renders is
   // our first-party client. So grant permissions to that origin and deny every other origin.
