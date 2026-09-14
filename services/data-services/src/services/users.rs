@@ -650,8 +650,26 @@ impl UserService for UserServiceImpl {
         )
         .fetch_optional(&self.db)
         .await
-        .map_err(sqlx_to_status)?
-        .ok_or_else(|| Status::unauthenticated("invalid credentials"))?;
+        .map_err(sqlx_to_status)?;
+
+        // Constant-time against account enumeration: when the identifier doesn't exist we
+        // still run a full argon2 verify against a fixed decoy hash (same params as real
+        // hashes), so "no such user" takes the same ~time as "wrong password". Without this,
+        // an attacker distinguishes the two by latency and enumerates valid users/emails.
+        const DECOY_HASH: &str = "$argon2id$v=19$m=65536,t=3,p=4$35EmPIJ/fWnOTI07lvmnow$rw1ttmrZQBlKOO3COke1DqvTFkf0Lxq48tfo6NBiyUw";
+        let row = match row {
+            Some(r) => r,
+            None => {
+                if let Ok(decoy) = argon2::PasswordHash::new(DECOY_HASH) {
+                    let _ = argon2::PasswordVerifier::verify_password(
+                        &argon2::Argon2::default(),
+                        req.password_hash.as_bytes(),
+                        &decoy,
+                    );
+                }
+                return Err(Status::unauthenticated("invalid credentials"));
+            }
+        };
 
         // Verify the argon2 hash
         let ph = argon2::PasswordHash::new(&row.password_hash)
