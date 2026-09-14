@@ -104,6 +104,69 @@ The defaults are tuned for a quick local run, not a hostile network. Do these fi
 | Voice server | 4001 (+ 40000-40100/udp media) | public |
 | Postgres / Redis / Elasticsearch / data-services / MinIO (S3 API + console) | 5432 / 6379 / 9200 / 50051 / 9000 / 9001 | localhost only |
 
+## Firewall — voice & video across machines (Windows)
+
+Voice works out of the box on the machine that runs Relay. To let **other computers on
+your network** join calls and see your camera / screen, the host's firewall has to allow
+their traffic in. If people can join a voice channel but **no camera, screen share, or
+voice ever comes through**, this is almost always the cause — the signaling reaches the
+app but the media (WebRTC) is blocked.
+
+You only need to open two things, because the client proxies the API, gateway, voice
+signaling and file/CDN traffic through its own origin (port 5173):
+
+| Port(s) | Protocol | Why |
+|---|---|---|
+| `5173` | TCP | The web app itself (and, proxied through it, the API / gateway / voice signaling / uploads). |
+| `40000-40100` | UDP **and** TCP | The actual WebRTC audio/video/screen media. UDP is preferred; TCP is the fallback when UDP is blocked. |
+
+The other service ports (`4001`, `8000`, `4000`, `9000`) do **not** need opening for remote
+clients — they are reached through the `5173` proxy — so you can leave them closed.
+
+### Add the rules
+
+Run in an **Administrator** PowerShell **on the machine that hosts Relay** (the one running
+Docker). Every rule is named with a `Relay - ` prefix so they're easy to find and remove
+later:
+
+```powershell
+New-NetFirewallRule -DisplayName "Relay - Web app (TCP 5173)"            -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5173          -Profile Private,Domain
+New-NetFirewallRule -DisplayName "Relay - Voice media UDP (40000-40100)" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 40000-40100 -Profile Private,Domain
+New-NetFirewallRule -DisplayName "Relay - Voice media TCP (40000-40100)" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 40000-40100 -Profile Private,Domain
+```
+
+`-Profile Private,Domain` opens the ports only on home/work networks, not on networks
+Windows has classified **Public**. If a call still won't connect, your active network may
+be marked Public — check with `Get-NetConnectionProfile`, and either reclassify it to
+`Private` (`Set-NetConnectionProfile -InterfaceAlias "<your adapter>" -NetworkCategory Private`)
+or, only if you trust the network, drop `-Profile Private,Domain` from the rules so they
+apply everywhere. Re-running a command whose `DisplayName` already exists errors — remove
+the rules first (below) and re-add.
+
+Also set **`ANNOUNCED_IP`** in `.env` to the host's LAN IP so the voice server advertises a
+reachable address (a stale value here breaks media in exactly the same way as a closed
+firewall). On Windows you can detect and write it automatically with
+`powershell -File scripts/announce-ip.ps1 -Recreate`.
+
+### Remove the rules (uninstall)
+
+To take the openings back out — e.g. you've stopped self-hosting — remove every `Relay - `
+rule in one line (Administrator PowerShell):
+
+```powershell
+Get-NetFirewallRule -DisplayName "Relay - *" | Remove-NetFirewallRule
+```
+
+If you added earlier rules by hand under different names (for example `Relay 5173`,
+`Relay Voice RTC`), this wider match removes those too:
+
+```powershell
+Get-NetFirewallRule -DisplayName "Relay*" | Remove-NetFirewallRule
+```
+
+Verify nothing Relay-related is left with `Get-NetFirewallRule -DisplayName "Relay*"`
+(it should return nothing).
+
 ## Status
 
 Relay is pre-1.0 and moves fast. It's solid for self-hosted communities, but if you're running

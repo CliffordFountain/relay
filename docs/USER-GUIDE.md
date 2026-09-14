@@ -46,6 +46,35 @@ Relay works the same in a browser and in the desktop app — everything below ap
 - **Push-to-talk**: in **User Settings → Voice & Video**, switch input mode to Push to Talk
   and set a key. Any key works — including a modifier on its own (Ctrl/Shift/Alt) or a mouse
   side-button. Hold it while connected to talk.
+- **Watching two streams at once**: when more than one person is sharing, a small switcher
+  appears on the stage — click a name (including **Your screen**) to choose whose share
+  fills the big view. Your own share never locks the stage, so you can flip between them.
+
+### Hosting a call for people on your network (Windows firewall)
+
+If you self-host Relay and people on **other computers** can join a voice channel but you
+**can't see their camera / screen or hear each other**, the host machine's firewall is
+blocking the media. On the computer running Relay, open an **Administrator** PowerShell and
+add these rules:
+
+```powershell
+New-NetFirewallRule -DisplayName "Relay - Web app (TCP 5173)"            -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5173          -Profile Private,Domain
+New-NetFirewallRule -DisplayName "Relay - Voice media UDP (40000-40100)" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 40000-40100 -Profile Private,Domain
+New-NetFirewallRule -DisplayName "Relay - Voice media TCP (40000-40100)" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 40000-40100 -Profile Private,Domain
+```
+
+That's all that needs opening — the app proxies everything else through port 5173. Also
+make sure `ANNOUNCED_IP` in `.env` is the host's real LAN IP (run
+`powershell -File scripts/announce-ip.ps1 -Recreate` to set it automatically).
+
+**To remove these rules later** (e.g. if you stop hosting), one line takes them all back out:
+
+```powershell
+Get-NetFirewallRule -DisplayName "Relay - *" | Remove-NetFirewallRule
+```
+
+Full details, network-profile notes, and cleanup of any hand-made rules are in
+[DEPLOYMENT.md → Firewall](./DEPLOYMENT.md#firewall--voice--video-across-machines-windows).
 
 ## Roles, permissions, and moderation
 
