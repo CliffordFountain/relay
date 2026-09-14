@@ -38,6 +38,16 @@ export default defineConfig({
     // — docker-compose sets CHOKIDAR_USEPOLLING=true for the client service.
     // Native/host dev leaves polling off to avoid needless CPU churn.
     watch: process.env.CHOKIDAR_USEPOLLING === 'true' ? { usePolling: true, interval: 300 } : undefined,
+    // Security headers on the app document/assets. Non-breaking set only — a full
+    // Content-Security-Policy for the SPA belongs at the production reverse proxy (it needs
+    // tuning for inline styles, GIPHY images, blob:/data: media and WebRTC). These stop
+    // clickjacking, MIME-sniffing, referrer leakage, and TLS downgrade on the LAN.
+    headers: {
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'no-referrer',
+      'Strict-Transport-Security': 'max-age=63072000',
+    },
     ...(hasCert ? { https: { key: fs.readFileSync(keyFile), cert: fs.readFileSync(certFile) } } : {}),
     proxy: {
       // Proxy API requests to the API service.
