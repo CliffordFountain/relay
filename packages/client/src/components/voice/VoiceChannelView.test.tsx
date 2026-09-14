@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { VoiceChannelView } from './VoiceChannelView';
+import { VoiceChannelView, clampOverlayPos } from './VoiceChannelView';
 import { voiceSlice } from '../../stores/voiceSlice';
 import { channelsSlice } from '../../stores/channelsSlice';
 import { authSlice } from '../../stores/authSlice';
@@ -516,6 +516,69 @@ describe('VoiceChannelView', () => {
       </Provider>,
     );
     expect(container.querySelector('video.tileVideo')).toBeInTheDocument();
+  });
+
+  // --- Fullscreen camera overlay (draggable; right-click to hide) ---
+
+  const enterFullscreen = () => {
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: document.body });
+    act(() => { document.dispatchEvent(new Event('fullscreenchange')); });
+  };
+  const exitFullscreen = () => {
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: null });
+    act(() => { document.dispatchEvent(new Event('fullscreenchange')); });
+  };
+
+  it('shows the camera as a tile (not the fullscreen overlay) while NOT fullscreen', () => {
+    mediaStateMock.screenStream = { id: 'screen' };
+    mediaStateMock.videoStream = { id: 'video' };
+    const store = createTestStore({ selfScreenShare: true, selfVideo: true });
+    render(
+      <Provider store={store}>
+        <VoiceChannelView channelId="100" channelName="General Voice" />
+      </Provider>,
+    );
+    expect(screen.queryByTestId('fs-camera-overlay')).not.toBeInTheDocument();
+  });
+
+  it('shows the fullscreen camera overlay and hides/shows it via right-click', () => {
+    mediaStateMock.screenStream = { id: 'screen' };
+    mediaStateMock.videoStream = { id: 'video' };
+    const store = createTestStore({ selfScreenShare: true, selfVideo: true });
+    const { container } = render(
+      <Provider store={store}>
+        <VoiceChannelView channelId="100" channelName="General Voice" />
+      </Provider>,
+    );
+    try {
+      enterFullscreen();
+      expect(screen.getByTestId('fs-camera-overlay')).toBeInTheDocument();
+
+      // Right-click the overlay → menu → hide.
+      fireEvent.contextMenu(screen.getByTestId('fs-camera-overlay'));
+      fireEvent.click(screen.getByText("Don't show camera feed"));
+      expect(screen.queryByTestId('fs-camera-overlay')).not.toBeInTheDocument();
+
+      // Right-click the stream → menu → show again.
+      fireEvent.contextMenu(container.querySelector('video.focusedStreamVideo')!);
+      fireEvent.click(screen.getByText('Show camera feed'));
+      expect(screen.getByTestId('fs-camera-overlay')).toBeInTheDocument();
+    } finally {
+      exitFullscreen();
+    }
+  });
+
+  it('clampOverlayPos keeps the overlay fully inside its container', () => {
+    const box = { w: 1000, h: 600 };
+    const size = { w: 240, h: 150 };
+    // In-bounds passes through unchanged.
+    expect(clampOverlayPos(300, 200, box, size)).toEqual({ x: 300, y: 200 });
+    // Past the right/bottom edge clamps to (box - size).
+    expect(clampOverlayPos(9999, 9999, box, size)).toEqual({ x: 760, y: 450 });
+    // Negative clamps to 0.
+    expect(clampOverlayPos(-50, -50, box, size)).toEqual({ x: 0, y: 0 });
+    // Container smaller than the overlay clamps to 0 (never negative).
+    expect(clampOverlayPos(10, 10, { w: 100, h: 80 }, size)).toEqual({ x: 0, y: 0 });
   });
 
   // --- Multi-share stage switching (issue: can't switch between two streams) ---

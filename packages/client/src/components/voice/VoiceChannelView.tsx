@@ -32,6 +32,24 @@ import styles from './voiceChannelView.module.scss';
 
 export type ViewMode = 'grid' | 'focus';
 
+/**
+ * Clamp a dragged overlay's top-left so it stays fully inside its container.
+ * Pure (no DOM) so the drag math is unit-testable. `box`/`size` in px.
+ */
+export function clampOverlayPos(
+  x: number,
+  y: number,
+  box: { w: number; h: number },
+  size: { w: number; h: number },
+): { x: number; y: number } {
+  const maxX = Math.max(0, box.w - size.w);
+  const maxY = Math.max(0, box.h - size.h);
+  return {
+    x: Math.min(maxX, Math.max(0, x)),
+    y: Math.min(maxY, Math.max(0, y)),
+  };
+}
+
 /** One selectable screen-share on the stage — our own or a remote peer's. */
 interface ScreenSource {
   userId: string;
@@ -39,6 +57,8 @@ interface ScreenSource {
   name: string;
   isLocal: boolean;
   screen: MediaStream;
+  /** The presenter's camera, if on — shown as a draggable overlay only in fullscreen. */
+  camera: MediaStream | null;
 }
 
 export interface VoiceChannelViewProps {
@@ -79,6 +99,12 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
   // Locally mute a stream's audio (independent of deafen), remembered PER presenter so
   // muting one share never carries over to another when you switch the stage.
   const [mutedStreamUserIds, setMutedStreamUserIds] = useState<Set<string>>(() => new Set());
+  // Fullscreen camera overlay: the presenter's camera floats over the fullscreen stream,
+  // draggable, and hideable via right-click. Position is px within the media box (null =
+  // default bottom-right corner). `cameraHidden` hides it; `camMenu` is the right-click menu.
+  const [camPos, setCamPos] = useState<{ x: number; y: number } | null>(null);
+  const [cameraHidden, setCameraHidden] = useState(false);
+  const [camMenu, setCamMenu] = useState<{ x: number; y: number } | null>(null);
 
   const {
     startAudio,
@@ -92,6 +118,9 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
   // All <video> elements attach their stream through <RemoteVideo>, which re-attaches
   // on mount — so a stage switch between shares never leaves a black element.
   const focusedStreamRef = useRef<HTMLDivElement | null>(null);
+  // The stage media box (drag bounds for the fullscreen camera overlay) + drag bookkeeping.
+  const stageMediaRef = useRef<HTMLDivElement | null>(null);
+  const camDragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
 
   // Force re-render when streams change
   const [, setStreamTick] = useState(0);
@@ -116,6 +145,7 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
       name: 'You',
       isLocal: true,
       screen: localScreenStream,
+      camera: voiceState.selfVideo && media.videoStream ? media.videoStream : null,
     });
   }
   for (const p of remotePeers) {
@@ -126,6 +156,7 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
       name: u?.username ?? 'Streamer',
       isLocal: false,
       screen: p.screen,
+      camera: p.camera ?? null,
     });
   }
 
@@ -139,6 +170,9 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
   const stagePresenterId = activeSource?.userId;
   const stagePresenter = voiceUsers.find(u => u.userId === stagePresenterId);
   const stagePresenterName = activeSource?.name ?? 'Streamer';
+  // The presenter's camera — shown as a draggable overlay ONLY in fullscreen (where the
+  // participant tiles that normally hold cameras are not visible).
+  const stageCameraStream: MediaStream | null = activeSource?.camera ?? null;
   // Whether the share currently on the stage is muted for this viewer.
   const stageStreamMuted = stagePresenterId ? mutedStreamUserIds.has(stagePresenterId) : false;
 
@@ -167,6 +201,63 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
       document.removeEventListener('fullscreenchange', handleFsChange);
       document.removeEventListener('webkitfullscreenchange', handleFsChange);
     };
+  }, []);
+
+  // Reset the fullscreen camera overlay (position + hidden state) whenever the presenter
+  // on the stage changes, so a newly-focused stream starts with its camera shown at the
+  // default corner rather than inheriting the last presenter's drag/hide state.
+  useEffect(() => {
+    setCamPos(null);
+    setCameraHidden(false);
+    setCamMenu(null);
+  }, [stagePresenterId]);
+
+  // Close the camera context-menu on any outside click or Escape.
+  useEffect(() => {
+    if (!camMenu) return;
+    const close = () => setCamMenu(null);
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setCamMenu(null); };
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', close);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [camMenu]);
+
+  // ── Fullscreen camera overlay: drag to reposition, clamped to the stage media box. ──
+  const CAM_W = 240; // overlay footprint (kept in sync with .fsCameraOverlay width/ratio)
+  const CAM_H = 150;
+  const onCamPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return; // left-drag only; right-click opens the menu
+    e.preventDefault();
+    e.stopPropagation();
+    const box = stageMediaRef.current?.getBoundingClientRect();
+    // Current top-left of the overlay within the media box (default = bottom-right corner).
+    const cur = camPos ?? (box
+      ? { x: Math.max(0, box.width - CAM_W - 16), y: Math.max(0, box.height - CAM_H - 16) }
+      : { x: 0, y: 0 });
+    camDragRef.current = { startX: e.clientX, startY: e.clientY, origX: cur.x, origY: cur.y };
+    try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch { /* ignore */ }
+  }, [camPos]);
+
+  const onCamPointerMove = useCallback((e: React.PointerEvent) => {
+    const drag = camDragRef.current;
+    if (!drag) return;
+    e.preventDefault();
+    const box = stageMediaRef.current?.getBoundingClientRect();
+    setCamPos(clampOverlayPos(
+      drag.origX + (e.clientX - drag.startX),
+      drag.origY + (e.clientY - drag.startY),
+      { w: box?.width ?? 0, h: box?.height ?? 0 },
+      { w: CAM_W, h: CAM_H },
+    ));
+  }, []);
+
+  const onCamPointerUp = useCallback((e: React.PointerEvent) => {
+    if (!camDragRef.current) return;
+    camDragRef.current = null;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch { /* ignore */ }
   }, []);
 
   // Propagate our local camera / screen-share status to the gateway so other members in
@@ -510,19 +601,77 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
         const presenter = stagePresenter;
         const presenterName = stagePresenterName;
         const watching = Math.max(0, voiceUsers.length - 1);
+        // The presenter's camera floats over the stream ONLY in fullscreen (where the
+        // participant tiles that normally hold cameras aren't visible).
+        const canShowCam = isFullscreen && Boolean(stageCameraStream);
+        const showCamOverlay = canShowCam && !cameraHidden;
         return (
           <div
             ref={focusedStreamRef}
             className={`${styles.focusedStream} ${streamMinimized ? styles.focusedStreamMinimized : ''}`}
             data-testid="stream-stage"
           >
-            <div className={styles.focusedStreamMedia}>
+            <div
+              className={styles.focusedStreamMedia}
+              ref={stageMediaRef}
+              onContextMenu={(e) => {
+                // In fullscreen, right-click offers hide/show for the camera overlay.
+                if (!canShowCam) return;
+                e.preventDefault();
+                const box = stageMediaRef.current?.getBoundingClientRect();
+                setCamMenu({
+                  x: e.clientX - (box?.left ?? 0),
+                  y: e.clientY - (box?.top ?? 0),
+                });
+              }}
+            >
               <RemoteVideo
                 stream={stageStream}
                 className={styles.focusedStreamVideo}
                 onClick={handleToggleFullscreen}
                 title="Click to toggle fullscreen"
               />
+
+              {/* Fullscreen camera overlay — draggable; right-click to hide (see menu). */}
+              {showCamOverlay && (
+                <div
+                  className={styles.fsCameraOverlay}
+                  data-testid="fs-camera-overlay"
+                  style={camPos ? { left: camPos.x, top: camPos.y, right: 'auto', bottom: 'auto' } : undefined}
+                  onPointerDown={onCamPointerDown}
+                  onPointerMove={onCamPointerMove}
+                  onPointerUp={onCamPointerUp}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const box = stageMediaRef.current?.getBoundingClientRect();
+                    setCamMenu({ x: e.clientX - (box?.left ?? 0), y: e.clientY - (box?.top ?? 0) });
+                  }}
+                >
+                  <RemoteVideo stream={stageCameraStream} className={styles.fsCameraOverlayVideo} />
+                  <span className={styles.fsCameraOverlayLabel}>{presenterName}</span>
+                </div>
+              )}
+
+              {/* Right-click menu for the camera overlay (fullscreen only). */}
+              {camMenu && canShowCam && (
+                <div
+                  className={styles.camMenu}
+                  style={{ left: camMenu.x, top: camMenu.y }}
+                  role="menu"
+                  data-testid="fs-camera-menu"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={styles.camMenuItem}
+                    onClick={() => { setCameraHidden(h => !h); setCamMenu(null); }}
+                  >
+                    {cameraHidden ? 'Show camera feed' : "Don't show camera feed"}
+                  </button>
+                </div>
+              )}
               <span className={styles.focusedLiveBadge}>
                 <span className={styles.liveBadge}>
                   <span className={styles.liveDot} />

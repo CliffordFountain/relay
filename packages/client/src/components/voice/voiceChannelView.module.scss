@@ -650,6 +650,82 @@
   }
 }
 
+// === Fullscreen camera overlay (draggable PiP of the presenter's camera) ===
+.fsCameraOverlay {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 6;
+  width: 240px;
+  height: 150px; // 16:10 — keep in sync with CAM_W / CAM_H in VoiceChannelView
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+  touch-action: none; // let pointer-drag work without the browser panning/scrolling
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.fsCameraOverlayVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none; // drags/right-clicks are handled by the overlay wrapper
+}
+
+.fsCameraOverlayLabel {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  max-width: calc(100% - 16px);
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(6, 14, 34, 0.72);
+  color: #fff;
+  font-family: $font-display;
+  font-size: 11px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+// Right-click menu for the fullscreen camera overlay.
+.camMenu {
+  position: absolute;
+  z-index: 7;
+  min-width: 172px;
+  padding: 4px;
+  border-radius: 8px;
+  background: $bg-floating;
+  border: 1px solid $border-subtle;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.camMenuItem {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: $text-normal;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(var(--brand-color-rgb), 0.16);
+    color: $interactive-hover;
+  }
+}
+
 // === Minimized floating PiP for the whole focused stream ===
 .focusedStreamMinimized {
   position: fixed;
