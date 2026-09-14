@@ -39,8 +39,6 @@ interface ScreenSource {
   name: string;
   isLocal: boolean;
   screen: MediaStream;
-  /** The presenter's camera, shown as a PiP over their share (null when off). */
-  camera: MediaStream | null;
 }
 
 export interface VoiceChannelViewProps {
@@ -118,7 +116,6 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
       name: 'You',
       isLocal: true,
       screen: localScreenStream,
-      camera: voiceState.selfVideo && media.videoStream ? media.videoStream : null,
     });
   }
   for (const p of remotePeers) {
@@ -129,7 +126,6 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
       name: u?.username ?? 'Streamer',
       isLocal: false,
       screen: p.screen,
-      camera: p.camera ?? null,
     });
   }
 
@@ -143,8 +139,6 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
   const stagePresenterId = activeSource?.userId;
   const stagePresenter = voiceUsers.find(u => u.userId === stagePresenterId);
   const stagePresenterName = activeSource?.name ?? 'Streamer';
-  const stageCameraStream: MediaStream | null = activeSource?.camera ?? null;
-  const stageCameraOn = Boolean(stageCameraStream);
   // Whether the share currently on the stage is muted for this viewer.
   const stageStreamMuted = stagePresenterId ? mutedStreamUserIds.has(stagePresenterId) : false;
 
@@ -352,14 +346,14 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
     // consumer stored in remotePeers. A tile shows live video only while a stream
     // is actually present, so turning the camera off unmounts the <video> cleanly.
     const remotePeer = isSelf ? undefined : remotePeers.find(p => p.userId === user.userId);
-    // De-dup: while this user's camera is already shown as the PiP over their share on
-    // the stage, don't render a second live copy of it down in the tile grid — show
-    // their avatar there instead (issue: camera appeared both over the feed AND below).
-    const cameraInStagePip = stageCameraOn && user.userId === stagePresenterId;
+    // A participant's camera always renders as its OWN tile here — never composited onto
+    // the screen-share on the stage. So a streamer who is also on camera has their screen
+    // on the stage and their camera as a tile, exactly like every other participant, and
+    // your own camera is consistently a tile whether you're watching your share or theirs.
     const cameraStream = isSelf ? media.videoStream : remotePeer?.camera;
-    const cameraOn = !cameraInStagePip && (isSelf
+    const cameraOn = isSelf
       ? Boolean(voiceState.selfVideo && media.videoStream)
-      : Boolean(remotePeer?.camera));
+      : Boolean(remotePeer?.camera);
     const isUserStreaming = isSelf
       ? voiceState.selfScreenShare
       : (user.streaming || Boolean(remotePeer?.screen));
@@ -516,7 +510,6 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
         const presenter = stagePresenter;
         const presenterName = stagePresenterName;
         const watching = Math.max(0, voiceUsers.length - 1);
-        const presenterCameraOn = Boolean(stageCameraStream);
         return (
           <div
             ref={focusedStreamRef}
@@ -577,15 +570,9 @@ export const VoiceChannelView = ({ channelId, channelName }: VoiceChannelViewPro
                 {watching} watching
               </span>
 
-              {/* Presenter camera overlay (PiP) — shown when the presenter is also on
-                  camera. This is the only place their camera renders while on stage; the
-                  duplicate in the tile grid is suppressed (see cameraInStagePip). */}
-              {presenterCameraOn && (
-                <div className={styles.cameraPip} data-testid="presenter-camera-pip">
-                  <RemoteVideo stream={stageCameraStream} className={styles.cameraPipVideo} />
-                  <span className={styles.cameraPipLabel}>{presenterName}</span>
-                </div>
-              )}
+              {/* Note: the presenter's camera is NOT overlaid on the share here. Like
+                  Discord, a camera always renders as its own tile in the grid below — the
+                  stage shows only the shared screen. */}
 
               {/* Fullscreen / Minimize controls on the stream (issue #1) */}
               <div className={styles.focusedStreamControls}>

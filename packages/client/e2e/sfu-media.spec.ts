@@ -303,4 +303,57 @@ test.describe('SFU media flow (2 browsers)', () => {
       await bobCtx?.close();
     }
   });
+
+  test('a streamer\'s camera renders as a separate tile, never overlaid on the share', async ({ browser, request }) => {
+    test.setTimeout(180000);
+    // Discord methodology: the camera is NEVER composited onto the screen-share. The
+    // screen fills the stage; the camera is its own participant tile.
+    const alice = await registerUserWithVoice(request, 'cta');
+    const bob = await addMemberToGuild(request, alice.token, alice.guildId, 'ctb');
+
+    let aliceCtx: BrowserContext | undefined;
+    let bobCtx: BrowserContext | undefined;
+    try {
+      aliceCtx = await browser.newContext({ ignoreHTTPSErrors: true, baseURL: BASE });
+      bobCtx = await browser.newContext({ ignoreHTTPSErrors: true, baseURL: BASE });
+      const alicePage = await aliceCtx.newPage();
+      const bobPage = await bobCtx.newPage();
+
+      // Alice goes live with BOTH camera and screen share.
+      await loginViaToken(alicePage, alice.token, { email: alice.email, password: 'TestPass123A' });
+      const aliceControls = await joinVoiceChannel(alicePage);
+      await aliceControls.getByLabel('Turn On Camera').click();
+      await aliceControls.getByLabel('Share Your Screen').click();
+      await alicePage.getByRole('button', { name: 'Go Live' }).click();
+      await expect(alicePage.getByTestId('stream-stage')).toBeVisible({ timeout: 40000 });
+
+      // Bob joins and watches.
+      await loginViaToken(bobPage, bob.token, { email: bob.email, password: 'TestPass123A' });
+      await joinVoiceChannel(bobPage);
+
+      const stage = bobPage.getByTestId('stream-stage');
+      await expect(stage).toBeVisible({ timeout: 30000 });
+      // The screen share is on the stage (real frames)…
+      await expect
+        .poll(() => stage.evaluate((el) => {
+          const v = el.querySelector('video');
+          return Boolean(v && (v as HTMLVideoElement).videoWidth > 0);
+        }), { timeout: 30000, message: 'Screen share did not render on the stage' })
+        .toBe(true);
+      // …and the camera is NOT overlaid on it (no PiP element anywhere).
+      await expect(bobPage.getByTestId('presenter-camera-pip')).toHaveCount(0);
+      // Alice's camera renders as its own participant tile, with real frames.
+      const aliceTile = bobPage.locator(`[aria-label*="${alice.username}"]`).first();
+      await expect(aliceTile).toBeVisible({ timeout: 10000 });
+      await expect
+        .poll(() => aliceTile.evaluate((el) => {
+          const v = el.querySelector('video');
+          return Boolean(v && (v as HTMLVideoElement).videoWidth > 0);
+        }), { timeout: 30000, message: "Alice's camera did not render as a separate tile" })
+        .toBe(true);
+    } finally {
+      await aliceCtx?.close();
+      await bobCtx?.close();
+    }
+  });
 });

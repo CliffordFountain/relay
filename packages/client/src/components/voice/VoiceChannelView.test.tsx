@@ -475,9 +475,9 @@ describe('VoiceChannelView', () => {
     expect(screen.getByLabelText('Restore Stream')).toBeInTheDocument();
   });
 
-  // --- Presenter camera PiP overlay (issue #2) ---
+  // --- Camera renders as its own tile, never overlaid on the share (Discord model) ---
 
-  it('renders the camera PiP overlay when the presenter is screen-sharing AND on camera', () => {
+  it('never overlays the camera on the stage — no PiP element exists', () => {
     mediaStateMock.screenStream = { id: 'screen' };
     mediaStateMock.videoStream = { id: 'video' };
     const store = createTestStore({ selfScreenShare: true, selfVideo: true });
@@ -486,25 +486,13 @@ describe('VoiceChannelView', () => {
         <VoiceChannelView channelId="100" channelName="General Voice" />
       </Provider>,
     );
-    expect(screen.getByTestId('presenter-camera-pip')).toBeInTheDocument();
-  });
-
-  it('does not render the camera PiP overlay when the presenter camera is off', () => {
-    mediaStateMock.screenStream = { id: 'screen' };
-    mediaStateMock.videoStream = null;
-    const store = createTestStore({ selfScreenShare: true, selfVideo: false });
-    render(
-      <Provider store={store}>
-        <VoiceChannelView channelId="100" channelName="General Voice" />
-      </Provider>,
-    );
+    // The stage renders, but the camera is NOT composited onto it.
+    expect(screen.getByTestId('stream-stage')).toBeInTheDocument();
     expect(screen.queryByTestId('presenter-camera-pip')).not.toBeInTheDocument();
   });
 
-  // --- Camera de-dup: no double render (issue: camera over AND below the feed) ---
-
-  it('does not duplicate the presenter camera as a tile <video> while it is the stage PiP', () => {
-    // Self is sharing screen AND on camera → camera should appear ONLY as the PiP.
+  it('renders the presenter camera as a tile (not an overlay) while they screen-share', () => {
+    // Self sharing screen AND on camera → screen on the stage, camera as a single tile.
     mediaStateMock.screenStream = { id: 'screen' };
     mediaStateMock.videoStream = { id: 'video' };
     const store = createTestStore({ selfScreenShare: true, selfVideo: true });
@@ -513,10 +501,9 @@ describe('VoiceChannelView', () => {
         <VoiceChannelView channelId="100" channelName="General Voice" />
       </Provider>,
     );
-    // Shown once, over the feed…
-    expect(screen.getByTestId('presenter-camera-pip')).toBeInTheDocument();
-    // …and NOT a second time as a live camera down in the tile grid.
-    expect(container.querySelector('video.tileVideo')).not.toBeInTheDocument();
+    // Exactly one camera video — the tile — and nothing overlaid on the stage.
+    expect(screen.queryByTestId('presenter-camera-pip')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('video.tileVideo')).toHaveLength(1);
   });
 
   it('still shows the self camera as a tile <video> when NOT screen-sharing', () => {
