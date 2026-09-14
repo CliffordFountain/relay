@@ -17,9 +17,12 @@ services:
       POSTGRES_USER: "${POSTGRES_USER:-relay}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-relay}"
       POSTGRES_DB: "${POSTGRES_DB:-relay}"
-      # Seed the demo accounts (owner/player1/player2) on a fresh, backup-less database.
-      # Set to false for a real deployment so no shared-password accounts are created.
-      RELAY_SEED_DEMO: "${RELAY_SEED_DEMO:-true}"
+      # Demo accounts (owner/player1/player2) on a fresh, backup-less database. OFF by
+      # default (fail closed) and never seeded with a shipped password. To use them in
+      # local dev, set BOTH in your .env: RELAY_SEED_DEMO=true and RELAY_DEMO_PASSWORD_HASH
+      # (an argon2id hash of your chosen demo password — see .env.example).
+      RELAY_SEED_DEMO: "${RELAY_SEED_DEMO:-false}"
+      RELAY_DEMO_PASSWORD_HASH: "${RELAY_DEMO_PASSWORD_HASH:-}"
     ports:
       - "127.0.0.1:5432:5432"
     volumes:

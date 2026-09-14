@@ -118,16 +118,17 @@ Set `RELAY_URL` to your server's address if it isn't the local default.
 
 ### Log in or sign up
 
-First launch drops you on the sign-in screen. Log in with one of the
-[default accounts](#default-accounts) — say **`owner`** / **`RelayDev123!`** — or hit
-**Create an account** to make your own.
+First launch drops you on the sign-in screen. Hit **Create an account** to make your own —
+or, for a quick look around, enable the optional
+[demo accounts](#demo-accounts-optional-off-by-default) and a ready-made community.
 
 | Sign in | Create an account |
 |---|---|
 | ![Sign in](docs/screenshots/login.png) | ![Create an account](docs/screenshots/create-account.png) |
 
-Once you're in, the **+** on the left rail spins up your first server. A fresh install already
-comes with a small demo community ("Relay HQ") so there's something to poke at right away.
+Once you're in, the **+** on the left rail spins up your first server. If you enabled demo
+seeding (above), a small demo community ("Relay HQ") comes with it so there's something to
+poke at right away.
 
 | Create a server | Settings |
 |---|---|
@@ -137,25 +138,28 @@ comes with a small demo community ("Relay HQ") so there's something to poke at r
 moderation · [Deploying & configuring](docs/DEPLOYMENT.md) — env settings, backups, and what to
 lock down before you put it on the internet.
 
-## Default accounts
+## Demo accounts (optional, off by default)
 
-A fresh database is seeded (via `infrastructure/seed.sql`) with three ready-to-go development
-accounts, all sharing the password **`RelayDev123!`**:
+For local development you can seed three ready-to-go accounts — `owner` (demo server
+owner/admin), `player1`, and `player2` — plus a small demo community ("Relay HQ"). They're
+**off by default and never ship with a password**: no shared credential lives in the repo,
+so a fresh public deployment can't be logged into with a known account. To enable them for
+your own machine, set both in your **`.env`** (which is gitignored):
 
-| Username  | Password       | Role                       |
-|-----------|----------------|----------------------------|
-| `owner`   | `RelayDev123!` | demo server owner / admin  |
-| `player1` | `RelayDev123!` | regular member             |
-| `player2` | `RelayDev123!` | regular member             |
+```sh
+RELAY_SEED_DEMO=true
+# argon2id hash of the password you want the demo accounts to have. Generate it once the
+# stack is up (pick any password):
+#   docker exec relay-api python -c "from argon2 import PasswordHasher; print(PasswordHasher().hash('choose-a-password'))"
+RELAY_DEMO_PASSWORD_HASH=$argon2id$v=19$m=65536,t=3,p=4$...
+```
 
-Log in with the username (or its `@relay.local` email) and the password above.
-
-The seed only runs the first time the Postgres volume is created. To fully reset, run
-`docker compose down -v && rm -rf backups/*` before starting again (this wipes all local
-data — the `rm` matters because the hourly backup sidecar keeps snapshots in `./backups`
-on the host, and a fresh start restores the newest one automatically). These are **local
-development credentials** — change or remove them in `infrastructure/seed.sql` before you
-put Relay in front of anyone else.
+Then start with a fresh database (the seed only runs when the Postgres volume is first
+created): `docker compose down -v && rm -rf backups/*` before starting again wipes all local
+data — the `rm` matters because the hourly backup sidecar keeps snapshots in `./backups`, and
+a fresh start restores the newest one automatically. Log in with a username (or its
+`@relay.local` email) and the password you hashed. **Leave demo seeding off for any real
+deployment.**
 
 ## How it's put together
 

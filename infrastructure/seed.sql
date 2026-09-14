@@ -5,27 +5,28 @@
 --  /docker-entrypoint-initdb.d and Postgres runs it once, right after
 --  01-schema.sql, the first time the data volume is created.
 --
---  All three accounts share the same password:  RelayDev123!
+--    username | role
+--    ---------+---------------------------------
+--    owner    | demo server owner / admin
+--    player1  | regular member
+--    player2  | regular member
 --
---    username | password     | role
---    ---------+--------------+---------------------------------
---    owner    | RelayDev123! | demo server owner / admin
---    player1  | RelayDev123! | regular member
---    player2  | RelayDev123! | regular member
---
---  Log in with the username (or the email) and the password above.
---
---  These are LOCAL DEVELOPMENT credentials only. Change or delete them before
---  any shared or public deployment. Re-running is safe (ON CONFLICT DO NOTHING).
---
---  The password_hash values are argon2id hashes of RelayDev123!, produced with
---  the same argon2 PasswordHasher the API uses to verify logins.
+--  All three share ONE password, which is NOT stored here. It is supplied at seed
+--  time from RELAY_DEMO_PASSWORD_HASH (an argon2id hash the operator sets in .env);
+--  init-db.sh passes it in as the psql variable :demo_pw_hash and only runs this file
+--  when RELAY_SEED_DEMO=true AND that hash is set. So a public repo/deploy ships NO
+--  usable credential. These accounts are for LOCAL DEVELOPMENT only — never seed them
+--  on a real deployment. Re-running is safe (ON CONFLICT DO NOTHING).
 -- ============================================================================
 
+-- The password hash is NOT hardcoded here (shipping a shared credential in a public repo
+-- would let anyone log into any default deployment). It comes from the psql variable
+-- :demo_pw_hash, which init-db.sh passes from RELAY_DEMO_PASSWORD_HASH (an argon2id hash
+-- the operator sets in their own .env). All three demo accounts share that one password.
 INSERT INTO users (username, display_name, email, password_hash, date_of_birth) VALUES
-  ('owner',   'Relay Owner', 'owner@relay.local',   '$argon2id$v=19$m=65536,t=3,p=4$ekszCqnlRTc5E+S0RFyNJA$tBDuFHKxznLy+Sz1lhfTdeauko3HrbIV3sNNqLJXUGU', '2000-01-01'),
-  ('player1', 'Player One',  'player1@relay.local', '$argon2id$v=19$m=65536,t=3,p=4$3wYHkP+eZjdoQ3fPWXmh0w$mVSiLlSU3B53hRV/D5f7pzTc977ZrGNaeRIbRXvsnJM', '2000-01-01'),
-  ('player2', 'Player Two',  'player2@relay.local', '$argon2id$v=19$m=65536,t=3,p=4$b+EjJoPEnum3JurcRQwQ2A$ymZjD7bg5rypjHB5JmG1er6s+0ScR3asBopU3PbOFgk', '2000-01-01')
+  ('owner',   'Relay Owner', 'owner@relay.local',   :'demo_pw_hash', '2000-01-01'),
+  ('player1', 'Player One',  'player1@relay.local', :'demo_pw_hash', '2000-01-01'),
+  ('player2', 'Player Two',  'player2@relay.local', :'demo_pw_hash', '2000-01-01')
 ON CONFLICT DO NOTHING;
 
 -- ============================================================================

@@ -30,7 +30,7 @@ unedited copy reproduces the local defaults. (Ports and internal service URLs ar
 | `INTERNAL_SERVICE_SECRET` | Shared secret for internal service-to-service calls (the gateway's per-channel voice-join authorization request to the API). The API and gateway must agree on it. Change it from the dev default for any real deployment (`openssl rand -hex 32`). |
 | `CORS_ORIGINS` | Comma-separated origins the API accepts. Add your real client origin when serving from a domain other than localhost. |
 | `PUBLIC_BASE_URL` | The URL that goes into verification / password-reset emails. Set it to your real address (e.g. `https://relay.example.com`). |
-| `RELAY_SEED_DEMO` | `true` seeds the demo accounts (owner/player1/player2) on a fresh database. **Set to `false` for a real deployment** so no shared-password accounts exist. |
+| `RELAY_SEED_DEMO` | Off by default. Seeding demo accounts (owner/player1/player2) also requires `RELAY_DEMO_PASSWORD_HASH` (an argon2id hash you set) — no password ships in the repo. Leave both unset for a real deployment. |
 | `ANNOUNCED_IP` | Leave empty for voice on the same machine. Set it to the host's LAN or public IP so voice works from phones / remote users. |
 | `VOICE_PUBLIC_ENDPOINT` | The `host:port` of the voice signaling server advertised to clients. Defaults to `127.0.0.1:4001` (same machine); set `<host-ip>:4001` for remote use. |
 | `SMTP_*` | Leave `SMTP_HOST` empty and the API just logs verification/reset URLs (fine for a private instance). Fill these in to send real emails. |
@@ -82,7 +82,8 @@ The defaults are tuned for a quick local run, not a hostile network. Do these fi
    `INTERNAL_SERVICE_SECRET` (`openssl rand -hex 32`) — the API and gateway share it to
    authenticate the internal voice-join authorization call. **With `ENVIRONMENT=production`,
    the API refuses every `/internal` call until this is a strong non-default value.**
-2. **Turn off the demo accounts** — `RELAY_SEED_DEMO=false`.
+2. **Leave demo accounts off** — they're off by default now and can't be seeded without an
+   explicit `RELAY_DEMO_PASSWORD_HASH`, so there's nothing to disable; just don't set those.
 3. **Keep the internal services internal.** Postgres, Redis, Elasticsearch, the data layer,
    MinIO (both the S3 API on 9000 and the console on 9001) are already bound to `127.0.0.1`
    in `docker-compose.yml` — don't republish them on `0.0.0.0`. Only the client, API,

@@ -23,13 +23,21 @@ if [ -s "$DUMP" ]; then
 else
   echo "[relay-init] No backup found — applying fresh schema."
   psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f /relay-init/schema.sql
-  # Demo accounts (owner/player1/player2, shared password) are convenient for a first run
-  # but must NOT exist on a real deployment. They seed by default; set RELAY_SEED_DEMO=false
-  # (see .env.example) to bring up an empty, production-ready database instead.
-  if [ "${RELAY_SEED_DEMO:-true}" = "true" ]; then
-    echo "[relay-init] Seeding demo accounts + server (set RELAY_SEED_DEMO=false to skip)."
-    psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f /relay-init/seed.sql
+  # Demo accounts (owner/player1/player2) are for local development only. They are OFF by
+  # default (fail closed) and never seed with a shipped password: seeding requires BOTH
+  # RELAY_SEED_DEMO=true AND RELAY_DEMO_PASSWORD_HASH (an argon2id hash the operator sets in
+  # .env), so a public deployment can't be logged into with a repo-published credential.
+  if [ "${RELAY_SEED_DEMO:-false}" = "true" ]; then
+    if [ -n "${RELAY_DEMO_PASSWORD_HASH:-}" ]; then
+      echo "[relay-init] Seeding demo accounts + server."
+      psql -v ON_ERROR_STOP=1 -v demo_pw_hash="$RELAY_DEMO_PASSWORD_HASH" \
+        -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f /relay-init/seed.sql
+    else
+      echo "[relay-init] RELAY_SEED_DEMO=true but RELAY_DEMO_PASSWORD_HASH is unset — refusing"
+      echo "[relay-init] to seed demo accounts without an explicit password. Set an argon2id"
+      echo "[relay-init] hash in .env (see .env.example) to enable them."
+    fi
   else
-    echo "[relay-init] RELAY_SEED_DEMO=false — schema only, no demo accounts."
+    echo "[relay-init] RELAY_SEED_DEMO not enabled — schema only, no demo accounts."
   fi
 fi
