@@ -97,7 +97,7 @@ describe('detectAnnouncedIps', () => {
     ]);
   });
 
-  it('announces an explicit ANNOUNCED_IP override first, then detected IPs and loopback', () => {
+  it('announces ONLY the explicit ANNOUNCED_IP override (a single clean candidate)', () => {
     process.env.ANNOUNCED_IP = '203.0.113.9';
     mockInterfaces({
       lo: [ipv4('127.0.0.1', true)],
@@ -106,17 +106,15 @@ describe('detectAnnouncedIps', () => {
 
     const result = detectAnnouncedIps();
 
-    // Every candidate is offered so a client on the internet/LAN, on the same host,
-    // or in the same container can each find a reachable ICE candidate.
-    expect(result.map((e) => e.announcedIp)).toEqual([
-      '203.0.113.9',
-      '192.168.1.50',
-      '127.0.0.1',
-    ]);
+    // When an override is set we advertise exactly that one routable candidate. Adding the
+    // container IP + loopback alongside it handed full-ICE clients dead pairs to keep
+    // probing, which over a cross-machine link drifts the selected pair / loses ICE consent,
+    // so ALL media goes black after ~tens of seconds. One clean candidate avoids that.
+    expect(result.map((e) => e.announcedIp)).toEqual(['203.0.113.9']);
     expect(result[0]).toEqual({ ip: '0.0.0.0', announcedIp: '203.0.113.9' });
   });
 
-  it('deduplicates when the override equals a detected IP', () => {
+  it('returns just the override even when it equals a detected IP', () => {
     process.env.ANNOUNCED_IP = '192.168.1.50';
     mockInterfaces({
       lo: [ipv4('127.0.0.1', true)],
@@ -125,7 +123,7 @@ describe('detectAnnouncedIps', () => {
 
     const result = detectAnnouncedIps();
 
-    expect(result.map((e) => e.announcedIp)).toEqual(['192.168.1.50', '127.0.0.1']);
+    expect(result.map((e) => e.announcedIp)).toEqual(['192.168.1.50']);
   });
 
   it('falls back to loopback only when no non-internal IPv4 exists', () => {
