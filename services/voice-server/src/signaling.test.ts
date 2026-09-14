@@ -67,6 +67,12 @@ class MockWs extends EventEmitter {
 function makeRedis(store: Record<string, string>) {
   return {
     get: vi.fn(async (key: string) => (key in store ? store[key] : null)),
+    // GETDEL: read and atomically remove — the voice grant is single-use.
+    getDel: vi.fn(async (key: string) => {
+      const v = key in store ? store[key] : null;
+      delete store[key];
+      return v;
+    }),
     publish: vi.fn(async () => 1),
     sIsMember: vi.fn(async () => false),
   };
@@ -124,6 +130,27 @@ describe('handleIdentify grant enforcement', () => {
     expect(ws.closed).toBeNull();
 
     ws.close(); // trigger cleanup (clears heartbeat interval)
+  });
+
+  it('consumes the grant on join — a second identify with the same grant is refused', async () => {
+    const store = {
+      [`auth:token:${TOKEN}`]: USER_ID,
+      [voiceGrantKey(USER_ID, CHANNEL_ID)]: GRANT_GUILD,
+    };
+    const redis = makeRedis(store); // shared store across both joins
+
+    const ws1 = new MockWs();
+    const rm1 = makeRoomManager();
+    await identify(ws1, redis, rm1, { token: TOKEN, user_id: USER_ID, session_id: 's1', channel_id: CHANNEL_ID, server_id: GRANT_GUILD });
+    expect(rm1.joinRoom).toHaveBeenCalledTimes(1);
+    ws1.close();
+
+    // The grant was single-use — it's gone, so a re-join without a freshly-minted grant fails.
+    const ws2 = new MockWs();
+    const rm2 = makeRoomManager();
+    await identify(ws2, redis, rm2, { token: TOKEN, user_id: USER_ID, session_id: 's2', channel_id: CHANNEL_ID, server_id: GRANT_GUILD });
+    expect(rm2.joinRoom).not.toHaveBeenCalled();
+    expect(ws2.closed?.code).toBe(4004);
   });
 
   it('refuses a join when no grant exists (the core cross-channel fix)', async () => {

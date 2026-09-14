@@ -202,8 +202,12 @@ async function handleIdentify(
     return;
   }
 
+  // Consume the grant atomically (GETDEL): it is strictly SINGLE-USE, so a permission
+  // revocation between the gateway's authorize and this join is honored on any re-join
+  // (the grant is gone and a fresh one is only minted if the user is still permitted),
+  // instead of leaving a ~30s window where the stale grant could be reused.
   const grantGuildId = await redis
-    .get(voiceGrantKey(authenticatedUserId, channelId))
+    .getDel(voiceGrantKey(authenticatedUserId, channelId))
     .catch(() => null);
   if (!grantGuildId) {
     console.warn(
