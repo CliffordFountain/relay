@@ -59,6 +59,20 @@ kick/ban, and an audit log so moderators can see what happened. Scheduled events
 rest of the stack in Docker Compose. Nothing external to sign up for. The source is available
 under a noncommercial license, so you can read exactly what you're running and change it.
 
+## A look inside
+
+| Chat, reactions & GIFs | The GIF picker (GIPHY) |
+|---|---|
+| ![Chat with reactions and an inline GIF](docs/screenshots/feature-chat.png) | ![GIF picker with GIPHY results](docs/screenshots/feature-gif-picker.png) |
+
+| Stickers | Custom emoji |
+|---|---|
+| ![Sticker picker](docs/screenshots/feature-sticker-picker.png) | ![Emoji picker](docs/screenshots/feature-emoji-picker.png) |
+
+| Media gallery | Voice & video settings |
+|---|---|
+| ![Channel media gallery](docs/screenshots/feature-media-gallery.png) | ![Voice & video settings](docs/screenshots/feature-settings-voice.png) |
+
 ## Getting started
 
 You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows/macOS) or
