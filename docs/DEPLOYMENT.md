@@ -72,12 +72,16 @@ whole stack.
 
 The defaults are tuned for a quick local run, not a hostile network. Do these first:
 
-1. **Change the default credentials.** In `.env`, set a real `POSTGRES_PASSWORD` and change
+1. **Set `ENVIRONMENT=production`.** The dev compose runs in `development`, which accepts the
+   dev internal secret and serves the API docs. In production the app hides the docs/OpenAPI
+   and **fails closed** on the internal endpoint until you set a strong secret (next line).
+2. **Change the default credentials.** In `.env`, set a real `POSTGRES_PASSWORD` and change
    the MinIO `S3_ACCESS_KEY` / `S3_SECRET_KEY`. The shipped `relay`/`relay` and
    `minioadmin`/`minioadmin` are dev defaults; the API, backup sidecar, data layer and MinIO
    all read these same values, so you only set them once. Also set a strong
    `INTERNAL_SERVICE_SECRET` (`openssl rand -hex 32`) — the API and gateway share it to
-   authenticate the internal voice-join authorization call.
+   authenticate the internal voice-join authorization call. **With `ENVIRONMENT=production`,
+   the API refuses every `/internal` call until this is a strong non-default value.**
 2. **Turn off the demo accounts** — `RELAY_SEED_DEMO=false`.
 3. **Keep the internal services internal.** Postgres, Redis, Elasticsearch, the data layer,
    MinIO (both the S3 API on 9000 and the console on 9001) are already bound to `127.0.0.1`
